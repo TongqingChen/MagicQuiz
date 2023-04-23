@@ -22,4 +22,6 @@ dist-ssr
 *.njsproj
 *.sun
 *.sw?
-node_modules
+*.d.ts
+yarn.lock
+.vscode/
