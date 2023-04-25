@@ -7,7 +7,8 @@ export interface IQuiz{
     subject_name:string,
     choice_num:number,
     logic_num:number,
-    coding_num:number
+    coding_num:number,
+    exam_minutes:number
 }
 
 export class QuizPages{

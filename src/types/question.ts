@@ -8,6 +8,7 @@ export class Question {
     answer: string = ""
     userAnswer: string = ""
     displayType: string = ""
+    score: number = 0
 }
 
 interface IQuestionListWithType {
@@ -17,11 +18,21 @@ interface IQuestionListWithType {
     qList: Question[]
 }
 
+
+export enum ExamState {
+    IDLE = 0,
+    ONGOING = 1,
+    FINISHED = 2
+}
+
 export class ExamInfo {
+
+    scores: number = 0
     id: number = 0
-    state: number = 0
+    state: ExamState = ExamState.IDLE   //0-未开始， 1-考试中, 2-已结束
     name: string = ''
     subjectId: number = 0
     subjectName: string = ''
+    exam_seconds: number = 0
     meta: IQuestionListWithType[] = []
 }

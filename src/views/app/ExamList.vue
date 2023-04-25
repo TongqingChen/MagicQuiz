@@ -13,14 +13,15 @@
                     <div class="card-header">
                         <!-- <img src="../assets/python.svg" style="height:2em" /> -->
                         <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
-                        <el-button class="button" type="text"
-                            @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name)">开始考试</el-button>
+                        <el-button class="button" link
+                            @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
                     </div>
                 </template>
                 <div class="card-body">
                     <li>选择：{{ quiz.choice_num }}</li>
                     <li>判断：{{ quiz.logic_num }}</li>
                     <li>编程：{{ quiz.coding_num }}</li>
+                    <li>时长：{{ quiz.exam_minutes }}分钟</li>
                 </div>
             </el-card>
         </div>
@@ -33,11 +34,11 @@
 </template>
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from 'vue'
-import { QuizPages } from '../type/quiz'
+import { QuizPages } from '@/types/quiz'
 import { computed } from '@vue/reactivity';
-import { Api } from '../request/api'
+import { Api } from '@/request/api'
 
-import { SubjectList } from '../type/subject'
+import { SubjectList } from '@/types/subject'
 
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router';
@@ -52,13 +53,12 @@ const quizPages = reactive(new QuizPages())
 const getQuizList = () => {
     quizPages.currentPage = 1
     quizPages.subject = { id: 0, name: "Python四级", count: 0 }
-    Api.getQuizList().then(res => {
-        quizPages.quizList = res.data
+    Api.getQuizList().then((res: { data: { results: any; }; }) => {
+        quizPages.quizList = res.data.results
         quizPages.quizNum = quizPages.quizList.length
         quizPages.quizDisplay = quizPages.quizList
-
-        subjectList.data.forEach(s => { s.count = 0 })
-        quizPages.quizList.forEach(q => {
+        subjectList.data.forEach((s: { count: number; }) => { s.count = 0 })
+        quizPages.quizList.forEach((q: { subject: any; subject_name: any; }) => {
             for (var i = 1; i < subjectList.data.length; i++) {
                 if (q.subject == subjectList.data[i].id) {
                     subjectList.data[i].count++;
@@ -68,37 +68,6 @@ const getQuizList = () => {
         })
         subjectList.data[0].count = quizPages.quizNum
     })
-    // quizPages.quizList = [
-    //     { id: 0, name: "2024.03", subject: { id: 0, name: "Python四级" }, choiceNum: 20, yesNoNum: 15, codingNum: 4 },
-    //     { id: 1, name: "2022.06", subject: { id: 1, name: "Scratch" }, choiceNum: 10, yesNoNum: 20, codingNum: 4 },
-    //     { id: 2, name: "2020.03", subject: { id: 0, name: "Python四级" }, choiceNum: 20, yesNoNum: 15, codingNum: 3 },
-    //     { id: 3, name: "2022.03", subject: { id: 1, name: "Scrath" }, choiceNum: 20, yesNoNum: 25, codingNum: 12 },
-    //     { id: 4, name: "2022.06", subject: { id: 0, name: "Python四级" }, choiceNum: 20, yesNoNum: 15, codingNum: 4 },
-    //     { id: 5, name: "2022.12", subject: { id: 0, name: "Python四级" }, choiceNum: 10, yesNoNum: 25, codingNum: 7 },
-    //     { id: 6, name: "2022.03", subject: { id: 0, name: "Python四级" }, choiceNum: 20, yesNoNum: 15, codingNum: 2 },
-    //     { id: 7, name: "2023.09", subject: { id: 2, name: "C++" }, choiceNum: 20, yesNoNum: 15, codingNum: 4 },
-    //     { id: 8, name: "2022.03", subject: { id: 0, name: "Python四级" }, choiceNum: 10, yesNoNum: 15, codingNum: 4 },
-    //     { id: 9, name: "2021.03", subject: { id: 2, name: "C++" }, choiceNum: 20, yesNoNum: 15, codingNum: 4 },
-    //     { id: 10, name: "2022.06", subject: { id: 0, name: "Python四级" }, choiceNum: 10, yesNoNum: 15, codingNum: 8 },
-    //     { id: 11, name: "2021.03", subject: { id: 0, name: "Python四级" }, choiceNum: 20, yesNoNum: 35, codingNum: 4 },
-    //     { id: 12, name: "2022.03", subject: { id: 3, name: "Math口算" }, choiceNum: 20, yesNoNum: 15, codingNum: 4 },
-    //     { id: 13, name: "2023.06", subject: { id: 0, name: "Python四级" }, choiceNum: 10, yesNoNum: 15, codingNum: 4 },
-    //     { id: 14, name: "2022.03", subject: { id: 3, name: "Math口算" }, choiceNum: 20, yesNoNum: 12, codingNum: 4 },
-    //     { id: 15, name: "2022.12", subject: { id: 0, name: "Python四级" }, choiceNum: 10, yesNoNum: 15, codingNum: 9 },
-    // ]
-    // quizPages.quizNum = quizPages.quizList.length
-    // quizPages.quizDisplay = quizPages.quizList
-
-    // for (var i = 1; i < subjectList.length; i++) {
-    //     subjectList[i].count = 0
-    //     quizPages.quizList.forEach(q => {
-    //         if (q.subject.id == subjectList[i].id) {
-    //             subjectList[i].count++;
-    //         }
-    //     })
-    //     console.log(subjectList[i].name, subjectList[i].count)
-    // }
-    // subjectList[0].count = quizPages.quizNum
 }
 
 onMounted(() => {
@@ -106,17 +75,17 @@ onMounted(() => {
         subjectList.data = store.getters.getSubjectList
         getQuizList()
     } else {
-        Api.getSubjectList().then(res => {
-            console.log('getsubjectlist', res.data)
-            subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data)
-            store.commit('setSubjectList', res.data)
+        Api.getSubjectList().then((res: { data: { results: ConcatArray<{ id: number; name: string; count: number; }>; }; }) => {
+            console.log('getsubjectlist', res.data.results)
+            subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
+            store.commit('setSubjectList', res.data.results)
             getQuizList()
         })
     }
 }
 )
 const onSubjectSelected = () => {
-    quizPages.quizDisplay = quizPages.quizList.filter(value => {
+    quizPages.quizDisplay = quizPages.quizList.filter((value: { subject: number; }) => {
         return (currentSubjectId.value == -1) ? true : value.subject == currentSubjectId.value
     })
     quizPages.quizNum = quizPages.quizDisplay.length
@@ -131,10 +100,10 @@ const onPageChanged = (page: number) => (
     quizPages.currentPage = page
 )
 
-const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string) => {
+const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
     router.push({
         path: '/exam',
-        query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName }
+        query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
     })
 }
 </script>

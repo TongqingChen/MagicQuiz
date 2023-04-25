@@ -1,65 +1,57 @@
 <template>
-    <el-container class="layout-container-exam" style="height:600px">
+    <el-container class="layout-container-exam" style="height:100%">
         <el-header
             style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: bold;">
-            <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
-            <CountDown style="color: red;" :duration_secs="5" :blink="true" end_text="考试结束" @end_event="onCountDownEnd"></CountDown>
-            <el-button type="text" @click="submitQuiz">提交</el-button>
+            <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span>
+            <CountDown style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
+                :duration_secs="examInfo.exam_seconds" :blink="true" end_text="考试结束" @end_event="onCountDownEnd">
+            </CountDown>
+            <el-button link :disabled="examInfo.state != ExamState.ONGOING" @click="submitQuiz">提交</el-button>
         </el-header>
-        <el-container>      
+        <el-container>
             <el-aside width="170px">
                 <el-scrollbar style="height:100%">
-                    <div v-for="(qs, idx1) in examInfo.meta" style="margin: 5px;">
+                    <div v-for="qs in examInfo.meta" style="margin: 5px;">
                         <el-divider>{{ qs.typeName }}</el-divider>
                         <div class="question-zone">
-                            <el-button v-for="(q, idx2) in qs.qList" :type="q.displayType" class="question-button"
-                                @click="onQuestionClicked(idx1, idx2)">{{ q.index }}</el-button>
+                            <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
+                                @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
                         </div>
                     </div>
-                    <!-- <el-menu @select="onQuestionSelected" collapse-transition>
-                    <el-sub-menu v-for="(qs, index1)  in examInfo.meta" :index="qs.typeName">
-                        <template #title>
-                            <el-icon>
-                                <component :is="qs.icon" class="icon" />
-                            </el-icon>
-                            {{ qs.typeName }}
-                        </template>
-                        <el-menu-item v-for="(q, index2) in qs.qList" :index="index1 + '_' + index2">
-                            第{{q.index}}题[{{ q.id }}]
-                        </el-menu-item>
-                    </el-sub-menu>
-                </el-menu> -->
                 </el-scrollbar>
             </el-aside>
-
             <el-main>
-                <!-- <div>
-                    <el-radio-group v-model="radio1">
-                        <el-radio label="1" size="large">Option A</el-radio>
-                        <el-radio label="2" size="large">Option B</el-radio>
-                    </el-radio-group>
-                </div> -->
-                <div style="padding-left: 10px;">
-                    <div class="answer" v-if="activeQ.meta.index > 0">【考生答案】{{ activeQ.meta.userAnswer }}</div>
-                    <div class="answer" v-if="examInfo.state == 1 && activeQ.meta.index > 0">
+                <div style="padding-left: 10px; padding-top: 5px;">
+                    <div class="answer" v-if="activeQ.meta.index >= 0">【考生答案】{{ activeQ.meta.userAnswer }}
+                    </div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED && activeQ.meta.index >= 0">
                         【正确答案】{{ activeQ.meta.answer }}
                     </div>
-                    <el-radio-group v-model="activeQ.answers[0]" v-if="activeQ.meta.type == 0 && examInfo.state == 0"
-                        @change="onAnswerSelected">
-                        <el-radio label="A" size="large">A</el-radio>
-                        <el-radio label="B" size="large">B</el-radio>
-                        <el-radio label="C" size="large">C</el-radio>
-                        <el-radio label="D" size="large">D</el-radio>
+                    <el-button-group v-if="activeQ.meta.index >= 0">
+                        <el-button :disabled="activeQ.meta.index == 0" type="primary" :icon="ArrowLeft" size="small"
+                            @click="onQuestionClicked(activeQ.meta.index - 1)">上一题</el-button>
+                        <el-button :disabled="activeQ.meta.index == ijPairs.length - 1" type="primary" size="small"
+                            @click="onQuestionClicked(activeQ.meta.index + 1)">下一题<el-icon class="el-icon--right">
+                                <ArrowRight />
+                            </el-icon></el-button>
+                    </el-button-group>
+                    <el-radio-group v-model="activeQ.answers[0]"
+                        v-if="activeQ.meta.type == 0 && examInfo.state == ExamState.ONGOING" @change="onAnswerSelected">
+                        <el-radio label="A" size="small">A</el-radio>
+                        <el-radio label="B" size="small">B</el-radio>
+                        <el-radio label="C" size="small">C</el-radio>
+                        <el-radio label="D" size="small">D</el-radio>
                     </el-radio-group>
-                    <el-radio-group v-model="activeQ.answers[1]" v-if="activeQ.meta.type == 1 && examInfo.state == 0"
-                        @change="onAnswerSelected">
-                        <el-radio label="T" size="large">正确</el-radio>
-                        <el-radio label="F" size="large">错误</el-radio>
+                    <el-radio-group v-model="activeQ.answers[1]"
+                        v-if="activeQ.meta.type == 1 && examInfo.state == ExamState.ONGOING" @change="onAnswerSelected">
+                        <el-radio label="T" size="small">正确</el-radio>
+                        <el-radio label="F" size="small">错误</el-radio>
                     </el-radio-group>
                 </div>
                 <div class="question">
-                    <div v-if="activeQ.meta.index > 0" class="title">{{ activeQ.meta.index }}. {{
-                        activeQ.meta.title }}</div>
+                    <div v-if="activeQ.meta.index >= 0" class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
+                    }}分){{
+    activeQ.meta.title }}</div>
                     <div>{{ activeQ.meta.description }}</div>
                     <el-image v-if="activeQ.meta.image != null" :src="activeQ.meta.image" fit="scale-down" />
                 </div>
@@ -70,43 +62,53 @@
 
 
 <script lang='ts' setup>
-import { ref, reactive, onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Question, ExamInfo } from '../type/question'
+import { Question, ExamInfo, ExamState } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { Api } from '../request/api';
-import CountDown from '../components/CountDown.vue'
+import { Api } from '@/request/api';
+import CountDown from '@/components/CountDown.vue'
+import { ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const examInfo = reactive(new ExamInfo())
 
+let ijPairs = reactive([[0, 0]])
+
 const getQuestionList = () => {
     examInfo.id = Number(route.query.id)
-    examInfo.state = 0
+    examInfo.state = ExamState.IDLE
     examInfo.name = String(route.query.name)
     examInfo.subjectId = Number(route.query.subjectId)
     examInfo.subjectName = String(route.query.subjectName)
+    examInfo.exam_seconds = Number(route.query.exam_seconds)
 
     // examInfo.title = '【Python四级】2022.03'
     Api.getQuestionListByQuizId(examInfo.id).then(res => {
-        let questions: Question[] = res.data
-        console.log('res.data', res.data)
+        let questions: Question[] = res.data.results
         examInfo.meta = [{ typeId: 0, typeName: "选择", icon: "Message", qList: [] },
         { typeId: 1, typeName: "判断", icon: "Setttings", qList: [] },
         { typeId: 2, typeName: "编程", icon: "Menu", qList: [] }]
+        examInfo.scores = 0
+        ijPairs = []
         var i = 0
         questions.forEach(q => {
+            ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
             examInfo.meta[q.type].qList.push(
                 {
-                    index: ++i, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答'
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
+                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
-        })
+            examInfo.scores += q.score
+        }
+        )
+        examInfo.state = ExamState.ONGOING
     })
 }
 
-const onCountDownEnd = ()=>{
-    console.log('onCountDownEnd')
+const onCountDownEnd = () => {
+    examInfo.state = ExamState.FINISHED
+    console.log('考试已结束')
 }
 
 onMounted(() => {
@@ -132,28 +134,28 @@ onBeforeRouteLeave((to, from, next) => {
     }).catch((err) => {
         if (err == 'cancel') {
             next()
-        }else{
+        } else {
             next(false)
         }
-        
+
         console.log('err', err)
     })
 })
 
 const activeQ = reactive(
-    { key: [-1, -1], meta: new Question(), answers: ["", "", ""] }
+    { meta: new Question(), answers: ["", "", ""] }
 )
-const onQuestionClicked = (i: number, j: number) => {
-    let q = examInfo.meta[i].qList[j]
+const onQuestionClicked = (index: number) => {
+    let q = examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]
     activeQ.meta = q
-    activeQ.key = [i, j];
     activeQ.answers[activeQ.meta.type] = q.userAnswer
 }
 const onAnswerSelected = () => {
-    if (activeQ.key[0] >= 0 && activeQ.key[1] >= 0 && examInfo.state == 0) {
-        examInfo.meta[activeQ.key[0]].qList[activeQ.key[1]].userAnswer = activeQ.answers[activeQ.meta.type]
-        console.log('examInfo.state', examInfo.state)
-        examInfo.meta[activeQ.key[0]].qList[activeQ.key[1]].displayType = 'primary'
+    if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
+        var i = ijPairs[activeQ.meta.index][0]
+        var j = ijPairs[activeQ.meta.index][1]
+        examInfo.meta[i].qList[j].userAnswer = activeQ.answers[activeQ.meta.type]
+        examInfo.meta[i].qList[j].displayType = 'primary'
     }
 }
 const submitQuiz = () => {
@@ -173,14 +175,13 @@ const submitQuiz = () => {
         examInfo.meta.forEach(qs => {
             qs.qList.forEach(q => { q.displayType = q.userAnswer == q.answer ? "success" : "danger" })
         })
-        examInfo.state = 1
-    })
-        .catch(() => {
-            ElMessage({
-                type: 'info',
-                message: 'Delete canceled',
-            })
+        examInfo.state = ExamState.FINISHED
+    }).catch(() => {
+        ElMessage({
+            type: 'info',
+            message: 'Delete canceled',
         })
+    })
 }
 </script>
 
@@ -210,9 +211,9 @@ const submitQuiz = () => {
         }
     }
 
-
     .question {
         padding-left: 10px;
+
         margin: 0px;
         font-size: 14px;
         white-space: pre-wrap;
@@ -244,7 +245,9 @@ const submitQuiz = () => {
     }
 
     .el-radio {
-        margin-right: 21px;
+        margin-left: 16px;
+        margin-right: 0px;
+        margin-top: 0%;
         // color: darkblue;
         font-weight: bold;
     }

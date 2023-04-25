@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import Layout from './layout/Index.vue'
 </script>
 
 <template>
-  <Layout class="layout"></Layout>
+  <router-view></router-view>
   <!-- <Layout class="layout"></Layout> -->
 <!-- <router-link to="/">Home</router-link> |
   <router-link to="/about">About</router-link> -->
@@ -22,9 +21,17 @@ import Layout from './layout/Index.vue'
 
 </script>
 <style lang="scss" scoped>
-.layout{
-  height: 100%;
-}
+  *{
+    margin: 0;
+    padding: 0;
+  }
+  body,html{
+    margin: 0;
+    padding: 0;
+  }
+// .layout{
+//   height: 100%;
+// }
 /* .logo {
   height: 6em;
   padding: 1.5em;

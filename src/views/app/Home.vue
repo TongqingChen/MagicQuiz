@@ -1,6 +1,12 @@
 <template>
     <el-row class="mb-4">
         <el-button>Default</el-button>
+        <el-countdown
+        title="Remaining VIP time"
+        prefix="剩余时间"
+        format="HH:mm:ss"
+        :value="value1"
+      />
         <el-button type="primary">Primary</el-button>
         <el-button type="success">Success</el-button>
         <el-button type="info">Info</el-button>
@@ -45,9 +51,11 @@ import {
     Search,
     Star,
 } from '@element-plus/icons-vue'
-import { Api } from '../request/api'
+import { Api } from '@/request/api'
 import { useStore } from 'vuex'
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
+const value1 = ref(Date.now() + 1000 * 10)
 
 const store = useStore()
 onMounted(() => {
@@ -56,6 +64,5 @@ onMounted(() => {
     //     store.commit('setSubjectList', res.data)
     // })
 })
-
 
 </script>

@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-import { ISubject } from '../type/subject'
+import { ISubject } from '../types/subject'
 import { computed } from 'vue'
 
 
@@ -14,7 +14,6 @@ const store = createStore({
             return state.is_valid
         },
         getSubjectList(state) {
-            console.log('store；', state.subjectList)
             return state.subjectList
         },
         getSubjectNameById: (state) => (id: number) => {

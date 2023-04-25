@@ -17,7 +17,7 @@
                 <span>{{ menu.meta.title }}</span>
             </template>
         </el-menu-item>
-        <template v-if="menu.grow">
+        <template v-if="menu.meta.padding">
             <div class="flex-grow"></div>
         </template>
     </template>
@@ -28,6 +28,12 @@
 defineProps(['menuList'])
 </script>
 
-<style lang="scss" scoped>.flex-grow {
+<style lang="scss" scoped>
+.flex-grow {
     flex-grow: 1;
-}</style>
+}
+
+.el-menu-item {
+    padding: 10px;
+}
+</style>

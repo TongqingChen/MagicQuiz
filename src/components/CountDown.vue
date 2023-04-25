@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive } from 'vue'
+import { onMounted, onUnmounted, reactive, watch } from 'vue'
 
 const data = reactive({
     timer: 0,
@@ -17,17 +17,20 @@ const props = withDefaults(defineProps<{
     start_text: string,
     duration_secs: number,
     end_text: string,
-    blink: boolean
-}>(), { start_text: '【剩余时间】', duration_secs: 60, end_text: '计时结束', blink: false })
+    blink: boolean,
+    start_flag: boolean
+}>(), { start_text: '【剩余时间】', duration_secs: 60, end_text: '计时结束', blink: false, start_flag: false })
 
 const emit = defineEmits(['end_event'])
 
-onMounted(() => {
+
+const startTickToc = () => {
+    console.log('start exam')
     data.durationSecs = props.duration_secs
     // 清除掉定时器
-    data.timer && clearInterval(data.timer)
+    clearInterval(data.timer)
     // 开启定时器
-    data.timer = setInterval(() => {
+    data.timer = window.setInterval(() => {
         if (props.blink) {
             data.blinkFlag = !data.blinkFlag
         }
@@ -41,18 +44,32 @@ onMounted(() => {
             }
             data.text = `${props.start_text}${sec_min_hour_str[2]}:${sec_min_hour_str[1]}:${sec_min_hour_str[0]}`
             if (data.durationSecs <= 0) {
-                // 清除掉定时器
-                clearInterval(data.timer)
-                data.text = props.end_text
-                data.blinkFlag = true
-                emit("end_event")
+                stopTickToc()
             }
         }
     }, props.blink ? 500 : 1000)
-})
+}
+const stopTickToc = () => {
+    // 清除掉定时器
+    clearInterval(data.timer)
+    data.text = props.end_text
+    data.blinkFlag = true
+    emit("end_event")
+    console.log('stopTickToc')
+}
+
+watch(
+    () => props.start_flag,
+    (new_v, old_v) => {
+        console.log('new_v, old_v',new_v, old_v)
+        if (new_v) {
+            startTickToc()
+        } else {
+            stopTickToc()
+        }
+    })
 
 onUnmounted(() => {
     clearInterval(data.timer)
-    console.log('计时结束...')
 })
 </script>
