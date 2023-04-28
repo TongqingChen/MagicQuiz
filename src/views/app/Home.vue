@@ -51,7 +51,7 @@ import {
     Search,
     Star,
 } from '@element-plus/icons-vue'
-import { Api } from '@/request/api'
+import { Api } from '@/request'
 import { useStore } from 'vuex'
 import { onMounted, ref } from 'vue';
 

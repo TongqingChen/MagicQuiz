@@ -20,7 +20,6 @@ import { onMounted, reactive } from 'vue'
 import MenuItem from '@/components/MenuItem.vue'
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from '@vue/reactivity';
-import { mutable } from 'element-plus/es/utils';
 
 const route = useRoute()
 const router = useRouter()

@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive, watch } from 'vue'
+import { onUnmounted, reactive, watch } from 'vue'
 
 const data = reactive({
     timer: 0,
@@ -16,16 +16,13 @@ const data = reactive({
 const props = withDefaults(defineProps<{
     start_text: string,
     duration_secs: number,
-    end_text: string,
     blink: boolean,
     start_flag: boolean
-}>(), { start_text: '【剩余时间】', duration_secs: 60, end_text: '计时结束', blink: false, start_flag: false })
+}>(), { start_text: '【剩余时间】', duration_secs: 60, blink: false, start_flag: false })
 
 const emit = defineEmits(['end_event'])
 
-
 const startTickToc = () => {
-    console.log('start exam')
     data.durationSecs = props.duration_secs
     // 清除掉定时器
     clearInterval(data.timer)
@@ -51,8 +48,9 @@ const startTickToc = () => {
 }
 const stopTickToc = () => {
     // 清除掉定时器
+    var mins = Math.round((props.duration_secs - data.durationSecs) / 60)
     clearInterval(data.timer)
-    data.text = props.end_text
+    data.text = `【用时】${mins}分钟`
     data.blinkFlag = true
     emit("end_event")
     console.log('stopTickToc')
@@ -61,7 +59,6 @@ const stopTickToc = () => {
 watch(
     () => props.start_flag,
     (new_v, old_v) => {
-        console.log('new_v, old_v',new_v, old_v)
         if (new_v) {
             startTickToc()
         } else {

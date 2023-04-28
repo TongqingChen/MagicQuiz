@@ -1,12 +1,12 @@
 <template>
     <el-container class="layout-container-exam" style="height:100%">
-        <el-header
-            style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: bold;">
+        <el-header>
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span>
             <CountDown style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
-                :duration_secs="examInfo.exam_seconds" :blink="true" end_text="考试结束" @end_event="onCountDownEnd">
+                :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="onCountDownEnd">
             </CountDown>
-            <el-button link :disabled="examInfo.state != ExamState.ONGOING" @click="submitQuiz">提交</el-button>
+            <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
+                @click="submitQuiz">提交</el-button>
         </el-header>
         <el-container>
             <el-aside width="170px">
@@ -36,14 +36,16 @@
                             </el-icon></el-button>
                     </el-button-group>
                     <el-radio-group v-model="activeQ.answers[0]"
-                        v-if="activeQ.meta.type == 0 && examInfo.state == ExamState.ONGOING" @change="onAnswerSelected">
+                        v-if="activeQ.meta.type == QueType.CHOICE && examInfo.state == ExamState.ONGOING"
+                        @change="onAnswerSelected">
                         <el-radio label="A" size="small">A</el-radio>
                         <el-radio label="B" size="small">B</el-radio>
                         <el-radio label="C" size="small">C</el-radio>
                         <el-radio label="D" size="small">D</el-radio>
                     </el-radio-group>
                     <el-radio-group v-model="activeQ.answers[1]"
-                        v-if="activeQ.meta.type == 1 && examInfo.state == ExamState.ONGOING" @change="onAnswerSelected">
+                        v-if="activeQ.meta.type == QueType.LOGIC && examInfo.state == ExamState.ONGOING"
+                        @change="onAnswerSelected">
                         <el-radio label="T" size="small">正确</el-radio>
                         <el-radio label="F" size="small">错误</el-radio>
                     </el-radio-group>
@@ -64,9 +66,10 @@
 <script lang='ts' setup>
 import { reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Question, ExamInfo, ExamState } from '@/types/question'
+import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { Api } from '@/request/api';
+import { Api } from '@/request';
+import { QuizResult } from '@/types/http'
 import CountDown from '@/components/CountDown.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
@@ -78,6 +81,7 @@ let ijPairs = reactive([[0, 0]])
 const getQuestionList = () => {
     examInfo.id = Number(route.query.id)
     examInfo.state = ExamState.IDLE
+    examInfo.start_time = Date.now()
     examInfo.name = String(route.query.name)
     examInfo.subjectId = Number(route.query.subjectId)
     examInfo.subjectName = String(route.query.subjectName)
@@ -86,12 +90,13 @@ const getQuestionList = () => {
     // examInfo.title = '【Python四级】2022.03'
     Api.getQuestionListByQuizId(examInfo.id).then(res => {
         let questions: Question[] = res.data.results
-        examInfo.meta = [{ typeId: 0, typeName: "选择", icon: "Message", qList: [] },
-        { typeId: 1, typeName: "判断", icon: "Setttings", qList: [] },
-        { typeId: 2, typeName: "编程", icon: "Menu", qList: [] }]
+        examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
+        { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
+        { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
         examInfo.scores = 0
         ijPairs = []
         var i = 0
+
         questions.forEach(q => {
             ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
             examInfo.meta[q.type].qList.push(
@@ -107,16 +112,18 @@ const getQuestionList = () => {
 }
 
 const onCountDownEnd = () => {
-    examInfo.state = ExamState.FINISHED
-    console.log('考试已结束')
+    uploadExamResults()
 }
 
 onMounted(() => {
     getQuestionList()
-    console.log(route.query.id)
 })
 
 onBeforeRouteLeave((to, from, next) => {
+    if (examInfo.state != ExamState.ONGOING) {
+        next()
+        return
+    }
     ElMessageBox.confirm(
         '正在考试中，离开页面数据将会丢失，考试中断！',
         '确认离开吗？',
@@ -130,15 +137,12 @@ onBeforeRouteLeave((to, from, next) => {
         }
     ).then((action) => {
         next(false)
-        console.log('action', action)
     }).catch((err) => {
         if (err == 'cancel') {
             next()
         } else {
             next(false)
         }
-
-        console.log('err', err)
     })
 })
 
@@ -158,6 +162,36 @@ const onAnswerSelected = () => {
         examInfo.meta[i].qList[j].displayType = 'primary'
     }
 }
+
+const uploadExamResults = async () => {
+    var user_id = Number(localStorage.getItem('user_id'))
+    var results = new QuizResult()
+    var total_score = 0
+    var correct_count = [0, 0, 0]
+    examInfo.meta.forEach(qs => {
+        qs.qList.forEach(q => {
+            q.displayType = q.userAnswer == q.answer ? "success" : "danger"
+            if (q.userAnswer == q.answer) {
+                results.meta.abs_score += q.score
+                correct_count[q.type]++
+            }
+            if (q.type != QueType.CODING) {
+                total_score += q.score
+                results.questions.push({ "user": user_id, "question": q.id, "is_correct": (q.userAnswer == q.answer) })
+            }
+        })
+    })
+    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}, 判断: ${correct_count[QueType.LOGIC]}/${examInfo.meta[QueType.LOGIC].qList.length}`
+    results.meta.user = user_id
+    results.meta.quiz = examInfo.id
+    results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
+    results.meta.use_minutes = Math.round((Date.now() - examInfo.start_time) / 1000 / 60)
+    console.log('resluts', results)
+    await Api.postQuestionsResult(results.questions)
+    await Api.postQuizResult(results.meta)
+    examInfo.state = ExamState.FINISHED
+}
+
 const submitQuiz = () => {
     ElMessageBox.confirm(
         '确定提交并结束考试吗？',
@@ -167,19 +201,11 @@ const submitQuiz = () => {
             cancelButtonText: '取消',
             type: 'warning',
         }
-    ).then(() => {
+    ).then(async () => {
+        await uploadExamResults()
         ElMessage({
             type: 'success',
             message: 'Delete completed',
-        })
-        examInfo.meta.forEach(qs => {
-            qs.qList.forEach(q => { q.displayType = q.userAnswer == q.answer ? "success" : "danger" })
-        })
-        examInfo.state = ExamState.FINISHED
-    }).catch(() => {
-        ElMessage({
-            type: 'info',
-            message: 'Delete canceled',
         })
     })
 }
@@ -235,7 +261,12 @@ const submitQuiz = () => {
         height: 36px;
         position: relative;
         background-color: var(--el-color-primary-light-7);
-        // color: var(--el-text-color-primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        font-weight: bold;
     }
 
     .el-aside {

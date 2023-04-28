@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Api } from '@/request/api';
+import { Api } from '@/request/index';
 import { onMounted, reactive } from 'vue';
 
 const handleClick = () => {

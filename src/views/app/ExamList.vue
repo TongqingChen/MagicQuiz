@@ -13,7 +13,7 @@
                     <div class="card-header">
                         <!-- <img src="../assets/python.svg" style="height:2em" /> -->
                         <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
-                        <el-button class="button" link
+                        <el-button class="button" link type="primary"
                             @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
                     </div>
                 </template>
@@ -36,7 +36,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { QuizPages } from '@/types/quiz'
 import { computed } from '@vue/reactivity';
-import { Api } from '@/request/api'
+import { Api } from '@/request/index'
 
 import { SubjectList } from '@/types/subject'
 
@@ -76,7 +76,6 @@ onMounted(() => {
         getQuizList()
     } else {
         Api.getSubjectList().then((res: { data: { results: ConcatArray<{ id: number; name: string; count: number; }>; }; }) => {
-            console.log('getsubjectlist', res.data.results)
             subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
             store.commit('setSubjectList', res.data.results)
             getQuizList()
@@ -102,7 +101,7 @@ const onPageChanged = (page: number) => (
 
 const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
     router.push({
-        path: '/exam',
+        path: subjectId == 8 ? 'oral_math' : '/exam',
         query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
     })
 }
@@ -133,14 +132,16 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 5px 0px;
         }
 
         .card-body {
-            height: 60px;
+            height: 80px;
             padding: 20px;
+            color: darkcyan;
+            // background-image: url('@/assets/python.svg');
+            // background-size: 100% 100%;
         }
-
-        // flex-wrap: wrap;
     }
 
     .el-card :deep(.el-card__header) {

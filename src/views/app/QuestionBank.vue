@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Api } from '@/request/api';
+import { Api } from '@/request';
 import { onMounted, reactive } from 'vue';
 
 const handleClick = () => {
@@ -36,7 +36,6 @@ const appInfo = reactive({
 
 onMounted(()=>{
     Api.getSubjectList().then(res=>{
-        console.log('sssss', res.data.results)
         appInfo.subjectList = res.data.results
     })
 })

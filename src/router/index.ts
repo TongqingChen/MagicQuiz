@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import Index from '../views/Index.vue'
+import Index from '@/views/Index.vue'
+import { Api } from '@/request'
 
 const routes: Array<RouteRecordRaw> = [
     {
@@ -56,6 +57,12 @@ const routes: Array<RouteRecordRaw> = [
                 name: 'exam',
                 component: () => import('@/views/app/Exam.vue'),
                 meta: { title: "考试", icon: "HomeFilled", visible: false },
+            },
+            {
+                path: '/oral_math',
+                name: 'oral_math',
+                component: () => import('@/views/app/OralMath.vue'),
+                meta: { title: "口算", icon: "HomeFilled", visible: false },
             }
         ]
     },
@@ -71,15 +78,25 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
-    const token: string | null = localStorage.getItem("token")
-    console.log(token)
-    if (!token && to.path !== "/login") {
-        next("/login")
-    }
-    else {
+router.beforeEach(async (to, from, next) => {
+    console.log('to.path', to.path)
+    if (to.path == "/login") {
         next()
+        return
     }
+    console.log('to.path1', to.path)
+    const token: string | null = localStorage.getItem("token")
+    if (token == null) {
+        next('/login')
+        return
+    }
+    await Api.verifyToken(token).then(res => {
+        console.log('verfiyed', res.config, res.data)
+        next()
+    }).catch(error => {
+        next('/login')
+        console.log('router=', error.config)
+    })
 })
 
 export default router
