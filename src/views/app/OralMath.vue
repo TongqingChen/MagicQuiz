@@ -5,25 +5,26 @@
             <CountDown style="color: red;" :start_flag="true" :duration_secs="10" :blink="true" start_text='【考试剩余】'
                 @end_event="">
             </CountDown>
-            <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED" @click="onSubmit">提交</el-button>
+            <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
+                @click="onSubmit">提交</el-button>
         </el-header>
         <el-main>
-            <div class="q-body">
-                <div v-for="m in math_info.meta" style="margin: 3px;">
+            <el-row :gutter="16" class="q-body">
+                <el-col v-for="m in math_info.meta" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                     <el-card>
                         <span class="question">{{ m.title }}</span>
                         <el-input v-model="m.user_answer" :max="999" clearable type="number" size="small"
                             :disabled="math_info.state == ExamState.FINISHED"></el-input>
                         <span>{{ m.mark }}</span>
                     </el-card>
-                </div>
-            </div>
+                </el-col>
+            </el-row>
         </el-main>
     </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import CountDown from '@/components/CountDown.vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { Api } from '@/request'
@@ -99,16 +100,19 @@ onBeforeRouteLeave((to, from, next) => {
     justify-content: space-between;
     font-size: 12px;
     font-weight: bold;
-
 }
 
 .el-card {
-    width: 250px;
-    background-color: azure;
+    background-color: honeydew;
+    margin-bottom: 5px;
 }
 
 :deep(.el-card__body) {
     padding: 6px 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
 
 }
 
@@ -123,5 +127,4 @@ onBeforeRouteLeave((to, from, next) => {
 
 .el-input {
     width: 100px;
-}
-</style>
+}</style>

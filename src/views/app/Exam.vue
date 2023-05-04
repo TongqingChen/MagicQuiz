@@ -52,10 +52,9 @@
                 </div>
                 <div class="question">
                     <div v-if="activeQ.meta.index >= 0" class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
-                    }}分){{
-    activeQ.meta.title }}</div>
-                    <div>{{ activeQ.meta.description }}</div>
+                    }}分){{ activeQ.meta.title }}</div>
                     <el-image v-if="activeQ.meta.image != null" :src="activeQ.meta.image" fit="scale-down" />
+                    <div>{{ activeQ.meta.description }}</div>
                 </div>
             </el-main>
         </el-container>

@@ -1,84 +1,65 @@
 <template>
     <div class="subject">
         <span>科目：</span>
-        <el-radio-group v-model="appInfo.currentSubjectId" @change="" size="small">
-            <el-radio-button v-for="sub in appInfo.subjectList" :label="sub.id"> {{ sub.name }}</el-radio-button>
+        <el-radio-group v-model="currentInfo.subject" size="small">
+            <el-radio-button v-for="(val, key) in wrongSets" :label="key"> {{ key }}({{ val.length }})</el-radio-button>
         </el-radio-group>
     </div>
-    <el-table :data="tableData" style="width: 100%">
-        <el-table-column fixed prop="date" label="Date" width="150" />
-        <el-table-column prop="name" label="Name" width="120" />
-        <el-table-column prop="state" label="State" width="120" />
-        <el-table-column prop="city" label="City" width="120" />
-        <el-table-column prop="address" label="Address" width="600" />
-        <el-table-column prop="zip" label="Zip" width="120" />
-        <el-table-column fixed="right" label="Operations" width="120">
-            <template #default>
-                <el-button link type="primary" size="small" @click="handleClick">Detail</el-button>
-                <el-button link type="primary" size="small">Edit</el-button>
+    <el-table :data="wrongSets[currentInfo.subject]" style="width: 100%; color:darkslategray; font-size: 13px;" stripe
+        border>
+        <el-table-column fixed type='index' width="30" />
+        <el-table-column prop="quiz_name" label="试卷名" width="72" />
+        <el-table-column prop="type" label="题型" width="40" />
+        <el-table-column prop="title" label="题目" />
+        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="level" label="难度" width="40" />
+        <el-table-column prop="record_times" label="次数" width="40" />
+        <el-table-column fixed="right" label="查看" width="40">
+            <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="onDetailsClicked(scope.$index)">详情</el-button>
             </template>
         </el-table-column>
     </el-table>
+    <el-drawer v-model="currentInfo.drawerVisible" :with-header="false" direction="ltr" size="75%">
+        <div class="question">
+            <div style="color: darkblue;">{{ currentInfo.q.title }}</div>
+            <el-image v-if="currentInfo.q.image != ''" :src="currentInfo.q.image" fit="scale-down" />
+            <div>{{ currentInfo.q.description }}</div>
+            <div style="color: darkblue; font-weight: bold;">【正确答案】{{ currentInfo.q.answer }}</div>
+        </div>
+    </el-drawer>
 </template>
 
 <script lang="ts" setup>
 import { Api } from '@/request/index';
 import { onMounted, reactive } from 'vue';
+import { IWrongSet, WrongSet } from '@/types/http';
 
-const handleClick = () => {
-    console.log('click')
-}
 
-const appInfo = reactive({
-    currentSubjectId: 0,
-    subjectList: [{id:0, name:''}],
+var wrongSets: { [key: string]: IWrongSet[] } = reactive(
+    {}
+)
+
+const currentInfo: { subject: string, drawerVisible: boolean, q: IWrongSet } = reactive({
+    subject: '',
+    drawerVisible: false,
+    q: new WrongSet()
 })
-
-onMounted(()=>{
-    Api.getSubjectList().then(res=>{
-        console.log('sssss', res.data.results)
-        appInfo.subjectList = res.data.results
+const onDetailsClicked = (index: number) => {
+    currentInfo.q = wrongSets[currentInfo.subject][index]
+    currentInfo.drawerVisible = true;
+}
+onMounted(() => {
+    // Api.getSubjectList().then(res => {
+    //     console.log('sssss', res.data.results)
+    //     appInfo.subjectList = res.data.results
+    // })
+    Api.getWrongSetsMixed(2, -1).then(res => {
+        var keys = Object.keys(res.data)
+        keys.forEach(key => wrongSets[key] = res.data[key])
+        currentInfo.subject = keys[0]
     })
 })
-
-const tableData = [
-    {
-        date: '2016-05-03',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Home',
-    },
-    {
-        date: '2016-05-02',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Office',
-    },
-    {
-        date: '2016-05-04',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Home',
-    },
-    {
-        date: '2016-05-01',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Office',
-    },
-]
 </script>
 
 <style lang="scss" scoped>
@@ -87,5 +68,14 @@ const tableData = [
     align-items: center;
     margin-bottom: 10px;
     font-weight: bold;
+}
+
+.question {
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.el-table:deep(.cell) {
+    padding: 0 4px;
 }
 </style>

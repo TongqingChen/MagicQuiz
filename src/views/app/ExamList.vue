@@ -3,15 +3,15 @@
         <span>科目：</span>
         <el-radio-group v-model="currentSubjectId" @change="onSubjectSelected" size="small">
             <el-radio-button v-for="sub in subjectList.data" :label="sub.id"> {{ sub.name }}({{ sub.count
-            }})</el-radio-button>
+                }})</el-radio-button>
         </el-radio-group>
     </div>
-    <div class="home-card">
-        <div v-for="quiz in quizShown.quizList" style="margin: 5px;">
+
+    <el-row :gutter="20" class="home-card">
+        <el-col v-for="quiz in quizShown.quizList" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
             <el-card class="box-card">
                 <template #header>
                     <div class="card-header">
-                        <!-- <img src="../assets/python.svg" style="height:2em" /> -->
                         <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
                         <el-button class="button" link type="primary"
                             @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
@@ -24,14 +24,16 @@
                     <li>时长：{{ quiz.exam_minutes }}分钟</li>
                 </div>
             </el-card>
-        </div>
+        </el-col>
+    </el-row>
 
-    </div>
     <div class="pagination-block">
         <el-pagination background :page-size="quizPages.pageSize" :total="quizPages.quizNum" layout="prev, pager, next"
             @current-change="onPageChanged"></el-pagination>
     </div>
 </template>
+
+
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from 'vue'
 import { QuizPages } from '@/types/quiz'
@@ -126,7 +128,8 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     .box-card {
         font-size: 12px;
         font-weight: bold;
-        width: 250px;
+        margin-bottom: 10px;
+        // width: 250px;
 
         .card-header {
             display: flex;
