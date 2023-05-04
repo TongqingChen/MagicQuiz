@@ -1,4 +1,4 @@
-export enum QueType{
+export enum QueType {
     UNKNOWN = -1,
     CHOICE = 0,
     LOGIC,
@@ -11,7 +11,7 @@ export class Question {
     type: number = QueType.UNKNOWN
     title: string = ""
     description: string = ""
-    image: string = ""
+    image: string | null = null
     answer: string = ""
     userAnswer: string = ""
     displayType: string = ""

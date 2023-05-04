@@ -83,11 +83,26 @@ export class Api {
         })
     }
 
+    //sub_id=-1表示全部
+    static getWrongSetsMixed(user_id: number, sub_id: number){
+        return Axios({
+            url: `wrongsets_mixpost/?user_id=${user_id}&sub_id=${sub_id}`,
+            method: "GET"
+        })
+    }
+
     static postQuestionsResult(data: IQuestionResult[]) {
         return Axios({
             url: 'wrongsets_mixpost/',
             method: "POST",
             data: data
+        })
+    }
+
+    static getOverviewInfo(user_id:number){
+        return Axios({
+            url: `overview_info/?user_id=${user_id}`,
+            method: 'GET'
         })
     }
 
