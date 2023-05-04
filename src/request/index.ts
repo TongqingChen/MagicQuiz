@@ -50,6 +50,7 @@ export class Api {
             data: user_data
         })
     }
+
     static getSubjectList() {
         return Axios({
             url: "subjects/",

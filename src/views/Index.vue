@@ -6,6 +6,7 @@
                     background-color="#545c64" text-color="#fff" active-text-color="#ffd04b" @select="handleSelect" router>
                     <MenuItem :menuList="menuList" />
                 </el-menu>
+                <!-- <el-button link @click="onLogoutClicked">退出</el-button> -->
             </el-header>
             <el-main class="main">
                 <router-view></router-view>
@@ -29,6 +30,9 @@ const activeIdx = computed(() => {
 })
 
 const handleSelect = (key: string, keyPath: string[]) => {
+    if(key=='/logout'){
+        localStorage.clear()
+    }
     // console.log(key, keyPath)
     // console.log('router.currentRoute()', router.currentRoute)
     // console.log('router.getRoutes()', router.getRoutes())
@@ -38,7 +42,7 @@ const handleSelect = (key: string, keyPath: string[]) => {
 const menuList = router.getRoutes().filter(v => {return v.meta.visible && v.meta.is_child==false})
 
 onMounted(()=>{
-    console.log('router.getRoutes()', router.getRoutes())
+    // console.log('router.getRoutes()', router.getRoutes())
 })
 
 </script>
@@ -64,7 +68,6 @@ onMounted(()=>{
         background-color: #f5f7fa;
         color: black;
         padding: 10px;
-
     }
 }
 </style>

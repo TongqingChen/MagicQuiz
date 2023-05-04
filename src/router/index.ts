@@ -47,7 +47,8 @@ const routes: Array<RouteRecordRaw> = [
                     {
                         path: "/logout",
                         name: "logout",
-                        component: () => import('@/views/app/Home.vue'),
+                        // component: () => import('@/views/a.vue'),
+                        redirect: 'login',
                         meta: { title: "退出", icon: "el-icon-s-home", visible: true, is_child: true },
                     }
                 ]
