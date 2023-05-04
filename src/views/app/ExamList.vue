@@ -18,10 +18,10 @@
                     </div>
                 </template>
                 <div class="card-body">
-                    <li>选择：{{ quiz.choice_num }}</li>
-                    <li>判断：{{ quiz.logic_num }}</li>
-                    <li>编程：{{ quiz.coding_num }}</li>
-                    <li>时长：{{ quiz.exam_minutes }}分钟</li>
+                    <li>{{ quiz.subject == 8?"最大数":"选择题数"}}：{{ quiz.choice_num }}</li>
+                    <li>{{ quiz.subject == 8?"加数个数":"判断题数"}}：{{ quiz.logic_num }}</li>
+                    <li>{{ quiz.subject == 8?"题目数":"编程题数"}}：{{ quiz.coding_num }}</li>
+                    <li>考试时长：{{ quiz.exam_minutes }}分钟</li>
                 </div>
             </el-card>
         </el-col>
@@ -90,7 +90,6 @@ const onSubjectSelected = () => {
         return (currentSubjectId.value == -1) ? true : value.subject == currentSubjectId.value
     })
     quizPages.quizNum = quizPages.quizDisplay.length
-    console.log(currentSubjectId.value)
 }
 const quizShown = reactive({
     quizList: computed(() => {

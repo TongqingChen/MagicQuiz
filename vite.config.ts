@@ -3,14 +3,14 @@ import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
-import path, { resolve } from 'path'
 import UnoCss from 'unocss/vite'
 // import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
-
-
+import { resolve } from 'path'
+// import mkcert from 'vite-plugin-mkcert'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    // mkcert(),
     vue(),
     UnoCss(),
     AutoImport({
@@ -39,8 +39,15 @@ export default defineConfig({
       // build: resolve(__dirname, 'build')
     }
   },
-  // server:{
-  //   open: true //自动打开浏览器
-  // }
-})
 
+  server: {
+    // https: true, // 是否开启 https
+    open: false, // 是否自动在浏览器打开
+    cors: true, // 允许跨域  8月更新
+    host: true,
+    port: 3000, // 端口号
+    headers:{ 
+      'Access-Control-Allow-Origin':'*'
+    },
+  }
+})

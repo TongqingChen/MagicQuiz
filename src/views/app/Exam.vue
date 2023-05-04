@@ -185,7 +185,6 @@ const uploadExamResults = async () => {
     results.meta.quiz = examInfo.id
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
     results.meta.use_minutes = Math.round((Date.now() - examInfo.start_time) / 1000 / 60)
-    console.log('resluts', results)
     await Api.postQuestionsResult(results.questions)
     await Api.postQuizResult(results.meta)
     examInfo.state = ExamState.FINISHED

@@ -53,7 +53,6 @@ const stopTickToc = () => {
     data.text = `【用时】${mins}分钟`
     data.blinkFlag = true
     emit("end_event")
-    console.log('stopTickToc')
 }
 
 watch(

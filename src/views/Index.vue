@@ -29,17 +29,16 @@ const activeIdx = computed(() => {
 })
 
 const handleSelect = (key: string, keyPath: string[]) => {
-    console.log(key, keyPath)
-    console.log('router.currentRoute()', router.currentRoute)
-    console.log('router.getRoutes()', router.getRoutes())
-    console.log(menuList)
+    // console.log(key, keyPath)
+    // console.log('router.currentRoute()', router.currentRoute)
+    // console.log('router.getRoutes()', router.getRoutes())
+    // console.log(menuList)
 }
 
 const menuList = router.getRoutes().filter(v => {return v.meta.visible && v.meta.is_child==false})
 
 onMounted(()=>{
     console.log('router.getRoutes()', router.getRoutes())
-    console.log('menuList', menuList)
 })
 
 </script>

@@ -79,23 +79,19 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-    console.log('to.path', to.path)
     if (to.path == "/login") {
         next()
         return
     }
-    console.log('to.path1', to.path)
     const token: string | null = localStorage.getItem("token")
     if (token == null) {
         next('/login')
         return
     }
     await Api.verifyToken(token).then(res => {
-        console.log('verfiyed', res.config, res.data)
         next()
     }).catch(error => {
         next('/login')
-        console.log('router=', error.config)
     })
 })
 

@@ -3,7 +3,7 @@ import jwtDecode from 'jwt-decode'
 import { IQuestionResult, IQuizResult } from '@/types/http'
 
 const Axios = axios.create({
-    baseURL: 'http://localhost:8000/',
+    baseURL: 'http://192.168.1.7:2345/',
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8"
@@ -14,7 +14,6 @@ Axios.interceptors.request.use((config) => {
     config.headers = config.headers || {}
     if (localStorage.getItem("token")) {
         // config.headers.token = localStorage.getItem("token") || ""
-        console.log('fsaaaaaaaaaaaaaaa', config.url)
         config.headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`
     }
     return config
@@ -35,7 +34,6 @@ Axios.interceptors.response.use((response) => {
             let res = await Api.refreshToken(refresh_token)
             localStorage.setItem('token', res.data.access)
             localStorage.setItem('refresh_token', res.data.refresh)
-            console.log('小星星小星星小星星谢谢', error.config)
             error.config.headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`
             return axios.request(error.config)
         }
@@ -130,7 +128,6 @@ export class Api {
     }
 
     static verifyToken(token: string) {
-        console.log('verfiy token')
         return Axios({
             url: "api/token/verify/",
             method: "POST",

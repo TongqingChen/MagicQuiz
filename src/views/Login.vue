@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts" setup>
-import { FormInstance } from "element-plus";
+import { ElMessage, FormInstance } from "element-plus";
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { User, Lock } from '@element-plus/icons-vue'
@@ -58,9 +58,12 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 Api.storeToken(res.data.access, res.data.refresh)
                 // 跳转页面
                 router.push('/')
-            })
+            }).catch(err=>{
+                ElMessage.error(`用户名或密码错误，${err.code}`)
+            }
+            )
         } else {
-            console.log('error submit!')
+            ElMessage.error('用户名或密码不符合规则')
             return false
         }
     })

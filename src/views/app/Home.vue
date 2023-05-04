@@ -59,7 +59,7 @@
                         <el-table-column prop="quiz_name" label="试卷名" width="72" />
                         <el-table-column prop="rel_score" label="得分" width="50" />
                         <el-table-column prop="use_minutes" label="分钟" width="50" />
-                        <el-table-column prop="date_time" label="考试时间" width="142" />
+                        <el-table-column prop="date_time" label="考试时间" width="144" />
                         <el-table-column prop="note" label="备注" />
                     </el-table>
                 </el-card>
@@ -214,8 +214,6 @@ onMounted(() => {
         dataDisplay.statics[3].data = info.wrongset_num
         dataDisplay.exam_his = info.exam_record
         dataDisplay.current_sub = Object.keys(dataDisplay.exam_his)[0]
-
-        console.log('dataDisplay.exam_his', dataDisplay.exam_his)
     }
     )
 })
