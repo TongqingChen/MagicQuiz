@@ -1,14 +1,15 @@
 import axios, { HttpStatusCode } from 'axios'
-import jwtDecode from 'jwt-decode'
-import { IQuestionResult, IQuizResult } from '@/types/http'
+import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 
 const Axios = axios.create({
-    baseURL: 'http://192.168.1.7:2345/',
+    // baseURL: 'http://192.168.1.7:2345/',
+    baseURL: 'http://localhost:8000/',
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8"
     }
 })
+
 //请求拦截
 Axios.interceptors.request.use((config) => {
     config.headers = config.headers || {}
@@ -27,14 +28,16 @@ Axios.interceptors.response.use((response) => {
     // localStorage.clear()
     if (error.config.url == "api/token/refresh/") {
         localStorage.clear()
+
     }
     else if (error.response.status == HttpStatusCode.Unauthorized) {
-        var refresh_token = localStorage.getItem('refresh_token')
-        if (refresh_token != null) {
-            let res = await Api.refreshToken(refresh_token)
-            localStorage.setItem('token', res.data.access)
-            localStorage.setItem('refresh_token', res.data.refresh)
-            error.config.headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`
+        var ui = Api.loadUserInfoFromStorage()
+        if (ui != null) {
+            let res = await Api.refreshToken(ui.refresh)
+            ui.access = res.data.access
+            ui.refresh = res.data.refresh
+            Api.storeUserInfo(ui)
+            error.config.headers['Authorization'] = `Bearer ${res.data.access}`
             return axios.request(error.config)
         }
     }
@@ -83,7 +86,7 @@ export class Api {
     }
 
     //sub_id=-1表示全部
-    static getWrongSetsMixed(user_id: number, sub_id: number){
+    static getWrongSetsMixed(user_id: number, sub_id: number) {
         return Axios({
             url: `wrongsets_mixpost/?user_id=${user_id}&sub_id=${sub_id}`,
             method: "GET"
@@ -98,7 +101,7 @@ export class Api {
         })
     }
 
-    static getOverviewInfo(user_id:number){
+    static getOverviewInfo(user_id: number) {
         return Axios({
             url: `overview_info/?user_id=${user_id}`,
             method: 'GET'
@@ -136,11 +139,19 @@ export class Api {
         })
     }
 
-    static storeToken(token: string, refresh_token: string) {
+    static storeUserInfo(user_info: IUserInfo) {
         // 将token进行保存
-        localStorage.setItem("token", token)
-        localStorage.setItem("refresh_token", refresh_token)
-        var decoded: { user_id: number } = jwtDecode(token)
-        localStorage.setItem("user_id", String(decoded.user_id))
+        localStorage.setItem("user", JSON.stringify(user_info))
+    }
+    static clearUserInfo(){
+        localStorage.removeItem('user')
+    }
+    static loadUserInfoFromStorage<IUserInfo>() {
+        var str = localStorage.getItem("user")
+        if (str) {
+            return JSON.parse(str)
+        } else {
+            return null
+        }
     }
 }

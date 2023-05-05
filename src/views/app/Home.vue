@@ -8,14 +8,17 @@
             <el-card class="w-full mb-4">
                 <div class="flex justify-between flex-wrap">
                     <div class="flex items-center">
-                        <img class="user-avatar" src="@/assets/vue.svg" />
-                        <span class="ml-[10px] text-[16px]">Jason</span>
+                        <img class="user-avatar" :src="dataDisplay.user.avatar" />
+                        <el-link type="primary" size="large" @click="onLinkClicked(0)">{{ dataDisplay.user.last_name }}, {{ dataDisplay.user.first_name
+                        }}</el-link>
                     </div>
-                    <div class="leading-[40px]">
-                        {{ greetings }}
+                    <div class="flex items-center">
+                        <el-link type="danger" size="large" @click="onLinkClicked(2)">{{ dataDisplay.title.quote }}</el-link>
                     </div>
-
-                    <div class="space-x-2 flex items-center">
+                    <div class="flex items-center">
+                        <el-link type="success" size="large" @click="onLinkClicked(1)">{{ dataDisplay.title.greeting }}</el-link>
+                    </div>
+                    <!-- <div class="space-x-2 flex items-center">
                         <el-link target="_blank" type="danger"
                             href="https://www.cnblogs.com/haoxianrui/p/16090029.html">官方0到1教程</el-link>
                         <el-divider direction="vertical" />
@@ -25,7 +28,7 @@
                         <el-link target="_blank" type="primary"
                             href="https://github.com/youlaitech/vue3-element-admin">GitHub源码
                         </el-link>
-                    </div>
+                    </div> -->
                 </div>
             </el-card>
         </el-row>
@@ -69,30 +72,19 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import DataCard from '@/components/DataCard.vue';
 import BarChart from '@/components/BarChart.vue';
 import { Api } from '@/request';
 import * as echarts from 'echarts'
 import { IOverviewInfo } from '@/types/http';
+import { ElMessage } from 'element-plus';
+import { randomInt } from 'crypto';
 
-const date: Date = new Date()
-const greetings = computed(() => {
-    let h = date.getHours()
-    if (h >= 6 && h < 8) {
-        return "晨起披衣出草堂，轩窗已自喜微凉🌅！";
-    } else if (h >= 8 && h < 12) {
-        return "上午好🌞！";
-    } else if (h >= 12 && h < 18) {
-        return "下午好☕！";
-    } else if (h >= 18 && h < 24) {
-        return "晚上好🌃！";
-    } else if (h >= 0 && h < 6) {
-        return "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
-    }
-});
 
 const dataDisplay: any = reactive({
+    title: {greeting: '', quote: '' },
+    user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     statics: [
         { title: '科目数', icon: 'Notebook', data: 0 },
         { title: '试卷数', icon: 'Document', data: 0 },
@@ -204,9 +196,55 @@ const dataDisplay: any = reactive({
     }
 })
 
+const quotes = [
+"不积跬步无以至千里，不积小流无以成江海。——荀子",
+"一寸光阴一寸金，寸金难买寸光阴。——增广贤文",
+"欲穷千里目，更上一层楼。——王之涣",
+"丈夫志四海，万里犹比邻。——曹植",
+"千里之行，始于足下。——老子",
+"吾生也有涯，而知也无涯。——庄子",
+"博观约取，厚积薄发。——苏轼"
+]
+
+const onLinkClicked=(index:number)=>{
+    switch(index){
+        case 0:
+            break
+        case 1:
+            var date = new Date()
+            let h = date.getHours()
+            if (h >= 6 && h < 8) {
+                dataDisplay.title.greeting = "晨起披衣出草堂，轩窗已自喜微凉🌅！";
+            } else if (h >= 8 && h < 12) {
+                dataDisplay.title.greeting = "上午好🌞！";
+            } else if (h >= 12 && h < 18) {
+                dataDisplay.title.greeting = "下午好☕！";
+            } else if (h >= 18 && h < 24) {
+                dataDisplay.title.greeting = "晚上好🌃！";
+            } else if (h >= 0 && h < 6) {
+                dataDisplay.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
+            }
+            ElMessage.success(`${date.toLocaleString('zh-CN')} ${dataDisplay.title.greeting}`)
+            break
+        case 2:
+            dataDisplay.title.quote = quotes[Math.floor(Math.random()*quotes.length)]
+            break
+    }
+}
+
 // const store = useStore()
 onMounted(() => {
-    Api.getOverviewInfo(2).then(res => {
+    onLinkClicked(1)
+    onLinkClicked(2)
+    var ui = Api.loadUserInfoFromStorage()
+    if (ui == null) {
+        return;
+    }
+    dataDisplay.user.id = ui.id
+    dataDisplay.user.first_name = ui.first_name
+    dataDisplay.user.last_name = ui.last_name
+    dataDisplay.user.avatar = ui.avatar
+    Api.getOverviewInfo(ui.id).then(res => {
         let info: IOverviewInfo = res.data
         dataDisplay.statics[0].data = info.subject_num
         dataDisplay.statics[1].data = info.quiz_num
@@ -226,8 +264,8 @@ onMounted(() => {
     padding: 10px;
 
     .user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
     }
 
@@ -264,7 +302,8 @@ onMounted(() => {
     .svg-icon {
         fill: currentcolor !important;
     }
-    .el-card:deep(.el-card__body){
+
+    .el-card:deep(.el-card__body) {
         padding: 10px;
     }
 }

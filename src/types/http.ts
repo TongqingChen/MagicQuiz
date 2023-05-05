@@ -1,5 +1,3 @@
-import { Interface } from "readline";
-
 export interface IQuestionResult {
     user: number;
     question: number;
@@ -74,4 +72,14 @@ export class OverviewInfo implements IOverviewInfo {
     question_num = 0;
     wrongset_num = 0;
     exam_record = {}
+}
+
+export interface IUserInfo{
+    id: number;
+    username: string;
+    token: string;
+    refresh: string;
+    first_name: string;
+    last_name: string;
+    avatar: string;
 }

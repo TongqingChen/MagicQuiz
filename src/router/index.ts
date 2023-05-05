@@ -36,13 +36,13 @@ const routes: Array<RouteRecordRaw> = [
             {
                 path: '/user',
                 name: 'user',
-                meta: { title: "个人中心", icon: "User", visible: true, is_child: false },
+                meta: { title: "我", icon: "User", visible: true, is_child: false },
                 children: [
                     {
                         path: "/userInfo",
                         name: 'userInfo',
-                        component: () => import('@/views/app/Home.vue'),
-                        meta: { title: "修改资料", icon: "el-icon-s-home", visible: true, is_child: true },
+                        component: () => import('@/views/app/UserInfo.vue'),
+                        meta: { title: "个人中心", icon: "el-icon-s-home", visible: true, is_child: true },
                     },
                     {
                         path: "/logout",
@@ -84,12 +84,13 @@ router.beforeEach(async (to, from, next) => {
         next()
         return
     }
-    const token: string | null = localStorage.getItem("token")
-    if (token == null) {
+    var ui = Api.loadUserInfoFromStorage()
+    if (ui == null) {
         next('/login')
         return
     }
-    await Api.verifyToken(token).then(res => {
+    console.log('ui', ui)
+    await Api.verifyToken(ui.access).then(res => {
         next()
     }).catch(error => {
         next('/login')

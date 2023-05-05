@@ -21,6 +21,7 @@ import { onMounted, reactive } from 'vue'
 import MenuItem from '@/components/MenuItem.vue'
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from '@vue/reactivity';
+import { Api } from '@/request';
 
 const route = useRoute()
 const router = useRouter()
@@ -31,7 +32,7 @@ const activeIdx = computed(() => {
 
 const handleSelect = (key: string, keyPath: string[]) => {
     if(key=='/logout'){
-        localStorage.clear()
+        Api.clearUserInfo()
     }
     // console.log(key, keyPath)
     // console.log('router.currentRoute()', router.currentRoute)

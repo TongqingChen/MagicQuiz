@@ -13,7 +13,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button class="login-btn" type="primary" @click="submitForm(ruleFormRef)">登录</el-button>
+                    <el-button class="login-btn" type="primary" @click="submitForm(ruleFormRef)" @keydown.enter="keyDown">登录</el-button>
                     <!-- <el-button class="login-btn" @click="resetForm(ruleFormRef)">重置</el-button> -->
                     <el-button class="login-btn" @click="resetForm">重置</el-button>
                 </el-form-item>
@@ -26,7 +26,7 @@
 
 <script lang="ts" setup>
 import { ElMessage, FormInstance } from "element-plus";
-import { reactive, ref } from "vue";
+import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { User, Lock } from '@element-plus/icons-vue'
 import {Api} from '@/request/index'
@@ -55,7 +55,7 @@ const submitForm = (formEl: FormInstance | undefined) => {
     formEl.validate((valid) => {
         if (valid) {
             Api.login(loginData.user).then(res => {
-                Api.storeToken(res.data.access, res.data.refresh)
+                Api.storeUserInfo(res.data)
                 // 跳转页面
                 router.push('/')
             }).catch(err=>{
@@ -73,7 +73,13 @@ const resetForm = () => {
     loginData.user.username = ""
     loginData.user.password = ""
 }
-
+const keyDown=(e:any)=>{
+    if(e.keyCode==13 || e.keyCode==100){
+        submitForm(ruleFormRef.value)
+    }
+}
+onMounted(()=>window.addEventListener('keydown', keyDown))
+onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
 
 </script>
 
