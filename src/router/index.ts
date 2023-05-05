@@ -89,7 +89,6 @@ router.beforeEach(async (to, from, next) => {
         next('/login')
         return
     }
-    console.log('ui', ui)
     await Api.verifyToken(ui.access).then(res => {
         next()
     }).catch(error => {

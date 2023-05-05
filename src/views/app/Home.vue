@@ -8,15 +8,16 @@
             <el-card class="w-full mb-4">
                 <div class="flex justify-between flex-wrap">
                     <div class="flex items-center">
-                        <img class="user-avatar" :src="dataDisplay.user.avatar" />
-                        <el-link type="primary" size="large" @click="onLinkClicked(0)">{{ dataDisplay.user.last_name }}, {{ dataDisplay.user.first_name
+                        <img class="user-avatar" :src="meta.user.avatar" />
+                        <el-link type="primary" size="large" @click="onLinkClicked(0)">{{ meta.user.last_name }}, {{
+                            meta.user.first_name
                         }}</el-link>
                     </div>
                     <div class="flex items-center">
-                        <el-link type="danger" size="large" @click="onLinkClicked(2)">{{ dataDisplay.title.quote }}</el-link>
+                        <el-link type="danger" size="large" @click="onLinkClicked(2)">{{ meta.title.quote }}</el-link>
                     </div>
                     <div class="flex items-center">
-                        <el-link type="success" size="large" @click="onLinkClicked(1)">{{ dataDisplay.title.greeting }}</el-link>
+                        <el-link type="success" size="large" @click="onLinkClicked(1)">{{ meta.title.greeting }}</el-link>
                     </div>
                     <!-- <div class="space-x-2 flex items-center">
                         <el-link target="_blank" type="danger"
@@ -35,7 +36,7 @@
 
         <!-- 数据卡片 -->
         <el-row :gutter="16" class="mb-4">
-            <el-col v-for="d in dataDisplay.statics" :xs="12" :sm="6" :lg="6" class="mb-4">
+            <el-col v-for="d in meta.statics" :xs="12" :sm="6" :lg="6" class="mb-4">
                 <DataCard :title="d.title" :data="d.data" :icon="d.icon"></DataCard>
             </el-col>
         </el-row>
@@ -43,7 +44,7 @@
         <!-- Echarts 图表 -->
         <el-row :gutter="16">
             <el-col :sm="12" class="mb-4">
-                <BarChart id="barChart" title="历史记录" height="400px" width="100%" :options="dataDisplay.exam_his_chart"
+                <BarChart id="barChart" title="历史记录" height="400px" width="100%" :options="meta.exam_his_chart"
                     class="bg-[var(--el-bg-color-overlay)]" />
             </el-col>
 
@@ -51,12 +52,12 @@
             <el-col :sm="12" class="mb-4">
                 <el-card>
                     <div class="subject">
-                        <el-radio-group v-model="dataDisplay.current_sub" size="small">
-                            <el-radio-button v-for="(val, key) in dataDisplay.exam_his" :label="key"> {{ key }}({{
+                        <el-radio-group v-model="meta.current_sub" size="small">
+                            <el-radio-button v-for="(val, key) in meta.exam_his" :label="key"> {{ key }}({{
                                 val.length }})</el-radio-button>
                         </el-radio-group>
                     </div>
-                    <el-table :data="dataDisplay.exam_his[dataDisplay.current_sub]"
+                    <el-table :data="meta.exam_his[meta.current_sub]"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
                         <el-table-column prop="quiz_name" label="试卷名" width="72" />
@@ -72,24 +73,33 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive } from 'vue';
 import DataCard from '@/components/DataCard.vue';
 import BarChart from '@/components/BarChart.vue';
 import { Api } from '@/request';
 import * as echarts from 'echarts'
 import { IOverviewInfo } from '@/types/http';
 import { ElMessage } from 'element-plus';
-import { randomInt } from 'crypto';
+import router from '@/router';
 
 
-const dataDisplay: any = reactive({
-    title: {greeting: '', quote: '' },
+const meta: any = reactive({
+    title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     statics: [
         { title: '科目数', icon: 'Notebook', data: 0 },
         { title: '试卷数', icon: 'Document', data: 0 },
         { title: '题库数', icon: 'Collection', data: 0 },
         { title: '错题数', icon: 'FolderDelete', data: 0 },
+    ],
+    quotes: [
+        "不积跬步无以至千里，不积小流无以成江海。——荀子",
+        "一寸光阴一寸金，寸金难买寸光阴。——增广贤文",
+        "欲穷千里目，更上一层楼。——王之涣",
+        "丈夫志四海，万里犹比邻。——曹植",
+        "千里之行，始于足下。——老子",
+        "吾生也有涯，而知也无涯。——庄子",
+        "博观约取，厚积薄发。——苏轼"
     ],
     current_sub: '',
     exam_his: {
@@ -196,38 +206,32 @@ const dataDisplay: any = reactive({
     }
 })
 
-const quotes = [
-"不积跬步无以至千里，不积小流无以成江海。——荀子",
-"一寸光阴一寸金，寸金难买寸光阴。——增广贤文",
-"欲穷千里目，更上一层楼。——王之涣",
-"丈夫志四海，万里犹比邻。——曹植",
-"千里之行，始于足下。——老子",
-"吾生也有涯，而知也无涯。——庄子",
-"博观约取，厚积薄发。——苏轼"
-]
-
-const onLinkClicked=(index:number)=>{
-    switch(index){
+const onLinkClicked = (index: number) => {
+    switch (index) {
         case 0:
+            router.push('/userInfo')
             break
         case 1:
             var date = new Date()
             let h = date.getHours()
             if (h >= 6 && h < 8) {
-                dataDisplay.title.greeting = "晨起披衣出草堂，轩窗已自喜微凉🌅！";
+                meta.title.greeting = "晨起披衣出草堂，轩窗已自喜微凉🌅！";
             } else if (h >= 8 && h < 12) {
-                dataDisplay.title.greeting = "上午好🌞！";
+                meta.title.greeting = "上午好🌞！";
             } else if (h >= 12 && h < 18) {
-                dataDisplay.title.greeting = "下午好☕！";
+                meta.title.greeting = "下午好☕！";
             } else if (h >= 18 && h < 24) {
-                dataDisplay.title.greeting = "晚上好🌃！";
+                meta.title.greeting = "晚上好🌃！";
             } else if (h >= 0 && h < 6) {
-                dataDisplay.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
+                meta.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
             }
-            ElMessage.success(`${date.toLocaleString('zh-CN')} ${dataDisplay.title.greeting}`)
+            ElMessage.success({
+                message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}`,
+                duration: 1000
+            })
             break
         case 2:
-            dataDisplay.title.quote = quotes[Math.floor(Math.random()*quotes.length)]
+            meta.title.quote = meta.quotes[Math.floor(Math.random() * meta.quotes.length)]
             break
     }
 }
@@ -240,18 +244,18 @@ onMounted(() => {
     if (ui == null) {
         return;
     }
-    dataDisplay.user.id = ui.id
-    dataDisplay.user.first_name = ui.first_name
-    dataDisplay.user.last_name = ui.last_name
-    dataDisplay.user.avatar = ui.avatar
+    meta.user.id = ui.id
+    meta.user.first_name = ui.first_name
+    meta.user.last_name = ui.last_name
+    meta.user.avatar = ui.avatar
     Api.getOverviewInfo(ui.id).then(res => {
         let info: IOverviewInfo = res.data
-        dataDisplay.statics[0].data = info.subject_num
-        dataDisplay.statics[1].data = info.quiz_num
-        dataDisplay.statics[2].data = info.question_num
-        dataDisplay.statics[3].data = info.wrongset_num
-        dataDisplay.exam_his = info.exam_record
-        dataDisplay.current_sub = Object.keys(dataDisplay.exam_his)[0]
+        meta.statics[0].data = info.subject_num
+        meta.statics[1].data = info.quiz_num
+        meta.statics[2].data = info.question_num
+        meta.statics[3].data = info.wrongset_num
+        meta.exam_his = info.exam_record
+        meta.current_sub = Object.keys(meta.exam_his)[0]
     }
     )
 })
