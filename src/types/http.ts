@@ -74,7 +74,7 @@ export class OverviewInfo implements IOverviewInfo {
     exam_record = {}
 }
 
-export interface IUserInfo{
+export interface IUserInfo {
     id: number;
     username: string;
     token: string;
@@ -82,4 +82,46 @@ export interface IUserInfo{
     first_name: string;
     last_name: string;
     avatar: string;
+}
+
+export interface IUserInfoExt extends IUserInfo {
+    birthday: Date;
+    gender: string;
+    email: string;
+    mobile: string;
+    address: string;
+    school: string;
+    card_id: string;
+    date_joined: Date;
+}
+
+export class UserInfo {
+    id: number = 2
+    avatar: string = ""// http://localhost:8000/media/avatar/2%E5%AF%B8_-_415x627.jpg"
+    username: string = "jason"
+    last_name: string = "陈"
+    first_name: string = "瑾辰"
+    birthday: string = "2016-07-12"
+    gender: number = 1
+    email: string = "zjuliuyang@126.com"
+    mobile: string = "18017264048"
+    school: string = ""
+    address: string = ""
+    card_id: string = ""
+    date_joined: string = "2023-05-05T01:37:00+08:00"
+
+    extractEditableInfo() {
+        return {
+            "username": this.username,
+            "last_name": this.last_name,
+            "first_name": this.first_name,
+            "birthday": this.birthday,
+            "gender": this.gender,
+            "email": this.email,
+            "mobile": this.mobile,
+            "school": this.school,
+            "address": this.address,
+            "card_id": this.card_id,
+        }
+    }
 }

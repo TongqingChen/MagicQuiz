@@ -17,9 +17,7 @@
                     <!-- <el-button class="login-btn" @click="resetForm(ruleFormRef)">重置</el-button> -->
                     <el-button class="login-btn" @click="resetForm">重置</el-button>
                 </el-form-item>
-
             </el-form>
-
         </div>
     </div>
 </template>
@@ -87,7 +85,7 @@ onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
 .login {
     // width: 100%;
     height: 100%;
-    background-image: url("../assets/background.jpg");
+    background-image: url("@/assets/background.jpg");
     background-size: 100% auto;
 
     .form-cls {
@@ -101,7 +99,6 @@ onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
-
         .title {
             font-size: 24px;
             font-weight: bold;

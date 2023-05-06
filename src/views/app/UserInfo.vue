@@ -1,96 +1,150 @@
 <template>
-        <el-card>
-            <el-descriptions class="margin-top" title="简介" :column="2" border>
-                <template slot="extra">
-                    <el-button type="primary" size="small">操作</el-button>
-                </template>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-picture-outline"></i>
-                        头像
-                    </template>
-                    <img class="img" src="avatar" alt="" />
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-user"></i>
-                        账户名
-                    </template>
-                    account
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-s-custom"></i>
-                        昵称
-                    </template>
-                    nickname
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-odometer"></i>
-                        年龄
-                    </template>
-                    age
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-male"></i>
-                        <i class="el-icon-female"></i>
-                        性别
-                    </template>
-                    <el-tag size="small">sex </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-message"></i>
-                        邮箱Email
-                    </template>
-                    email
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-mobile-phone"></i>
-                        手机号码
-                    </template>
-                    mobilePhoneNumber
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-location-outline"></i>
-                        地区
-                    </template>
-                    area
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-office-building"></i>
-                        职业
-                    </template>
-                    work
-                </el-descriptions-item>
-
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-basketball"></i>
-                        兴趣爱好
-                    </template>
-                    hobby
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-magic-stick"></i>
-                        个性签名
-                    </template>
-                    design
-                </el-descriptions-item>
-                <el-descriptions-item>
-                    <template slot="label">
-                        <i class="el-icon-date"></i>
-                        注册日期
-                    </template>
-                    createDate
-                </el-descriptions-item>
-            </el-descriptions>
-        </el-card>
+    <el-form :model="user" label-position="right" label-width="80px">
+        <el-form-item>
+            <el-upload class="avatar-uploader" :show-file-list="false" :auto-upload="false" accept=".png,.jepg,.jpg"
+                :on-change="onUploadAvatar" tip="dddd">
+                <el-image v-if="user.avatar && user.avatar != ''" :src="user.avatar" class="avatar" />
+                <div class="upload_avatar_box" v-else>
+                    <el-text class="align-center" type="primary" size="large">上传头像</el-text>
+                </div>
+            </el-upload>
+            <el-alert type="info" size="small" show-icon>点击头像修改; 支持jpg/jpeg/png; 不超过2M;</el-alert>
+        </el-form-item>
+        <!-- <FormItem label="用户名" type="text" v-modelv-model="user.username"/> -->
+        <FormItem label="用户名" type="text" :disabled="!editEnabled" v-model="user.username" />
+        <el-form-item label="姓名">
+            <el-row :gutter="10">
+                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                    <el-input v-model="user.last_name" :disabled="!editEnabled" placeholder="姓" />
+                </el-col>
+                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                    <el-input v-model="user.first_name" :disabled="!editEnabled" placeholder="名" />
+                </el-col>
+            </el-row>
+        </el-form-item>
+        <el-form-item label="性别">
+            <el-radio-group v-model="user.gender" :disabled="!editEnabled">
+                <el-radio :label="1">男</el-radio>
+                <el-radio :label="2">女</el-radio>
+            </el-radio-group>
+        </el-form-item>
+        <FormItem label="生日" type="date" :disabled="!editEnabled" v-model="user.birthday" />
+        <FormItem label="邮箱" type="email" :disabled="!editEnabled" v-model="user.email" />
+        <FormItem label="手机" type="tel" :disabled="!editEnabled" v-model="user.mobile" />
+        <FormItem label="学校" type="text" :disabled="!editEnabled" v-model="user.school" />
+        <FormItem label="住址" type="tel" :disabled="!editEnabled" v-model="user.address" />
+        <FormItem label="身份证号" type="number" :disabled="!editEnabled" v-model="user.date_joined" />
+        <FormItem label="注册时间" type="text" :disabled="!editEnabled" v-model="user.date_joined" />
+        <el-form-item>
+            <el-row :gutter="10">
+                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                    <el-switch v-model="editEnabled" inline-prompt active-text="已解锁" inactive-text="已锁定" />
+                </el-col>
+                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                    <el-button v-if="editEnabled" type="primary" @click="onSubmit">修改资料(不含头像)</el-button>
+                </el-col>
+            </el-row>
+        </el-form-item>
+    </el-form>
 </template>
 
+<script lang="ts" setup>
+import { reactive, ref } from 'vue'
+import { UserInfo } from '@/types/http'
+import FormItem from '@/components/FormItem.vue'
+import { ElLoading, ElMessage } from 'element-plus';
+import { Api } from '@/request';
+import { HttpStatusCode } from 'axios';
+import { setTimeout } from 'timers/promises';
+
+const editEnabled = ref(false)
+const user = reactive(new UserInfo())
+
+
+const onUploadAvatar = (file: any, fileList: any) => {
+    let rawFile = file.raw;
+    if (["image/jpg", "image/jpeg", "image/png"].indexOf(rawFile.type) < 0) {
+        ElMessage.error("仅支持格式为jpg, jpeg, png的图片");
+        return false;
+    }
+    if (rawFile.size / 1024 / 1024 > 2) {
+        ElMessage.error("图片文件大小不能超过2MB!");
+        return false;
+    }
+    let formData = new FormData();
+    formData.append("id", "2")
+    formData.append("avatar", rawFile);
+    const loading = ElLoading.service({
+        lock: true,
+        text: 'Loading',
+        background: 'rgba(0, 0, 0, 0.7)',
+    })
+    //请求接口上传图片到服务器
+    Api.uploadUserAvatar(formData).then(async (res: any) => {
+        if (res.status == HttpStatusCode.Ok) {
+            user.avatar = res.data['avatar'];
+            ElMessage.success(`头像上传成功`);
+        } else {
+            ElMessage.error(`头像上传失败(${res.status})`);
+        }
+    }).catch((err) => {
+        ElMessage.error(`头像上传失败(${err.code})`);
+    });
+    loading.close();
+    return true;
+};
+
+const onSubmit = () => {
+    const loading = ElLoading.service({
+        lock: true,
+        text: 'Loading',
+        background: 'rgba(0, 0, 0, 0.7)',
+    })
+    Api.updateUserInfo(2, user.extractEditableInfo()).then(async (res: any) => {
+        if (res.status == HttpStatusCode.Ok) {
+            ElMessage.success(`资料修改成功`);
+        } else {
+            ElMessage.error(`资料修改失败(${res.status})`);
+        }
+    }).catch((err) => {
+        ElMessage.error(`资料修改失败(${err.code})`);
+    });
+    loading.close();
+}
+</script>
+
+<style lang="scss" scoped>
+.el-row {
+    width: 100%;
+}
+
+:deep().avatar-uploader {
+    .avatar {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+    }
+
+    .el-upload {
+        border: 1px dashed #dcdfe6;
+        border-radius: 50%;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition: 0.2s;
+        background: rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .el-upload:hover {
+        border-color: #14b194;
+    }
+}
+
+.upload_avatar_box {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>

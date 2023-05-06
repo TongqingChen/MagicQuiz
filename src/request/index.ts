@@ -6,17 +6,16 @@ const Axios = axios.create({
     baseURL: 'http://localhost:8000/',
     timeout: 5000,
     headers: {
-        "Content-Type": "application/json;charset=utf-8"
+        "Content-Type": "application/json;charset=utf-8;"
     }
 })
 
 //请求拦截
 Axios.interceptors.request.use((config) => {
     config.headers = config.headers || {}
-    var ui = Api.loadUserInfoFromStorage()
-    if (ui) {
+    if (localStorage.getItem("token")) {
         // config.headers.token = localStorage.getItem("token") || ""
-        config.headers['Authorization'] = `Bearer ${ui.access}`
+        config.headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`
     }
     return config
 }, error => {
@@ -28,8 +27,7 @@ Axios.interceptors.response.use((response) => {
 }, async (error) => {
     // localStorage.clear()
     if (error.config.url == "api/token/refresh/") {
-        localStorage.clear()
-
+        Api.clearUserInfo()
     }
     else if (error.response.status == HttpStatusCode.Unauthorized) {
         var ui = Api.loadUserInfoFromStorage()
@@ -52,6 +50,30 @@ export class Api {
             url: "api/token/",
             method: "POST",
             data: user_data
+        })
+    }
+
+    static getUserInfo(user_id: number) {
+        return Axios({
+            url: `users/${user_id}/`,
+            method: "GET"
+        })
+    }
+
+    static uploadUserAvatar(data: any){
+        return Axios({
+            url: 'upload_avatar/',
+            method: "POST",
+            headers: {"Content-Type": "multipart/form-data"},
+            data: data
+        })
+    }
+
+    static updateUserInfo(user_id:number, data:any){
+        return Axios({
+            url: `users/${user_id}/`,
+            method: "PATCH",
+            data: data
         })
     }
 
@@ -144,7 +166,7 @@ export class Api {
         // 将token进行保存
         localStorage.setItem("user", JSON.stringify(user_info))
     }
-    static clearUserInfo(){
+    static clearUserInfo() {
         localStorage.removeItem('user')
     }
     static loadUserInfoFromStorage<IUserInfo>() {
