@@ -6,11 +6,11 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import UnoCss from 'unocss/vite'
 // import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { resolve } from 'path'
-// import mkcert from 'vite-plugin-mkcert'
+
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    // mkcert(),
     vue(),
     UnoCss(),
     AutoImport({

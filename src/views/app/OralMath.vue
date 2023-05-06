@@ -2,9 +2,9 @@
     <el-container>
         <el-header>
             <span>【{{ math_info.name }}】</span>
-            <CountDown style="color: red;" :start_flag="true" :duration_secs="10" :blink="true" start_text='【考试剩余】'
-                @end_event="">
-            </CountDown>
+            <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING" :duration_secs="100" :blink="true"
+                start_text='【已用时间】' :count_down="false" @end_event="onCountDownEnd">
+            </Timer>
             <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
                 @click="onSubmit">提交</el-button>
         </el-header>
@@ -13,7 +13,7 @@
                 <el-col v-for="m in math_info.meta" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                     <el-card>
                         <span class="question">{{ m.title }}</span>
-                        <el-input v-model="m.user_answer" :max="999" clearable type="number" size="small"
+                        <el-input v-model="m.user_answer" :max="999" clearable type="number"
                             :disabled="math_info.state == ExamState.FINISHED"></el-input>
                         <span>{{ m.mark }}</span>
                     </el-card>
@@ -25,16 +25,18 @@
 
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue'
-import CountDown from '@/components/CountDown.vue'
+import Timer from '@/components/Timer.vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { Api } from '@/request'
 import { ExamState } from '@/types/question'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { QuizResult } from '@/types/http'
 
 const math_info = reactive({
     id: 0,
     name: '',
     state: ExamState.IDLE,
+    start_time: 0,
     meta: [{ title: '', answer: 0, user_answer: 0, mark: '' }]
 })
 const route = useRoute()
@@ -48,12 +50,28 @@ onMounted(() => {
         res.data.forEach((r: any[]) =>
             math_info.meta.push({ title: r[0], answer: r[1], user_answer: 0, mark: '' })
         )
+        math_info.start_time = Date.now()
     })
 })
-
+const onCountDownEnd = async () => {
+    var correct_count = 0
+    math_info.meta.forEach(m => {
+        m.mark = m.answer == m.user_answer ? '✅' : '❌'
+        correct_count += m.answer == m.user_answer ? 1 : 0
+    })
+    var user_id = Api.loadUserIdFromStorage()
+    var results = new QuizResult()
+    results.meta.note = `[${math_info.name}]${correct_count}/${math_info.meta.length}`
+    results.meta.user = user_id
+    results.meta.quiz = math_info.id
+    results.meta.abs_score = correct_count
+    results.meta.rel_score = Math.round(correct_count * 100 / math_info.meta.length)
+    results.meta.use_minutes = Math.round((Date.now() - math_info.start_time) / 1000 / 60)
+    await Api.postQuizResult(results.meta)
+    ElMessage.success('考试提交成功!')
+}
 const onSubmit = () => {
-    math_info.meta.forEach(m => m.mark = m.answer == m.user_answer ? '✅' : '❌')
-    math_info.state = ExamState.FINISHED
+    math_info.state = ExamState.FINISHED //触发定时器结束，自动提交考试
 }
 
 onBeforeRouteLeave((to, from, next) => {
@@ -120,11 +138,12 @@ onBeforeRouteLeave((to, from, next) => {
     display: inline-flex;
     justify-content: center;
     width: 118px;
-    font-size: 14px;
+    font-size: 16px;
     color: darkcyan;
     font-weight: bold;
 }
 
 .el-input {
     width: 100px;
-}</style>
+}
+</style>

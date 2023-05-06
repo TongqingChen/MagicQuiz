@@ -1,5 +1,5 @@
 <template>
-    <el-form :model="user" label-position="right" label-width="80px">
+    <el-form v-if="dataLoaded" :model="user" label-position="right" label-width="80px">
         <el-form-item>
             <el-upload class="avatar-uploader" :show-file-list="false" :auto-upload="false" accept=".png,.jepg,.jpg"
                 :on-change="onUploadAvatar" tip="dddd">
@@ -8,16 +8,16 @@
                     <el-text class="align-center" type="primary" size="large">上传头像</el-text>
                 </div>
             </el-upload>
-            <el-alert type="info" size="small" show-icon>点击头像修改; 支持jpg/jpeg/png; 不超过2M;</el-alert>
+            <el-alert type="info" size="small" show-icon style="width: 300px;">点击头像修改; 支持jpg/jpeg/png; ≤2M;</el-alert>
         </el-form-item>
         <!-- <FormItem label="用户名" type="text" v-modelv-model="user.username"/> -->
         <FormItem label="用户名" type="text" :disabled="!editEnabled" v-model="user.username" />
         <el-form-item label="姓名">
             <el-row :gutter="10">
-                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
                     <el-input v-model="user.last_name" :disabled="!editEnabled" placeholder="姓" />
                 </el-col>
-                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
                     <el-input v-model="user.first_name" :disabled="!editEnabled" placeholder="名" />
                 </el-col>
             </el-row>
@@ -32,15 +32,15 @@
         <FormItem label="邮箱" type="email" :disabled="!editEnabled" v-model="user.email" />
         <FormItem label="手机" type="tel" :disabled="!editEnabled" v-model="user.mobile" />
         <FormItem label="学校" type="text" :disabled="!editEnabled" v-model="user.school" />
-        <FormItem label="住址" type="tel" :disabled="!editEnabled" v-model="user.address" />
-        <FormItem label="身份证号" type="number" :disabled="!editEnabled" v-model="user.date_joined" />
+        <FormItem label="住址" type="text" :disabled="!editEnabled" v-model="user.address" />
+        <FormItem label="身份证号" type="text" :disabled="!editEnabled" v-model="user.card_id" />
         <FormItem label="注册时间" type="text" :disabled="!editEnabled" v-model="user.date_joined" />
         <el-form-item>
             <el-row :gutter="10">
-                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
                     <el-switch v-model="editEnabled" inline-prompt active-text="已解锁" inactive-text="已锁定" />
                 </el-col>
-                <el-col :xs="12" :sm="8" :md="6" :lg="4" :xl="3">
+                <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
                     <el-button v-if="editEnabled" type="primary" @click="onSubmit">修改资料(不含头像)</el-button>
                 </el-col>
             </el-row>
@@ -49,17 +49,30 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { UserInfo } from '@/types/http'
 import FormItem from '@/components/FormItem.vue'
 import { ElLoading, ElMessage } from 'element-plus';
 import { Api } from '@/request';
 import { HttpStatusCode } from 'axios';
-import { setTimeout } from 'timers/promises';
 
 const editEnabled = ref(false)
-const user = reactive(new UserInfo())
+const dataLoaded = ref(false)
+let user = reactive(new UserInfo())
 
+onMounted(async () => {
+    var user_id = Api.loadUserIdFromStorage()
+
+    await Api.getUserInfo(user_id).then(async (res) => {
+        console.log(user, res.data)
+        user.first_name = res.data.first_name
+        user = res.data
+        console.log(user, res.data)
+        dataLoaded.value = true
+        ElMessage.success('页面加载成功')
+    }).catch((err) => ElMessage.error(`页面加载失败(${err.code})`))
+
+})
 
 const onUploadAvatar = (file: any, fileList: any) => {
     let rawFile = file.raw;
@@ -76,7 +89,7 @@ const onUploadAvatar = (file: any, fileList: any) => {
     formData.append("avatar", rawFile);
     const loading = ElLoading.service({
         lock: true,
-        text: 'Loading',
+        text: 'Uploading...',
         background: 'rgba(0, 0, 0, 0.7)',
     })
     //请求接口上传图片到服务器
@@ -95,21 +108,34 @@ const onUploadAvatar = (file: any, fileList: any) => {
 };
 
 const onSubmit = () => {
+
     const loading = ElLoading.service({
+        fullscreen: true,
         lock: true,
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
     })
-    Api.updateUserInfo(2, user.extractEditableInfo()).then(async (res: any) => {
-        if (res.status == HttpStatusCode.Ok) {
-            ElMessage.success(`资料修改成功`);
-        } else {
-            ElMessage.error(`资料修改失败(${res.status})`);
-        }
-    }).catch((err) => {
-        ElMessage.error(`资料修改失败(${err.code})`);
-    });
-    loading.close();
+    setTimeout(() => {
+        loading.close()
+    }, 2000)
+
+
+
+    // const loading = ElLoading.service({
+    //     lock: true,
+    //     text: 'Uploading...',
+    //     background: 'rgba(0, 0, 0, 0.7)',
+    // })
+    // Api.updateUserInfo(2, user.extractEditableInfo()).then(async (res: any) => {
+    //     if (res.status == HttpStatusCode.Ok) {
+    //         ElMessage.success(`资料修改成功`);
+    //     } else {
+    //         ElMessage.error(`资料修改失败(${res.status})`);
+    //     }
+    // }).catch((err) => {
+    //     ElMessage.error(`资料修改失败(${err.code})`);
+    // });
+    // loading.close();
 }
 </script>
 

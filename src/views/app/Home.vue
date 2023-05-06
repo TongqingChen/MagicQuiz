@@ -9,27 +9,15 @@
                 <div class="flex justify-between flex-wrap">
                     <div class="flex items-center">
                         <img class="user-avatar" :src="meta.user.avatar" />
-                        <el-link type="primary" size="large" @click="onLinkClicked(0)">{{ meta.user.last_name }}, {{
-                            meta.user.first_name
-                        }}</el-link>
+                        <router-link style="color:dodgerblue;" to="/userInfo">{{ meta.user.last_name }}, {{
+                            meta.user.first_name}}</router-link>
                     </div>
                     <div class="flex items-center">
-                        <el-link type="danger" size="large" @click="onLinkClicked(2)">{{ meta.title.quote }}</el-link>
+                        <el-link type="danger" size="large" @click="onLinkClicked(0)">{{ meta.title.quote }}</el-link>
                     </div>
                     <div class="flex items-center">
                         <el-link type="success" size="large" @click="onLinkClicked(1)">{{ meta.title.greeting }}</el-link>
                     </div>
-                    <!-- <div class="space-x-2 flex items-center">
-                        <el-link target="_blank" type="danger"
-                            href="https://www.cnblogs.com/haoxianrui/p/16090029.html">官方0到1教程</el-link>
-                        <el-divider direction="vertical" />
-                        <el-link target="_blank" type="success"
-                            href="https://gitee.com/youlaiorg/vue3-element-admin">Gitee源码</el-link>
-                        <el-divider direction="vertical" />
-                        <el-link target="_blank" type="primary"
-                            href="https://github.com/youlaitech/vue3-element-admin">GitHub源码
-                        </el-link>
-                    </div> -->
                 </div>
             </el-card>
         </el-row>
@@ -209,7 +197,7 @@ const meta: any = reactive({
 const onLinkClicked = (index: number) => {
     switch (index) {
         case 0:
-            router.push('/userInfo')
+            meta.title.quote = meta.quotes[Math.floor(Math.random() * meta.quotes.length)]
             break
         case 1:
             var date = new Date()
@@ -230,16 +218,13 @@ const onLinkClicked = (index: number) => {
                 duration: 1000
             })
             break
-        case 2:
-            meta.title.quote = meta.quotes[Math.floor(Math.random() * meta.quotes.length)]
-            break
     }
 }
 
 // const store = useStore()
 onMounted(() => {
+    onLinkClicked(0)
     onLinkClicked(1)
-    onLinkClicked(2)
     var ui = Api.loadUserInfoFromStorage()
     if (ui == null) {
         return;
@@ -257,7 +242,9 @@ onMounted(() => {
         meta.exam_his = info.exam_record
         meta.current_sub = Object.keys(meta.exam_his)[0]
     }
-    )
+    ).catch(err=>{
+        ElMessage.error('加載失敗')
+    })
 })
 
 </script>

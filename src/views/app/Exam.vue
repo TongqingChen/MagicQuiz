@@ -2,9 +2,9 @@
     <el-container class="layout-container-exam" style="height:100%">
         <el-header>
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span>
-            <CountDown style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
+            <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
                 :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="onCountDownEnd">
-            </CountDown>
+            </Timer>
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
                 @click="submitQuiz">提交</el-button>
         </el-header>
@@ -69,7 +69,7 @@ import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
 import { QuizResult } from '@/types/http'
-import CountDown from '@/components/CountDown.vue'
+import Timer from '@/components/Timer.vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -104,8 +104,7 @@ const getQuestionList = () => {
                     image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
             examInfo.scores += q.score
-        }
-        )
+        })
         examInfo.state = ExamState.ONGOING
     })
 }
@@ -113,6 +112,7 @@ const getQuestionList = () => {
 const onCountDownEnd = () => {
     uploadExamResults()
 }
+
 
 onMounted(() => {
     getQuestionList()
@@ -163,7 +163,7 @@ const onAnswerSelected = () => {
 }
 
 const uploadExamResults = async () => {
-    var user_id = Number(localStorage.getItem('user_id'))
+    var user_id = Api.loadUserIdFromStorage()
     var results = new QuizResult()
     var total_score = 0
     var correct_count = [0, 0, 0]
@@ -187,7 +187,7 @@ const uploadExamResults = async () => {
     results.meta.use_minutes = Math.round((Date.now() - examInfo.start_time) / 1000 / 60)
     await Api.postQuestionsResult(results.questions)
     await Api.postQuizResult(results.meta)
-    examInfo.state = ExamState.FINISHED
+    ElMessage.success('考试提交成功!')
 }
 
 const submitQuiz = () => {
@@ -199,12 +199,8 @@ const submitQuiz = () => {
             cancelButtonText: '取消',
             type: 'warning',
         }
-    ).then(async () => {
-        await uploadExamResults()
-        ElMessage({
-            type: 'success',
-            message: 'Delete completed',
-        })
+    ).then(() => {
+        examInfo.state = ExamState.FINISHED //定时器停止计时，自动触发提交考试
     })
 }
 </script>

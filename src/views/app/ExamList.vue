@@ -18,9 +18,9 @@
                     </div>
                 </template>
                 <div class="card-body">
-                    <li>{{ quiz.subject == 8?"最大数":"选择题数"}}：{{ quiz.choice_num }}</li>
-                    <li>{{ quiz.subject == 8?"加数个数":"判断题数"}}：{{ quiz.logic_num }}</li>
-                    <li>{{ quiz.subject == 8?"题目数":"编程题数"}}：{{ quiz.coding_num }}</li>
+                    <li>{{ quiz.subject == 3?"最大数":"选择题数"}}：{{ quiz.choice_num }}</li>
+                    <li>{{ quiz.subject == 3?"加数个数":"判断题数"}}：{{ quiz.logic_num }}</li>
+                    <li>{{ quiz.subject == 3?"题目数":"编程题数"}}：{{ quiz.coding_num }}</li>
                     <li>考试时长：{{ quiz.exam_minutes }}分钟</li>
                 </div>
             </el-card>
@@ -102,7 +102,7 @@ const onPageChanged = (page: number) => (
 
 const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
     router.push({
-        path: subjectId == 8 ? 'oral_math' : '/exam',
+        path: subjectId == 3 ? 'oral_math' : '/exam',
         query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
     })
 }

@@ -98,17 +98,17 @@ export interface IUserInfoExt extends IUserInfo {
 export class UserInfo {
     id: number = 2
     avatar: string = ""// http://localhost:8000/media/avatar/2%E5%AF%B8_-_415x627.jpg"
-    username: string = "jason"
-    last_name: string = "陈"
-    first_name: string = "瑾辰"
-    birthday: string = "2016-07-12"
-    gender: number = 1
-    email: string = "zjuliuyang@126.com"
-    mobile: string = "18017264048"
+    username: string = ""
+    last_name: string = ""
+    first_name: string = ""
+    birthday: string = ""
+    gender: number = 0
+    email: string = ""
+    mobile: string = ""
     school: string = ""
     address: string = ""
     card_id: string = ""
-    date_joined: string = "2023-05-05T01:37:00+08:00"
+    date_joined: string = ""
 
     extractEditableInfo() {
         return {

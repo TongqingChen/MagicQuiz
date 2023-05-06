@@ -13,9 +13,10 @@ const Axios = axios.create({
 //请求拦截
 Axios.interceptors.request.use((config) => {
     config.headers = config.headers || {}
-    if (localStorage.getItem("token")) {
+    var ui = Api.loadUserInfoFromStorage()
+    if (ui) {
         // config.headers.token = localStorage.getItem("token") || ""
-        config.headers['Authorization'] = `Bearer ${localStorage.getItem("token")}`
+        config.headers['Authorization'] = `Bearer ${ui.access}`
     }
     return config
 }, error => {
@@ -175,6 +176,15 @@ export class Api {
             return JSON.parse(str)
         } else {
             return null
+        }
+    }
+
+    static loadUserIdFromStorage() {
+        var str = localStorage.getItem("user")
+        if (str) {
+            return JSON.parse(str).id
+        } else {
+            return 0
         }
     }
 }
