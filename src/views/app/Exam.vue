@@ -3,7 +3,7 @@
         <el-header>
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span>
             <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
-                :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="onCountDownEnd">
+                :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
                 @click="submitQuiz">提交</el-button>
@@ -109,11 +109,6 @@ const getQuestionList = () => {
     })
 }
 
-const onCountDownEnd = () => {
-    uploadExamResults()
-}
-
-
 onMounted(() => {
     getQuestionList()
 })
@@ -163,6 +158,7 @@ const onAnswerSelected = () => {
 }
 
 const uploadExamResults = async () => {
+    examInfo.state = ExamState.FINISHED
     var user_id = Api.loadUserIdFromStorage()
     var results = new QuizResult()
     var total_score = 0
@@ -200,7 +196,7 @@ const submitQuiz = () => {
             type: 'warning',
         }
     ).then(() => {
-        examInfo.state = ExamState.FINISHED //定时器停止计时，自动触发提交考试
+        uploadExamResults()
     })
 }
 </script>

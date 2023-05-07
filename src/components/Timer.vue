@@ -10,7 +10,8 @@ const data = reactive({
     durationSecs: 60,
     text: '',
     blinkFlag: true,
-    color: {}
+    color: {},
+    is_stoped: false
 })
 
 const props = withDefaults(defineProps<{
@@ -24,6 +25,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits(['end_event'])
 
 const startTickToc = () => {
+    data.is_stoped = false
     data.durationSecs = props.count_down ? props.duration_secs : 0
     // 清除掉定时器
     clearInterval(data.timer)
@@ -44,17 +46,20 @@ const startTickToc = () => {
             if ((props.count_down && data.durationSecs <= 0) ||
                 (!props.count_down && data.durationSecs >= props.duration_secs)) {
                 stopTickToc()
+                emit("end_event")
             }
         }
     }, props.blink ? 500 : 1000)
 }
 const stopTickToc = () => {
     // 清除掉定时器
-    var mins = Math.round((props.count_down ? (props.duration_secs - data.durationSecs) : data.durationSecs) / 60)
-    clearInterval(data.timer)
-    data.text = `【用时】${mins}分钟`
-    data.blinkFlag = true
-    emit("end_event")
+    if (!data.is_stoped) {
+        data.is_stoped = true
+        var mins = Math.round((props.count_down ? (props.duration_secs - data.durationSecs) : data.durationSecs) / 60)
+        clearInterval(data.timer)
+        data.text = `【用时】${mins}分钟`
+        data.blinkFlag = true
+    }
 }
 
 watch(

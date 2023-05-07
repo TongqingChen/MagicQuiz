@@ -2,11 +2,12 @@
     <el-container>
         <el-header>
             <span>【{{ math_info.name }}】</span>
-            <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING" :duration_secs="100" :blink="true"
-                start_text='【已用时间】' :count_down="false" @end_event="onCountDownEnd">
+            <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING"
+                :duration_secs="math_info.exam_seconds" :blink="true" start_text='【已用时间】' :count_down="false"
+                @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
-                @click="onSubmit">提交</el-button>
+                @click="submitQuiz">提交</el-button>
         </el-header>
         <el-main>
             <el-row :gutter="16" class="q-body">
@@ -36,6 +37,7 @@ const math_info = reactive({
     id: 0,
     name: '',
     state: ExamState.IDLE,
+    exam_seconds: 0,
     start_time: 0,
     meta: [{ title: '', answer: 0, user_answer: 0, mark: '' }]
 })
@@ -44,6 +46,7 @@ const route = useRoute()
 onMounted(() => {
     math_info.id = Number(route.query.id)
     math_info.name = String(route.query.name)
+    math_info.exam_seconds = Number(route.query.exam_seconds)
     math_info.state = ExamState.ONGOING
     Api.getOralMath(math_info.id).then((res) => {
         math_info.meta = []
@@ -53,7 +56,9 @@ onMounted(() => {
         math_info.start_time = Date.now()
     })
 })
-const onCountDownEnd = async () => {
+
+const uploadExamResults = async () => {
+    math_info.state = ExamState.FINISHED
     var correct_count = 0
     math_info.meta.forEach(m => {
         m.mark = m.answer == m.user_answer ? '✅' : '❌'
@@ -70,8 +75,19 @@ const onCountDownEnd = async () => {
     await Api.postQuizResult(results.meta)
     ElMessage.success('考试提交成功!')
 }
-const onSubmit = () => {
-    math_info.state = ExamState.FINISHED //触发定时器结束，自动提交考试
+
+const submitQuiz = () => {
+    ElMessageBox.confirm(
+        '确定提交并结束考试吗？',
+        '请确认',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(() => {
+        uploadExamResults()
+    })
 }
 
 onBeforeRouteLeave((to, from, next) => {
