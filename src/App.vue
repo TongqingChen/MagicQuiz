@@ -1,6 +1,3 @@
-<script setup lang="ts">
-</script>
-
 <template>
   <router-view></router-view>
   <!-- <Layout class="layout"></Layout> -->
@@ -17,9 +14,7 @@
       </div>
       <HelloWorld msg="Vite + Vue" /> -->
 </template>
-<script lang="ts">
 
-</script>
 <style lang="scss" scoped>
   *{
     margin: 0;

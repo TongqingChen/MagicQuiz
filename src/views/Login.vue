@@ -78,8 +78,8 @@ const keyDown=(e:any)=>{
 }
 onMounted(()=>window.addEventListener('keydown', keyDown))
 onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
-
 </script>
+
 
 <style lang="scss" scoped>
 .login {
@@ -90,7 +90,6 @@ onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
 
     .form-cls {
         background-color: #152959;
-
         width: 240px;
         height: 300px;
         border-radius: 15px;

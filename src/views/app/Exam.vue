@@ -1,7 +1,8 @@
 <template>
     <el-container class="layout-container-exam" style="height:100%">
         <el-header>
-            <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span>
+            <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
+            <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
             <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
                 :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="uploadExamResults">
             </Timer>
@@ -9,7 +10,7 @@
                 @click="submitQuiz">提交</el-button>
         </el-header>
         <el-container>
-            <el-aside width="170px">
+            <el-aside width="164px">
                 <el-scrollbar style="height:100%">
                     <div v-for="qs in examInfo.meta" style="margin: 5px;">
                         <el-divider>{{ qs.typeName }}</el-divider>
@@ -20,14 +21,15 @@
                     </div>
                 </el-scrollbar>
             </el-aside>
-            <el-main>
-                <div style="padding-left: 10px; padding-top: 5px;">
-                    <div class="answer" v-if="activeQ.meta.index >= 0">【考生答案】{{ activeQ.meta.userAnswer }}
-                    </div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED && activeQ.meta.index >= 0">
+            <el-main v-if="activeQ.meta.index >= 0">
+                <div style="padding-left: 6px; padding-top: 5px;">
+                    <div class="answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED">
                         【正确答案】{{ activeQ.meta.answer }}
                     </div>
-                    <el-button-group v-if="activeQ.meta.index >= 0">
+                    <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
+                    <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                    <el-button-group style="padding-left: 6px;">
                         <el-button :disabled="activeQ.meta.index == 0" type="primary" :icon="ArrowLeft" size="small"
                             @click="onQuestionClicked(activeQ.meta.index - 1)">上一题</el-button>
                         <el-button :disabled="activeQ.meta.index == ijPairs.length - 1" type="primary" size="small"
@@ -51,9 +53,9 @@
                     </el-radio-group>
                 </div>
                 <div class="question">
-                    <div v-if="activeQ.meta.index >= 0" class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
+                    <div class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
                     }}分){{ activeQ.meta.title }}</div>
-                    <el-image v-if="activeQ.meta.image != null" :src="activeQ.meta.image" fit="scale-down" />
+                    <el-image v-if="activeQ.meta.image" :src="activeQ.meta.image" fit="scale-down" />
                     <div>{{ activeQ.meta.description }}</div>
                 </div>
             </el-main>
@@ -63,19 +65,22 @@
 
 
 <script lang='ts' setup>
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
 import { QuizResult } from '@/types/http'
 import Timer from '@/components/Timer.vue'
-import { ArrowLeft } from '@element-plus/icons-vue'
+import { ArrowLeft, Check, Close } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const examInfo = reactive(new ExamInfo())
 
 let ijPairs = reactive([[0, 0]])
+
+const autoNext = ref(false)
+const textType = computed(() => { return autoNext.value ? "primary" : "default" })
 
 const getQuestionList = () => {
     examInfo.id = Number(route.query.id)
@@ -85,6 +90,7 @@ const getQuestionList = () => {
     examInfo.subjectId = Number(route.query.subjectId)
     examInfo.subjectName = String(route.query.subjectName)
     examInfo.exam_seconds = Number(route.query.exam_seconds)
+    examInfo.question_num = 0
 
     // examInfo.title = '【Python四级】2022.03'
     Api.getQuestionListByQuizId(examInfo.id).then(res => {
@@ -95,7 +101,6 @@ const getQuestionList = () => {
         examInfo.scores = 0
         ijPairs = []
         var i = 0
-
         questions.forEach(q => {
             ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
             examInfo.meta[q.type].qList.push(
@@ -105,6 +110,7 @@ const getQuestionList = () => {
                 })
             examInfo.scores += q.score
         })
+        examInfo.question_num = questions.length
         examInfo.state = ExamState.ONGOING
     })
 }
@@ -126,7 +132,6 @@ onBeforeRouteLeave((to, from, next) => {
             cancelButtonText: '确认离开',
             type: 'warning',
             closeOnPressEscape: false,//按下 ESC 键关闭弹窗
-            // closeOnClickModal: false,//点击遮罩关闭弹窗
             distinguishCancelAndClose: true,//区分取消与关闭
         }
     ).then((action) => {
@@ -140,13 +145,10 @@ onBeforeRouteLeave((to, from, next) => {
     })
 })
 
-const activeQ = reactive(
-    { meta: new Question(), answers: ["", "", ""] }
-)
+const activeQ = reactive({ meta: new Question(), answers: ["", "", ""] })
 const onQuestionClicked = (index: number) => {
-    let q = examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]
-    activeQ.meta = q
-    activeQ.answers[activeQ.meta.type] = q.userAnswer
+    activeQ.meta = examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]
+    activeQ.answers[activeQ.meta.type] = activeQ.meta.userAnswer
 }
 const onAnswerSelected = () => {
     if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
@@ -154,6 +156,9 @@ const onAnswerSelected = () => {
         var j = ijPairs[activeQ.meta.index][1]
         examInfo.meta[i].qList[j].userAnswer = activeQ.answers[activeQ.meta.type]
         examInfo.meta[i].qList[j].displayType = 'primary'
+        if (autoNext.value && activeQ.meta.index < examInfo.question_num - 1) {
+            onQuestionClicked(activeQ.meta.index + 1)
+        }
     }
 }
 
@@ -272,6 +277,25 @@ const submitQuiz = () => {
         // color: darkblue;
         font-weight: bold;
     }
+
+    // .el-button--primary.is-active,
+    // .el-button--primary:active {
+    //     background: rgb(230, 162, 60);
+    //     border-color: rgb(230, 162, 60);
+    //     color: #fff;
+    // }
+
+    .el-button--primary:focus {
+        background-color: var(--el-color-primary);
+        background-color: var(--el-color-primary);
+        // color: #fff;
+    }
+
+    // .el-button--primary:hover {
+    //     background-color:chocolate;
+    //     // border-color: rgb(230, 162, 60);
+    //     color: #fff;
+    // }
 
     .el-main {
         background-color: white;

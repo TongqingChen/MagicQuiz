@@ -25,7 +25,6 @@ interface IQuestionListWithType {
     qList: Question[]
 }
 
-
 export enum ExamState {
     IDLE = 0,
     ONGOING = 1,
@@ -41,6 +40,7 @@ export class ExamInfo {
     name: string = ''
     subjectId: number = 0
     subjectName: string = ''
+    question_num: number = 0
     exam_seconds: number = 0
     meta: IQuestionListWithType[] = []
 }

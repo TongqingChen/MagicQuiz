@@ -2,15 +2,14 @@
     <div class="dashboard-container">
         <!-- github角标 -->
         <!-- <github-corner class="github-corner" /> -->
-
         <!-- 用户信息 -->
         <el-row class="mb-4">
             <el-card class="w-full mb-4">
                 <div class="flex justify-between flex-wrap">
                     <div class="flex items-center">
                         <img class="user-avatar" :src="meta.user.avatar" />
-                        <router-link style="color:dodgerblue;" to="/userInfo">{{ meta.user.last_name }}, {{
-                            meta.user.first_name}}</router-link>
+                        <router-link style="color:dodgerblue;" to="/userInfo">{{ meta.user.last_name }}{{
+                            meta.user.first_name }}</router-link>
                     </div>
                     <div class="flex items-center">
                         <el-link type="danger" size="large" @click="onLinkClicked(0)">{{ meta.title.quote }}</el-link>
@@ -29,29 +28,29 @@
             </el-col>
         </el-row>
 
-        <!-- Echarts 图表 -->
         <el-row :gutter="16">
+            <!-- Echarts 图表 -->
             <el-col :sm="12" class="mb-4">
-                <BarChart id="barChart" title="历史记录" height="400px" width="100%" :options="meta.exam_his_chart"
-                    class="bg-[var(--el-bg-color-overlay)]" />
+                <BarChart v-if="meta.data_loaded" id="barChart" :title="meta.chart_title" height="400px" width="100%"
+                    :options="meta.exam_his_chart" class="bg-[var(--el-bg-color-overlay)]" />
             </el-col>
 
             <!-- 表格记录 -->
             <el-col :sm="12" class="mb-4">
-                <el-card>
+                <el-card v-if="meta.data_loaded">
                     <div class="subject">
                         <el-radio-group v-model="meta.current_sub" size="small">
-                            <el-radio-button v-for="(val, key) in meta.exam_his" :label="key"> {{ key }}({{
-                                val.length }})</el-radio-button>
+                            <el-radio-button v-for="(val, key) in meta.exam_his" :label="key"> {{ key }}({{ val.length
+                            }})</el-radio-button>
                         </el-radio-group>
                     </div>
-                    <el-table :data="meta.exam_his[meta.current_sub]"
+                    <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="400"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
-                        <el-table-column prop="quiz_name" label="试卷名" width="72" />
-                        <el-table-column prop="rel_score" label="得分" width="50" />
-                        <el-table-column prop="use_minutes" label="分钟" width="50" />
-                        <el-table-column prop="date_time" label="考试时间" width="144" />
+                        <el-table-column prop="quiz_name" sortable label="试卷名" />
+                        <el-table-column prop="rel_score" sortable label="得分" />
+                        <el-table-column prop="use_minutes" sortable label="分钟" />
+                        <el-table-column prop="date_time" sortable label="考试时间" />
                         <el-table-column prop="note" label="备注" />
                     </el-table>
                 </el-card>
@@ -68,7 +67,6 @@ import { Api } from '@/request';
 import * as echarts from 'echarts'
 import { IOverviewInfo } from '@/types/http';
 import { ElMessage } from 'element-plus';
-import router from '@/router';
 
 
 const meta: any = reactive({
@@ -92,11 +90,14 @@ const meta: any = reactive({
     current_sub: '',
     exam_his: {
     },
+    data_loaded: false,
+    chart_display_num: 20,
+    chart_title: '',
     exam_his_chart: {
         grid: {
-            left: '2%',
-            right: '2%',
-            bottom: '10%',
+            left: '1%',
+            right: '1%',
+            bottom: '8%',
             containLabel: true
         },
         tooltip: {
@@ -106,12 +107,33 @@ const meta: any = reactive({
                 crossStyle: {
                     color: '#999'
                 }
+            },
+            formatter: (params: any) => {
+                var str: string = ''
+                params.forEach((p: {
+                    marker: any; seriesName: any; data: {
+                        quiz: string;
+                        date_time: string;
+                        use_mins: number; value: any; d: any;
+                    };
+                }) => {
+                    str += '<span style="font-size: 12px;">'
+                    if (p.data.use_mins > 0) {
+                        str += p.marker + p.seriesName + `【${p.data.quiz}】<br/>`
+                        str += '考试时间: ' + p.data.date_time + '<br/>'
+                        str += '用时(分钟): ' + p.data.use_mins + '<br/>'
+                    } else {
+                        str += p.marker + p.seriesName + '【暂无数据】<br/>'
+                    }
+                    '</span>'
+                })
+                return str
             }
         },
         legend: {
             x: 'center',
             y: 'bottom',
-            data: ['收入', '毛利润', '收入增长率', '利润增长率'],
+            data: [],
             textStyle: {
                 color: '#999'
             }
@@ -119,7 +141,7 @@ const meta: any = reactive({
         xAxis: [
             {
                 type: 'category',
-                data: ['浙江', '北京', '上海', '广东', '深圳'],
+                data: [],
                 axisPointer: {
                     type: 'shadow'
                 }
@@ -128,68 +150,24 @@ const meta: any = reactive({
         yAxis: [
             {
                 type: 'value',
-                min: 0,
-                max: 10000,
-                interval: 2000,
-                axisLabel: {
-                    formatter: '{value} '
-                }
-            },
-            {
-                type: 'value',
+                name: '分数',
                 min: 0,
                 max: 100,
                 interval: 20,
                 axisLabel: {
-                    formatter: '{value}%'
+                    formatter: '{value}'
                 }
             }
         ],
         series: [
-            {
-                name: '收入',
-                type: 'bar',
-                data: [7000, 7100, 7200, 7300, 7400],
-                barWidth: 20,
-                itemStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: '#83bff6' },
-                        { offset: 0.5, color: '#188df0' },
-                        { offset: 1, color: '#188df0' }
-                    ])
-                }
-            },
-            {
-                name: '毛利润',
-                type: 'bar',
-                data: [8000, 8200, 8400, 8600, 8800],
-                barWidth: 20,
-                itemStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: '#25d73c' },
-                        { offset: 0.5, color: '#1bc23d' },
-                        { offset: 1, color: '#179e61' }
-                    ])
-                }
-            },
-            {
-                name: '收入增长率',
-                type: 'line',
-                yAxisIndex: 1,
-                data: [60, 65, 70, 75, 80],
-                itemStyle: {
-                    color: '#67C23A'
-                }
-            },
-            {
-                name: '利润增长率',
-                type: 'line',
-                yAxisIndex: 1,
-                data: [70, 75, 80, 85, 90],
-                itemStyle: {
-                    color: '#409EFF'
-                }
-            }
+            // {
+            //     name: 'Scratch四级',
+            //     type: 'line',
+            //     data: [60, 65, 70, 75, 80, 0, 0, 0, 0, 0,60, 65, 70, 75, 80, 0, 0, 0, 0, 0],
+            //     itemStyle: {
+            //         color: '#67C23A'
+            //     }
+            // }
         ]
     }
 })
@@ -239,11 +217,39 @@ onMounted(() => {
         meta.statics[1].data = info.quiz_num
         meta.statics[2].data = info.question_num
         meta.statics[3].data = info.wrongset_num
-        meta.exam_his = info.exam_record
-        meta.current_sub = Object.keys(meta.exam_his)[0]
+        meta.exam_his = {}
+        var keys = Object.keys(info.exam_record)
+        keys.forEach(k => {
+            if (info.exam_record[k].length > 0) {
+                let scores = []
+                meta.exam_his[k] = info.exam_record[k]
+                for (var i = 0; i < meta.chart_display_num; i++) {
+                    scores.push(i < info.exam_record[k].length ? {
+                        'value': info.exam_record[k][i].rel_score, 'date_time': info.exam_record[k][i].date_time,
+                        'quiz': info.exam_record[k][i].quiz_name, 'use_mins': info.exam_record[k][i].use_minutes
+                    } : { 'value': 0, 'date_time': 'NA', 'quiz': 'NA', 'use_mins': 0 })
+                }
+                meta.exam_his_chart.series.push({
+                    name: k,
+                    type: 'line',
+                    data: scores.reverse(),
+                    smooth: true
+                })
+            }
+        })
+        keys = Object.keys(meta.exam_his)
+        if (keys.length > 0) {
+            meta.current_sub = keys[0]
+        }
+        meta.exam_his_chart.legend.data = keys
+        for (var i = 0; i < meta.chart_display_num; i++) {
+            meta.exam_his_chart.xAxis[0].data.push(`${i + 1}`)
+        }
+        meta.chart_title = `考试记录(近${meta.chart_display_num}次)`
+        meta.data_loaded = true
     }
-    ).catch(err=>{
-        ElMessage.error('加載失敗')
+    ).catch(err => {
+        ElMessage.error('数据加载失败')
     })
 })
 
