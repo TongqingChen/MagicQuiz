@@ -44,7 +44,7 @@
                             }})</el-radio-button>
                         </el-radio-group>
                     </div>
-                    <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="400"
+                    <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="404px"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
                         <el-table-column prop="quiz_name" sortable label="试卷名" />
@@ -109,7 +109,7 @@ const meta: any = reactive({
                 }
             },
             formatter: (params: any) => {
-                var str: string = ''
+                var str:string = '<span style="font-size: 12px;">'
                 params.forEach((p: {
                     marker: any; seriesName: any; data: {
                         quiz: string;
@@ -117,7 +117,6 @@ const meta: any = reactive({
                         use_mins: number; value: any; d: any;
                     };
                 }) => {
-                    str += '<span style="font-size: 12px;">'
                     if (p.data.use_mins > 0) {
                         str += p.marker + p.seriesName + `【${p.data.quiz}】<br/>`
                         str += '考试时间: ' + p.data.date_time + '<br/>'
@@ -125,8 +124,8 @@ const meta: any = reactive({
                     } else {
                         str += p.marker + p.seriesName + '【暂无数据】<br/>'
                     }
-                    '</span>'
                 })
+                str += '</span>'
                 return str
             }
         },

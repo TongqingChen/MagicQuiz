@@ -39,6 +39,12 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { title: "我", icon: "User", visible: true, is_child: false },
                 children: [
                     {
+                        path: "/habbit",
+                        name: 'habbit',
+                        component: () => import('@/views/app/Habbit.vue'),
+                        meta: { title: "小习惯", icon: "el-icon-s-home", visible: true, is_child: true },
+                    },
+                    {
                         path: "/userInfo",
                         name: 'userInfo',
                         component: () => import('@/views/app/UserInfo.vue'),

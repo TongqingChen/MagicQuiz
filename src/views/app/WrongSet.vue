@@ -5,16 +5,16 @@
             <el-radio-button v-for="(val, key) in wrongSets" :label="key"> {{ key }}({{ val.length }})</el-radio-button>
         </el-radio-group>
     </div>
-    <el-table :data="wrongSets[currentInfo.subject]" style="width: 100%; color:darkslategray; font-size: 13px;" stripe
-        border>
-        <el-table-column fixed type='index' width="30" />
-        <el-table-column prop="quiz_name" label="试卷名" width="72" />
-        <el-table-column prop="type" label="题型" width="40" />
+    <el-table :data="wrongSets[currentInfo.subject]" stripe border
+    style="width: 100%; color:darkslategray; font-size: 13px;">
+        <el-table-column fixed type='index' width="32px"/>
+        <el-table-column prop="quiz_name" label="试卷名" width="72px" sortable/>
+        <el-table-column prop="type" label="题型" width="60px" sortable/>
         <el-table-column prop="title" label="题目" />
         <el-table-column prop="description" label="描述" />
-        <el-table-column prop="level" label="难度" width="40" />
-        <el-table-column prop="record_times" label="次数" width="40" />
-        <el-table-column fixed="right" label="查看" width="40">
+        <el-table-column prop="level" label="难度" width="60px" sortable/>
+        <el-table-column prop="record_times" label="次数" width="60px" sortable/>
+        <el-table-column fixed="right" label="查看" width="40px">
             <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="onDetailsClicked(scope.$index)">详情</el-button>
             </template>
