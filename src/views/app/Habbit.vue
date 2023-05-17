@@ -1,15 +1,15 @@
 <template>
     <el-card v-if="dataLoaded">
         <template #header>
-            <div style="display: inline-flex; justify-content: space-between; width: 100%;">
+            <div class="card-header">
                 <el-tag effect="dark" type="success"><el-icon>
                         <List />
                     </el-icon>【小习惯，大成就】</el-tag>
                 <!-- <el-tag round type="warning">天道酬勤，厚积薄发</el-tag> -->
                 <el-button-group>
-                    <el-button type="primary" :icon="ArrowLeft" size="small" @click="onWeekButtonClicked(-1)">上周</el-button>
-                    <el-button type="primary" size="small" @click="onWeekButtonClicked(0)">今天</el-button>
-                    <el-button type="primary" size="small" @click="onWeekButtonClicked(1)">下周<el-icon
+                    <el-button type="success" :icon="ArrowLeft" size="small" @click="onWeekButtonClicked(-1)">上周</el-button>
+                    <el-button type="success" size="small" @click="onWeekButtonClicked(0)">今天</el-button>
+                    <el-button type="success" size="small" @click="onWeekButtonClicked(1)">下周<el-icon
                             class="el-icon--right">
                             <ArrowRight />
                         </el-icon></el-button>
@@ -19,7 +19,8 @@
         <el-table :data="habbits.data" border style="width: 100%; font-size:12px" table-layout="auto"
             :row-style="{ height: 0 + 'px' }" :cell-style="{ padding: '0px' }" :header-cell-style="{ padding: '0px' }">
             <el-table-column label="名称" fixed align="center">
-                <template #default="scope">{{ scope.row.name }}({{ scope.row.description }})</template>
+                <template #default="scope">{{ scope.row.name }}<span v-if="scope.row.description.length > 0">({{
+                    scope.row.description }})</span></template>
             </el-table-column>
             <el-table-column v-for="(d, col) in dateTitles" align="center" :label="d">
                 <el-table-column align="center" :label="habbits.week_titles[col]"
@@ -49,8 +50,6 @@ import { Check, ArrowLeft, ArrowRight, List, Location } from '@element-plus/icon
 import { ADate } from '@/utils/date'
 import { Api } from '@/request';
 import { ElMessageBox } from 'element-plus';
-import { column } from 'element-plus/es/components/table-v2/src/common';
-import { HttpStatusCode } from 'axios';
 
 const dataLoaded = ref(false)
 var habbits = reactive(new Habbits())
@@ -109,6 +108,7 @@ const checkedNums = computed(() => (row: IHabbit) => {
 })
 
 onMounted(() => {
+    dataLoaded.value = false
     var date = new ADate()
     habbits.today = date.toString()
     date.goToFirstDayOfThisWeek()
@@ -117,7 +117,6 @@ onMounted(() => {
     habbits.end_day = date.toString()
     var uid = Api.loadUserIdFromStorage()
     Api.getHabbitsByUserId(uid).then(res => {
-        habbits.data = []
         habbits.data = res.data.results
         habbits.data.forEach(h => h.checks = [false, false, false, false, false, false, false])
         return
@@ -127,13 +126,6 @@ onMounted(() => {
     if (!getHabbitRecord()) {
         return
     }
-    // habbits.data = [
-    //     { id: 0, name: 'A', note: 'aa', times_per_week: 4, checks: [false, true, false, true, true, true, false] },
-    //     { id: 1, name: 'B', note: 'bb', times_per_week: 3, checks: [true, true, true, false, true, false, true] },
-    //     { id: 2, name: 'C', note: 'cc', times_per_week: 5, checks: [true, true, false, true, true, true, false] },
-    //     { id: 3, name: 'D', note: 'dd', times_per_week: 7, checks: [false, false, true, false, false, false, true] },
-    //     { id: 4, name: 'E', note: 'ee', times_per_week: 2, checks: [false, false, false, true, true, false, false] }
-    // ]
     dataLoaded.value = true
 })
 
@@ -179,22 +171,17 @@ const onSwitchChanged = async (row: any, col: number) => {
     }
 }
 </style>
-<!-- 
+
 <style lang="scss" scoped>
-::v-deep(.el-table__body) {
-    tr {
-        .cell {
-            width: 100%;
-            height: 30px; //设置高度 主要是这个
-            line-height: 30px;
-            flex-wrap: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            justify-content: center;
-            align-items: center;
-            padding: 0px, 2px;
-        }
-    }
+.card-header {
+    display: inline-flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 5px 0px;
 }
-</style> -->
+
+.el-card :deep(.el-card__header) {
+    padding: 0px 8px !important;
+    background-color: #3f94d0;
+}
+</style>

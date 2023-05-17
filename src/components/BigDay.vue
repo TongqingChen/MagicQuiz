@@ -58,7 +58,7 @@ const props = defineProps(["date", "title", "description"])
     }
 }
 
-:deep(.el-card__header) {
+.el-card :deep(.el-card__header) {
     padding: 0px 8px;
     background-color: #3f94d0;
 }

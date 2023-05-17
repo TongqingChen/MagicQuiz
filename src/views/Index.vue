@@ -40,7 +40,15 @@ const handleSelect = (key: string, keyPath: string[]) => {
     // console.log(menuList)
 }
 
-const menuList = router.getRoutes().filter(v => {return v.meta.visible && v.meta.is_child==false})
+const menuList = computed(()=>{
+    var menu = router.getRoutes().filter(v => {return v.meta.visible && v.meta.is_child==false})
+    menu.forEach(m=>{
+        if(m.children && m.children.length>0){
+            m.children = m.children.filter(c=>{return c.meta && c.meta.visible})
+        }
+    })
+    return menu
+})
 
 onMounted(()=>{
     // console.log('router.getRoutes()', router.getRoutes())

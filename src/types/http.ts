@@ -1,6 +1,7 @@
 export interface IQuestionResult {
     user: number;
     question: number;
+    user_answer: string;
     is_correct: boolean;
 }
 export interface IQuizResult {
@@ -39,6 +40,7 @@ export interface IWrongSet {
     description: string;
     image: string;
     answer: string;
+    user_answer: string;
     level: string;
     record_times: number;
 }
@@ -50,6 +52,7 @@ export class WrongSet implements IWrongSet {
     description: string = '';
     image: string = '';
     answer: string = '';
+    user_answer: string = '';
     level: string = '';
     record_times: number = 0;
 }

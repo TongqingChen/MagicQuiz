@@ -28,13 +28,19 @@
             </el-col>
         </el-row>
 
+        <!-- habbit -->
+        <el-row :gutter="8" class="mb-4">
+            <el-col :xs="24" :lg="24" class="mb-2">
+                <HabbitVue />
+            </el-col>
+        </el-row>
+
         <!-- 数据卡片 -->
         <el-row :gutter="8" class="mb-4">
             <el-col v-for="d in meta.statics" :xs="12" :sm="6" :lg="6" class="mb-2">
                 <DataCard :title="d.title" :data="d.data" :icon="d.icon"></DataCard>
             </el-col>
         </el-row>
-
 
         <el-row :gutter="8">
             <!-- Echarts 图表 -->
@@ -73,11 +79,10 @@ import DataCard from '@/components/DataCard.vue';
 import BarChart from '@/components/BarChart.vue';
 import BigDay from '@/components/BigDay.vue';
 import { Api } from '@/request';
-import * as echarts from 'echarts'
 import { IOverviewInfo } from '@/types/http';
 import { ElMessage } from 'element-plus';
-import { IBigDay } from '@/types/habbit'
 import { ADate } from '@/utils/date';
+import HabbitVue from './Habbit.vue';
 
 
 const meta: any = reactive({
@@ -106,33 +111,21 @@ const meta: any = reactive({
     chart_display_num: 20,
     chart_title: '',
     exam_his_chart: {
-        grid: {
-            left: '1%',
-            right: '1%',
-            bottom: '8%',
-            containLabel: true
-        },
+        grid: { left: '1%', right: '1%', bottom: '8%', containLabel: true },
         tooltip: {
             trigger: 'axis',
-            axisPointer: {
-                type: 'cross',
-                crossStyle: {
-                    color: '#999'
-                }
-            },
+            axisPointer: { type: 'cross', crossStyle: { color: '#999' } },
             formatter: (params: any) => {
                 var str: string = '<span style="font-size: 12px;">'
                 params.forEach((p: {
                     marker: any; seriesName: any; data: {
-                        quiz: string;
-                        date_time: string;
-                        use_mins: number; value: any; d: any;
+                        quiz: string; date_time: string; use_mins: number; value: any; d: any;
                     };
                 }) => {
                     if (p.data.use_mins > 0) {
                         str += p.marker + p.seriesName + `【${p.data.quiz}】<br/>`
                         str += '考试时间: ' + p.data.date_time + '<br/>'
-                        str += '用时(分钟): ' + p.data.use_mins + '<br/>'
+                        str += '用时: ' + p.data.use_mins + '分钟<br/>'
                     } else {
                         str += p.marker + p.seriesName + '【暂无数据】<br/>'
                     }
@@ -170,16 +163,7 @@ const meta: any = reactive({
                 }
             }
         ],
-        series: [
-            // {
-            //     name: 'Scratch四级',
-            //     type: 'line',
-            //     data: [60, 65, 70, 75, 80, 0, 0, 0, 0, 0,60, 65, 70, 75, 80, 0, 0, 0, 0, 0],
-            //     itemStyle: {
-            //         color: '#67C23A'
-            //     }
-            // }
-        ]
+        series: []
     }
 })
 
@@ -211,7 +195,7 @@ const onLinkClicked = (index: number) => {
 }
 
 // const store = useStore()
-onMounted(() => {
+onMounted(async() => {
     onLinkClicked(0)
     onLinkClicked(1)
     var ui = Api.loadUserInfoFromStorage()
@@ -222,7 +206,8 @@ onMounted(() => {
     meta.user.first_name = ui.first_name
     meta.user.last_name = ui.last_name
     meta.user.avatar = ui.avatar
-    Api.getOverviewInfo(ui.id).then(res => {
+    meta.data_loaded = false
+    await Api.getOverviewInfo(ui.id).then(res => {
         let info: IOverviewInfo = res.data
         meta.statics[0].data = info.subject_num
         meta.statics[1].data = info.quiz_num
@@ -263,7 +248,7 @@ onMounted(() => {
         return
     })
 
-    Api.getBigDaysByUserId(ui.id).then(res => {
+    await Api.getBigDaysByUserId(ui.id).then(res => {
         var now_str = (new ADate()).toString()
         var afterdays: any[] = []
         var beforedays: any[] = []
@@ -281,13 +266,12 @@ onMounted(() => {
                 meta.big_days.push({ name: 'TO BE ADDED', description: '待添加', date: '--' })
             }
         }
-        meta.data_loaded = true
     }
     ).catch(err => {
         ElMessage.error('纪念日数据加载失败', err.status)
         return
     })
-
+    meta.data_loaded = true
 })
 
 </script>
@@ -296,14 +280,11 @@ onMounted(() => {
 .dashboard-container {
     position: relative;
     padding: 10px;
-
     .user-avatar {
         width: 64px;
         height: 64px;
         border-radius: 50%;
-    }
-
-    .subject {
+    }    .subject {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
@@ -317,26 +298,12 @@ onMounted(() => {
         z-index: 99;
         border: 0;
     }
-
-    // .data-box {
-    //     display: flex;
-    //     justify-content: space-between;
-    //     padding: 16px;
-    //     font-weight: bold;
-    //     color: var(--el-text-color-regular);
-    //     background: var(--el-bg-color-overlay);
-    //     border-color: var(--el-border-color);
-    //     box-shadow: var(--el-box-shadow-dark);
-    // }
-
     .el-row {
         margin-bottom: 0px;
     }
-
     .svg-icon {
         fill: currentcolor !important;
     }
-
     .el-card:deep(.el-card__body) {
         padding: 6px;
     }

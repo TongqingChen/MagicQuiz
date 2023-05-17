@@ -177,7 +177,10 @@ const uploadExamResults = async () => {
             }
             if (q.type != QueType.CODING) {
                 total_score += q.score
-                results.questions.push({ "user": user_id, "question": q.id, "is_correct": (q.userAnswer == q.answer) })
+                results.questions.push({
+                    "user": user_id, "question": q.id,
+                    "user_answer": q.userAnswer, "is_correct": (q.userAnswer == q.answer)
+                })
             }
         })
     })

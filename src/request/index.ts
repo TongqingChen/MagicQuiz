@@ -2,8 +2,8 @@ import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 
 const Axios = axios.create({
-    // baseURL: 'http://192.168.1.7:2345/',
-    baseURL: 'http://localhost:8000/',
+    baseURL: 'http://192.168.1.7:2345/',
+    // baseURL: 'http://localhost:8000/',
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8;"
