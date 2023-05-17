@@ -19,14 +19,14 @@
         <el-table :data="habbits.data" border style="width: 100%; font-size:12px" table-layout="auto"
             :row-style="{ height: 0 + 'px' }" :cell-style="{ padding: '0px' }" :header-cell-style="{ padding: '0px' }">
             <el-table-column label="名称" fixed align="center">
-                <template #default="scope">{{ scope.row.name }}({{ scope.row.note }})</template>
+                <template #default="scope">{{ scope.row.name }}({{ scope.row.description }})</template>
             </el-table-column>
-            <el-table-column v-for="c in 7" align="center" :label="dateTitles[c - 1]">
-                <el-table-column align="center" :label="habbits.week_titles[c - 1]"
-                    :class-name="dateTitles[c - 1] == habbits.today ? 'bg-gray' : 'default_cell'">
+            <el-table-column v-for="(d, col) in dateTitles" align="center" :label="d">
+                <el-table-column align="center" :label="habbits.week_titles[col]"
+                    :class-name="d == habbits.today ? 'bg-gray' : 'default_cell'">
                     <template #default="scope">
-                        <el-switch size="small" style="--el-switch-on-color: #13ce66;" v-model="scope.row.checks[c - 1]"
-                            inline-prompt :active-icon="Check" />
+                        <el-switch size="small" style="--el-switch-on-color: #13ce66;" v-model="scope.row.checks[col]"
+                            inline-prompt :active-icon="Check" @change="onSwitchChanged(scope.row, col)" />
                     </template>
                 </el-table-column>
             </el-table-column>
@@ -47,6 +47,10 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { Habbits, IHabbit } from '@/types/habbit';
 import { Check, ArrowLeft, ArrowRight, List, Location } from '@element-plus/icons-vue';
 import { ADate } from '@/utils/date'
+import { Api } from '@/request';
+import { ElMessageBox } from 'element-plus';
+import { column } from 'element-plus/es/components/table-v2/src/common';
+import { HttpStatusCode } from 'axios';
 
 const dataLoaded = ref(false)
 var habbits = reactive(new Habbits())
@@ -58,7 +62,6 @@ const dateTitles = computed(() => {
         titles.push(date.toString())
         date.goToDaysLater(1)
     }
-    console.log('dateTitles')
     return titles
 })
 
@@ -70,7 +73,29 @@ const onWeekButtonClicked = (id: number) => {
         var date = new ADate(habbits.start_day)
         date.goToDaysLater(id > 0 ? 7 : -7)
     }
+    if (date.toString() == habbits.start_day) {
+        return
+    }
     habbits.start_day = date.toString()
+    date.goToDaysLater(6)
+    habbits.end_day = date.toString()
+    getHabbitRecord()
+}
+
+const getHabbitRecord = () => {
+    var uid = Api.loadUserIdFromStorage()
+    Api.getHabbitRecordByUserIdAndDateRange(uid, habbits.start_day, habbits.end_day).then(res => {
+        habbits.data.forEach(h => {
+            h.checks = [false, false, false, false, false, false, false]
+            for (var i = 0; i < h.checks.length; i++) {
+                h.checks[i] = res.data.results.some((d: { habbit: number; date: string; }) => (d.habbit == h.id && dateTitles.value[i] == d.date))
+            }
+        })
+        return true
+    }).catch(err => {
+        return false
+    })
+    return true
 }
 
 const checkedNums = computed(() => (row: IHabbit) => {
@@ -88,39 +113,51 @@ onMounted(() => {
     habbits.today = date.toString()
     date.goToFirstDayOfThisWeek()
     habbits.start_day = date.toString()
-    habbits.data = [
-        { id: 0, name: 'A', note: 'aa', times_per_week: 4, checks: [false, true, false, true, true, true, false] },
-        { id: 1, name: 'B', note: 'bb', times_per_week: 3, checks: [true, true, true, false, true, false, true] },
-        { id: 2, name: 'C', note: 'cc', times_per_week: 5, checks: [true, true, false, true, true, true, false] },
-        { id: 3, name: 'D', note: 'dd', times_per_week: 7, checks: [false, false, true, false, false, false, true] },
-        { id: 4, name: 'E', note: 'ee', times_per_week: 2, checks: [false, false, false, true, true, false, false] }
-    ]
+    date.goToDaysLater(6)
+    habbits.end_day = date.toString()
+    var uid = Api.loadUserIdFromStorage()
+    Api.getHabbitsByUserId(uid).then(res => {
+        habbits.data = []
+        habbits.data = res.data.results
+        habbits.data.forEach(h => h.checks = [false, false, false, false, false, false, false])
+        return
+    }).catch(err => {
+        return
+    })
+    if (!getHabbitRecord()) {
+        return
+    }
+    // habbits.data = [
+    //     { id: 0, name: 'A', note: 'aa', times_per_week: 4, checks: [false, true, false, true, true, true, false] },
+    //     { id: 1, name: 'B', note: 'bb', times_per_week: 3, checks: [true, true, true, false, true, false, true] },
+    //     { id: 2, name: 'C', note: 'cc', times_per_week: 5, checks: [true, true, false, true, true, true, false] },
+    //     { id: 3, name: 'D', note: 'dd', times_per_week: 7, checks: [false, false, true, false, false, false, true] },
+    //     { id: 4, name: 'E', note: 'ee', times_per_week: 2, checks: [false, false, false, true, true, false, false] }
+    // ]
     dataLoaded.value = true
 })
 
-// const onSwitchChanged = (id: number) => {
-//     habbits.data.forEach(d => {
-//         d.checked_num = 0
-//         d.checks.forEach(c => d.checked_num += c ? 1 : 0)
-//     })
-//     // showSum.value = false
-//     // nextTick(() => showSum.value = true)
-// }
-// const getSummaries = ({ columns, data }: any) => {
-//     // const { columns, data } = params
-//     const sums: string[] = []
-//     columns.forEach((column: any, index: number) => {
-//         if (index === 0) {
-//             sums[index] = '统计'
-//             return
-//         }
-//         let num: number = 0
-//         habbits.data.forEach(d => { num += (index == 8) ? d.checked_num : (d.checks[index - 1] ? 1 : 0) })
-//         sums[index] = String(num)
-//     })
-//     console.log(sums)
-//     return sums
-// }
+const onSwitchChanged = async (row: any, col: number) => {
+    var success = false
+    await ElMessageBox.confirm(
+        '确定打卡吗？',
+        '请确认',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(async () => {
+        await Api.postHabbitRecord(row.id, dateTitles.value[col], row.checks[col]
+        ).then(res => success = true
+        ).catch(err => success = false)
+    }).catch(err => success = false)
+
+    if (!success) {
+        row.checks[col] = !row.checks[col]
+    }
+}
+
 </script>
 
 <style lang="scss">

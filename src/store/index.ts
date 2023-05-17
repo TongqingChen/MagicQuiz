@@ -10,7 +10,7 @@ const store = createStore({
         is_valid: false
     },
     getters: {
-        isValid(state){
+        isValid(state) {
             return state.is_valid
         },
         getSubjectList(state) {
@@ -27,6 +27,7 @@ const store = createStore({
     mutations: {
         setSubjectList(state, sublist: ISubject[]) {
             state.subjectList = [{ id: -1, name: "全部" }].concat(sublist)
+            state.subjectList = sublist
             // console.log('sublist', state.subjectList)
             state.is_valid = true
         },

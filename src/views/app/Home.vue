@@ -4,7 +4,7 @@
         <!-- <github-corner class="github-corner" /> -->
         <!-- 用户信息 -->
         <el-row class="mb-4">
-            <el-card class="w-full mb-4">
+            <el-card class="w-full mb-2">
                 <div class="flex justify-between flex-wrap">
                     <div class="flex items-center">
                         <img class="user-avatar" :src="meta.user.avatar" />
@@ -21,14 +21,22 @@
             </el-card>
         </el-row>
 
+        <!-- big day -->
+        <el-row :gutter="8" class="mb-4">
+            <el-col v-for="d in meta.big_days" :xs="6" :sm="3" :lg="3" class="mb-2">
+                <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
+            </el-col>
+        </el-row>
+
         <!-- 数据卡片 -->
-        <el-row :gutter="16" class="mb-4">
-            <el-col v-for="d in meta.statics" :xs="12" :sm="6" :lg="6" class="mb-4">
+        <el-row :gutter="8" class="mb-4">
+            <el-col v-for="d in meta.statics" :xs="12" :sm="6" :lg="6" class="mb-2">
                 <DataCard :title="d.title" :data="d.data" :icon="d.icon"></DataCard>
             </el-col>
         </el-row>
 
-        <el-row :gutter="16">
+
+        <el-row :gutter="8">
             <!-- Echarts 图表 -->
             <el-col :sm="12" class="mb-4">
                 <BarChart v-if="meta.data_loaded" id="barChart" :title="meta.chart_title" height="400px" width="100%"
@@ -63,15 +71,19 @@
 import { onMounted, reactive } from 'vue';
 import DataCard from '@/components/DataCard.vue';
 import BarChart from '@/components/BarChart.vue';
+import BigDay from '@/components/BigDay.vue';
 import { Api } from '@/request';
 import * as echarts from 'echarts'
 import { IOverviewInfo } from '@/types/http';
 import { ElMessage } from 'element-plus';
+import { IBigDay } from '@/types/habbit'
+import { ADate } from '@/utils/date';
 
 
 const meta: any = reactive({
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
+    big_days: [],
     statics: [
         { title: '科目数', icon: 'Notebook', data: 0 },
         { title: '试卷数', icon: 'Document', data: 0 },
@@ -109,7 +121,7 @@ const meta: any = reactive({
                 }
             },
             formatter: (params: any) => {
-                var str:string = '<span style="font-size: 12px;">'
+                var str: string = '<span style="font-size: 12px;">'
                 params.forEach((p: {
                     marker: any; seriesName: any; data: {
                         quiz: string;
@@ -245,11 +257,37 @@ onMounted(() => {
             meta.exam_his_chart.xAxis[0].data.push(`${i + 1}`)
         }
         meta.chart_title = `考试记录(近${meta.chart_display_num}次)`
+    }
+    ).catch(err => {
+        ElMessage.error('统计数据加载失败', err.status)
+        return
+    })
+
+    Api.getBigDaysByUserId(ui.id).then(res => {
+        var now_str = (new ADate()).toString()
+        var afterdays: any[] = []
+        var beforedays: any[] = []
+        res.data.results.forEach((d: { date: string; }) => {
+            if (d.date < now_str) {
+                beforedays.push(d)
+            } else {
+                afterdays.push(d)
+            }
+        })
+        meta.big_days = afterdays.concat(beforedays.reverse())
+        var lack_num = meta.big_days.length % 8
+        if (lack_num > 0) {
+            for (var i = 0; i < 8 - lack_num; i++) {
+                meta.big_days.push({ name: 'TO BE ADDED', description: '待添加', date: '--' })
+            }
+        }
         meta.data_loaded = true
     }
     ).catch(err => {
-        ElMessage.error('数据加载失败')
+        ElMessage.error('纪念日数据加载失败', err.status)
+        return
     })
+
 })
 
 </script>
@@ -260,8 +298,8 @@ onMounted(() => {
     padding: 10px;
 
     .user-avatar {
-        width: 48px;
-        height: 48px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
     }
 
@@ -280,16 +318,16 @@ onMounted(() => {
         border: 0;
     }
 
-    .data-box {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px;
-        font-weight: bold;
-        color: var(--el-text-color-regular);
-        background: var(--el-bg-color-overlay);
-        border-color: var(--el-border-color);
-        box-shadow: var(--el-box-shadow-dark);
-    }
+    // .data-box {
+    //     display: flex;
+    //     justify-content: space-between;
+    //     padding: 16px;
+    //     font-weight: bold;
+    //     color: var(--el-text-color-regular);
+    //     background: var(--el-bg-color-overlay);
+    //     border-color: var(--el-border-color);
+    //     box-shadow: var(--el-box-shadow-dark);
+    // }
 
     .el-row {
         margin-bottom: 0px;
@@ -300,7 +338,7 @@ onMounted(() => {
     }
 
     .el-card:deep(.el-card__body) {
-        padding: 10px;
+        padding: 6px;
     }
 }
 </style>

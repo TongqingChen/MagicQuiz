@@ -3,7 +3,7 @@
         <span>科目：</span>
         <el-radio-group v-model="currentSubjectId" @change="onSubjectSelected" size="small">
             <el-radio-button v-for="sub in subjectList.data" :label="sub.id"> {{ sub.name }}({{ sub.count
-                }})</el-radio-button>
+            }})</el-radio-button>
         </el-radio-group>
     </div>
 
@@ -13,14 +13,14 @@
                 <template #header>
                     <div class="card-header">
                         <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
-                        <el-button class="button" link type="primary"
+                        <el-button class="button" link type="success"
                             @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
                     </div>
                 </template>
                 <div class="card-body">
-                    <li>{{ quiz.subject == 3?"最大数":"选择题数"}}：{{ quiz.choice_num }}</li>
-                    <li>{{ quiz.subject == 3?"加数个数":"判断题数"}}：{{ quiz.logic_num }}</li>
-                    <li>{{ quiz.subject == 3?"题目数":"编程题数"}}：{{ quiz.coding_num }}</li>
+                    <li>{{ quiz.subject == 3 ? "最大数" : "选择题数" }}：{{ quiz.choice_num }}</li>
+                    <li>{{ quiz.subject == 3 ? "加数个数" : "判断题数" }}：{{ quiz.logic_num }}</li>
+                    <li>{{ quiz.subject == 3 ? "题目数" : "编程题数" }}：{{ quiz.coding_num }}</li>
                     <li>考试时长：{{ quiz.exam_minutes }}分钟</li>
                 </div>
             </el-card>
@@ -69,6 +69,7 @@ const getQuizList = () => {
             q.subject_name = store.getters.getSubjectNameById(q.subject)
         })
         subjectList.data[0].count = quizPages.quizNum
+        subjectList.data = subjectList.data.filter(s => s.count > 0)
     })
 }
 
@@ -77,9 +78,9 @@ onMounted(() => {
         subjectList.data = store.getters.getSubjectList
         getQuizList()
     } else {
-        Api.getSubjectList().then((res: { data: { results: ConcatArray<{ id: number; name: string; count: number; }>; }; }) => {
+        Api.getSubjectList().then((res: { data: { results: [] }; }) => {
             subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
-            store.commit('setSubjectList', res.data.results)
+            store.commit('setSubjectList', subjectList.data)
             getQuizList()
         })
     }
@@ -148,7 +149,8 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
 
     .el-card :deep(.el-card__header) {
         padding: 1px 8px;
-        background-color: palegoldenrod;
+        color: white;
+        background-color: #3f94d0;
     }
 
     .el-card :deep(.el-card__body) {

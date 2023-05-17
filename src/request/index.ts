@@ -61,16 +61,16 @@ export class Api {
         })
     }
 
-    static uploadUserAvatar(data: any){
+    static uploadUserAvatar(data: any) {
         return Axios({
             url: 'upload_avatar/',
             method: "POST",
-            headers: {"Content-Type": "multipart/form-data"},
+            headers: { "Content-Type": "multipart/form-data" },
             data: data
         })
     }
 
-    static updateUserInfo(user_id:number, data:any){
+    static updateUserInfo(user_id: number, data: any) {
         return Axios({
             url: `users/${user_id}/`,
             method: "PATCH",
@@ -104,7 +104,36 @@ export class Api {
     }
     static getWrongSetsByUserIdAndSubjectIdAndPageId(user_id: number, sub_id: number, page_id: number) {
         return Axios({
-            url: `wrongsets/?page=${page_id}&quiz__id=${user_id}&sub_id=${sub_id}`,
+            url: `wrongsets/?page=${page_id}&user__id=${user_id}&sub_id=${sub_id}`,
+            method: "GET"
+        })
+    }
+
+    static getBigDaysByUserId(user_id: number) {
+        return Axios({
+            url: `bigdays/?user__id=${user_id}`,
+            method: "GET"
+        })
+    }
+
+    static getHabbitsByUserId(user_id: number) {
+        return Axios({
+            url: `habbits/?user__id=${user_id}&enabled=true`,
+            method: "GET"
+        })
+    }
+
+    static postHabbitRecord(habbit_id: number, date: string, is_register: boolean) {
+        return Axios({
+            url: "habbit_records/",
+            method: "POST",
+            data: { "habbit": habbit_id, "date": date, "is_register": is_register }
+        })
+    }
+
+    static getHabbitRecordByUserIdAndDateRange(user_id: number, start_day: string, end_day: string) {
+        return Axios({
+            url: `habbit_records/?habbit__user__id=${user_id}&date_after=${start_day}&date_before=${end_day}`,
             method: "GET"
         })
     }

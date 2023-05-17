@@ -19,7 +19,7 @@ export class QuizPages {
     }
     currentPage: number = 1
     quizNum: number = 0
-    pageSize: number = 12
+    pageSize: number = 16
     quizList: IQuiz[] = []
     quizDisplay: IQuiz[] = []
 }
