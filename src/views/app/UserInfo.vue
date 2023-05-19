@@ -60,18 +60,12 @@ const editEnabled = ref(false)
 const dataLoaded = ref(false)
 let user = reactive(new UserInfo())
 
-onMounted(async () => {
-    var user_id = Api.loadUserIdFromStorage()
-
-    await Api.getUserInfo(user_id).then(async (res) => {
-        console.log(user, res.data)
-        user.first_name = res.data.first_name
+onMounted(() => {
+    Api.getUserInfo().then((res) => {
         user = res.data
-        console.log(user, res.data)
         dataLoaded.value = true
         ElMessage.success('页面加载成功')
     }).catch((err) => ElMessage.error(`页面加载失败(${err.code})`))
-
 })
 
 const onUploadAvatar = (file: any, fileList: any) => {
@@ -108,7 +102,6 @@ const onUploadAvatar = (file: any, fileList: any) => {
 };
 
 const onSubmit = () => {
-
     const loading = ElLoading.service({
         fullscreen: true,
         lock: true,
@@ -118,24 +111,6 @@ const onSubmit = () => {
     setTimeout(() => {
         loading.close()
     }, 2000)
-
-
-
-    // const loading = ElLoading.service({
-    //     lock: true,
-    //     text: 'Uploading...',
-    //     background: 'rgba(0, 0, 0, 0.7)',
-    // })
-    // Api.updateUserInfo(2, user.extractEditableInfo()).then(async (res: any) => {
-    //     if (res.status == HttpStatusCode.Ok) {
-    //         ElMessage.success(`资料修改成功`);
-    //     } else {
-    //         ElMessage.error(`资料修改失败(${res.status})`);
-    //     }
-    // }).catch((err) => {
-    //     ElMessage.error(`资料修改失败(${err.code})`);
-    // });
-    // loading.close();
 }
 </script>
 

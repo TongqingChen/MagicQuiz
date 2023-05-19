@@ -2,8 +2,8 @@ import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 
 const Axios = axios.create({
-    baseURL: 'http://192.168.1.7:2345/',
-    // baseURL: 'http://localhost:8000/',
+    //baseURL: 'http://192.168.1.7:2345/',
+    baseURL: 'http://localhost:8000/',
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8;"
@@ -54,7 +54,8 @@ export class Api {
         })
     }
 
-    static getUserInfo(user_id: number) {
+    static getUserInfo() {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `users/${user_id}/`,
             method: "GET"
@@ -70,7 +71,8 @@ export class Api {
         })
     }
 
-    static updateUserInfo(user_id: number, data: any) {
+    static updateUserInfo(data: any) {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `users/${user_id}/`,
             method: "PATCH",
@@ -109,14 +111,16 @@ export class Api {
         })
     }
 
-    static getBigDaysByUserId(user_id: number) {
+    static getBigDays() {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `bigdays/?user__id=${user_id}`,
             method: "GET"
         })
     }
 
-    static getHabbitsByUserId(user_id: number) {
+    static getHabbits() {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `habbits/?user__id=${user_id}&enabled=true`,
             method: "GET"
@@ -131,7 +135,8 @@ export class Api {
         })
     }
 
-    static getHabbitRecordByUserIdAndDateRange(user_id: number, start_day: string, end_day: string) {
+    static getHabbitRecordByDateRange(start_day: string, end_day: string) {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `habbit_records/?habbit__user__id=${user_id}&date_after=${start_day}&date_before=${end_day}`,
             method: "GET"
@@ -139,7 +144,8 @@ export class Api {
     }
 
     //sub_id=-1表示全部
-    static getWrongSetsMixed(user_id: number, sub_id: number) {
+    static getWrongSetsMixed(sub_id: number) {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `wrongsets_mixpost/?user_id=${user_id}&sub_id=${sub_id}`,
             method: "GET"
@@ -154,7 +160,8 @@ export class Api {
         })
     }
 
-    static getOverviewInfo(user_id: number) {
+    static getOverviewInfo() {
+        var user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `overview_info/?user_id=${user_id}`,
             method: 'GET'

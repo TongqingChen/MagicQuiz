@@ -14,7 +14,6 @@
                 <span style="font-size: 12px;">{{ date }}</span>
             </div>
         </el-card>
-
     </el-tooltip>
 </template>
 

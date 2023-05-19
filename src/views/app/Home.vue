@@ -1,28 +1,18 @@
 <template>
     <div class="dashboard-container">
-        <!-- github角标 -->
-        <!-- <github-corner class="github-corner" /> -->
-        <!-- 用户信息 -->
-        <el-row class="mb-4">
-            <el-card class="w-full mb-2">
-                <div class="flex justify-between flex-wrap">
-                    <div class="flex items-center">
-                        <img class="user-avatar" :src="meta.user.avatar" />
-                        <router-link style="color:dodgerblue;" to="/userInfo">{{ meta.user.last_name }}{{
-                            meta.user.first_name }}</router-link>
-                    </div>
-                    <div class="flex items-center">
-                        <el-link type="danger" size="large" @click="onLinkClicked(0)">{{ meta.title.quote }}</el-link>
-                    </div>
-                    <div class="flex items-center">
-                        <el-link type="success" size="large" @click="onLinkClicked(1)">{{ meta.title.greeting }}</el-link>
-                    </div>
-                </div>
-            </el-card>
-        </el-row>
-
         <!-- big day -->
         <el-row :gutter="8" class="mb-4">
+            <el-col :xs="6" :sm="3" :lg="3" class="mb-2">
+                <el-tooltip :content="meta.quotes[Math.floor(Math.random() * meta.quotes.length)]" placement="top-end">
+                    <el-card class="w-full mb-2">
+                        <div class="flex items-center">
+                            <img class="user-avatar" :src="meta.user.avatar" />
+                            <router-link style="color:#3f94d0; font-size: 12px; font-weight: bold;" to="/userInfo">{{
+                                greetStr }}<br />{{ meta.user.last_name }}{{ meta.user.first_name }}</router-link>
+                        </div>
+                    </el-card>
+                </el-tooltip>
+            </el-col>
             <el-col v-for="d in meta.big_days" :xs="6" :sm="3" :lg="3" class="mb-2">
                 <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
             </el-col>
@@ -74,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 import DataCard from '@/components/DataCard.vue';
 import BarChart from '@/components/BarChart.vue';
 import BigDay from '@/components/BigDay.vue';
@@ -84,9 +74,22 @@ import { ElMessage } from 'element-plus';
 import { ADate } from '@/utils/date';
 import HabbitVue from './Habbit.vue';
 
+const greetStr = computed(() => {
+    var h = new Date().getHours()
+    var q = "好"
+    if (h >= 0 && h < 8) {
+        q = "早上" + q;
+    } else if (h >= 8 && h < 12) {
+        q = "上午" + q;
+    } else if (h >= 12 && h < 18) {
+        q = "下午" + q;
+    } else {
+        q = "晚上" + q;
+    }
+    return q
+})
 
 const meta: any = reactive({
-    title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
     statics: [
@@ -167,37 +170,8 @@ const meta: any = reactive({
     }
 })
 
-const onLinkClicked = (index: number) => {
-    switch (index) {
-        case 0:
-            meta.title.quote = meta.quotes[Math.floor(Math.random() * meta.quotes.length)]
-            break
-        case 1:
-            var date = new Date()
-            let h = date.getHours()
-            if (h >= 6 && h < 8) {
-                meta.title.greeting = "晨起披衣出草堂，轩窗已自喜微凉🌅！";
-            } else if (h >= 8 && h < 12) {
-                meta.title.greeting = "上午好🌞！";
-            } else if (h >= 12 && h < 18) {
-                meta.title.greeting = "下午好☕！";
-            } else if (h >= 18 && h < 24) {
-                meta.title.greeting = "晚上好🌃！";
-            } else if (h >= 0 && h < 6) {
-                meta.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
-            }
-            ElMessage.success({
-                message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}`,
-                duration: 1000
-            })
-            break
-    }
-}
-
 // const store = useStore()
-onMounted(async() => {
-    onLinkClicked(0)
-    onLinkClicked(1)
+onMounted(async () => {
     var ui = Api.loadUserInfoFromStorage()
     if (ui == null) {
         return;
@@ -207,7 +181,7 @@ onMounted(async() => {
     meta.user.last_name = ui.last_name
     meta.user.avatar = ui.avatar
     meta.data_loaded = false
-    await Api.getOverviewInfo(ui.id).then(res => {
+    await Api.getOverviewInfo().then(res => {
         let info: IOverviewInfo = res.data
         meta.statics[0].data = info.subject_num
         meta.statics[1].data = info.quiz_num
@@ -248,7 +222,7 @@ onMounted(async() => {
         return
     })
 
-    await Api.getBigDaysByUserId(ui.id).then(res => {
+    await Api.getBigDays().then(res => {
         var now_str = (new ADate()).toString()
         var afterdays: any[] = []
         var beforedays: any[] = []
@@ -260,7 +234,7 @@ onMounted(async() => {
             }
         })
         meta.big_days = afterdays.concat(beforedays.reverse())
-        var lack_num = meta.big_days.length % 8
+        var lack_num = (meta.big_days.length + 1) % 8
         if (lack_num > 0) {
             for (var i = 0; i < 8 - lack_num; i++) {
                 meta.big_days.push({ name: 'TO BE ADDED', description: '待添加', date: '--' })
@@ -280,11 +254,14 @@ onMounted(async() => {
 .dashboard-container {
     position: relative;
     padding: 10px;
+
     .user-avatar {
-        width: 64px;
-        height: 64px;
+        width: 81px;
+        height: 81px;
         border-radius: 50%;
-    }    .subject {
+    }
+
+    .subject {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
@@ -298,12 +275,15 @@ onMounted(async() => {
         z-index: 99;
         border: 0;
     }
+
     .el-row {
         margin-bottom: 0px;
     }
+
     .svg-icon {
         fill: currentcolor !important;
     }
+
     .el-card:deep(.el-card__body) {
         padding: 6px;
     }

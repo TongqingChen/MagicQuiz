@@ -1,71 +1,75 @@
 <template>
-    <el-container class="layout-container-exam" style="height:100%">
-        <el-header>
-            <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
-            <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
-            <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
-                :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="uploadExamResults">
-            </Timer>
-            <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
-                @click="submitQuiz">提交</el-button>
-        </el-header>
-        <el-container>
-            <el-aside width="164px">
-                <el-scrollbar style="height:100%">
-                    <div v-for="qs in examInfo.meta" style="margin: 5px;">
-                        <el-divider>{{ qs.typeName }}</el-divider>
-                        <div class="question-zone">
-                            <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
-                                @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
+    <el-dialog class="roll-dialog" v-model="props.enabled" center :show-close="false" :lock-scroll="false"
+        append-to-body destroy-on-close width="90%">
+        <div class="dialog-content">
+            <el-container class="layout-container-exam" style="height:100%">
+                <el-header>
+                    <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
+                    <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
+                    <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
+                        :duration_secs="examInfo.exam_seconds" :blink="false" start_text='【考试剩余】'
+                        @end_event="uploadExamResults">
+                    </Timer>
+                    <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
+                        @click="submitQuiz">提交</el-button>
+                </el-header>
+                <el-container>
+                    <el-aside width="164px">
+                        <div v-for="qs in examInfo.meta" style="margin: 5px;">
+                            <el-divider>{{ qs.typeName }}</el-divider>
+                            <div class="question-zone">
+                                <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
+                                    @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
+                            </div>
                         </div>
-                    </div>
-                </el-scrollbar>
-            </el-aside>
-            <el-main v-if="activeQ.meta.index >= 0">
-                <div style="padding-left: 6px; padding-top: 5px;">
-                    <div class="answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED">
-                        【正确答案】{{ activeQ.meta.answer }}
-                    </div>
-                    <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
-                    <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
-                    <el-button-group style="padding-left: 6px;">
-                        <el-button :disabled="activeQ.meta.index == 0" type="primary" :icon="ArrowLeft" size="small"
-                            @click="onQuestionClicked(activeQ.meta.index - 1)">上一题</el-button>
-                        <el-button :disabled="activeQ.meta.index == ijPairs.length - 1" type="primary" size="small"
-                            @click="onQuestionClicked(activeQ.meta.index + 1)">下一题<el-icon class="el-icon--right">
-                                <ArrowRight />
-                            </el-icon></el-button>
-                    </el-button-group>
-                    <el-radio-group v-model="activeQ.answers[0]"
-                        v-if="activeQ.meta.type == QueType.CHOICE && examInfo.state == ExamState.ONGOING"
-                        @change="onAnswerSelected">
-                        <el-radio label="A" size="small">A</el-radio>
-                        <el-radio label="B" size="small">B</el-radio>
-                        <el-radio label="C" size="small">C</el-radio>
-                        <el-radio label="D" size="small">D</el-radio>
-                    </el-radio-group>
-                    <el-radio-group v-model="activeQ.answers[1]"
-                        v-if="activeQ.meta.type == QueType.LOGIC && examInfo.state == ExamState.ONGOING"
-                        @change="onAnswerSelected">
-                        <el-radio label="T" size="small">正确</el-radio>
-                        <el-radio label="F" size="small">错误</el-radio>
-                    </el-radio-group>
-                </div>
-                <div class="question">
-                    <div class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
-                    }}分){{ activeQ.meta.title }}</div>
-                    <el-image v-if="activeQ.meta.image" :src="activeQ.meta.image" fit="scale-down" />
-                    <div>{{ activeQ.meta.description }}</div>
-                </div>
-            </el-main>
-        </el-container>
-    </el-container>
+                    </el-aside>
+                    <el-main v-if="activeQ.meta.index >= 0">
+                        <div style="padding-left: 6px; padding-top: 5px;">
+                            <div class="answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
+                            <div class="answer" v-if="examInfo.state == ExamState.FINISHED">
+                                【正确答案】{{ activeQ.meta.answer }}
+                            </div>
+                            <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
+                            <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
+                            <el-button-group style="padding-left: 6px;">
+                                <el-button :disabled="activeQ.meta.index == 0" type="primary" :icon="ArrowLeft" size="small"
+                                    @click="onQuestionClicked(activeQ.meta.index - 1)">上一题</el-button>
+                                <el-button :disabled="activeQ.meta.index == ijPairs.length - 1" type="primary" size="small"
+                                    @click="onQuestionClicked(activeQ.meta.index + 1)">下一题<el-icon class="el-icon--right">
+                                        <ArrowRight />
+                                    </el-icon></el-button>
+                            </el-button-group>
+                            <el-radio-group v-model="activeQ.answers[0]"
+                                v-if="activeQ.meta.type == QueType.CHOICE && examInfo.state == ExamState.ONGOING"
+                                @change="onAnswerSelected">
+                                <el-radio label="A" size="small">A</el-radio>
+                                <el-radio label="B" size="small">B</el-radio>
+                                <el-radio label="C" size="small">C</el-radio>
+                                <el-radio label="D" size="small">D</el-radio>
+                            </el-radio-group>
+                            <el-radio-group v-model="activeQ.answers[1]"
+                                v-if="activeQ.meta.type == QueType.LOGIC && examInfo.state == ExamState.ONGOING"
+                                @change="onAnswerSelected">
+                                <el-radio label="T" size="small">正确</el-radio>
+                                <el-radio label="F" size="small">错误</el-radio>
+                            </el-radio-group>
+                        </div>
+                        <div class="question">
+                            <div class="title">{{ activeQ.meta.index + 1 }}. ({{ activeQ.meta.score
+                            }}分){{ activeQ.meta.title }}</div>
+                            <el-image v-if="activeQ.meta.image" :src="activeQ.meta.image" fit="scale-down" />
+                            <div>{{ activeQ.meta.description }}</div>
+                        </div>
+                    </el-main>
+                </el-container>
+            </el-container>
+        </div>
+    </el-dialog>
 </template>
 
 
 <script lang='ts' setup>
-import { reactive, onMounted, ref, computed } from 'vue'
+import { reactive, onMounted, ref, computed, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
@@ -74,7 +78,8 @@ import { QuizResult } from '@/types/http'
 import Timer from '@/components/Timer.vue'
 import { ArrowLeft, Check, Close } from '@element-plus/icons-vue'
 
-const route = useRoute()
+const props = defineProps(['enabled', 'exam_id', 'exam_name', 'sub_name', 'sub_id', 'exam_secs'])
+
 const examInfo = reactive(new ExamInfo())
 
 let ijPairs = reactive([[0, 0]])
@@ -83,13 +88,13 @@ const autoNext = ref(false)
 const textType = computed(() => { return autoNext.value ? "primary" : "default" })
 
 const getQuestionList = () => {
-    examInfo.id = Number(route.query.id)
+    examInfo.id = Number(props.exam_id)
     examInfo.state = ExamState.IDLE
     examInfo.start_time = Date.now()
-    examInfo.name = String(route.query.name)
-    examInfo.subjectId = Number(route.query.subjectId)
-    examInfo.subjectName = String(route.query.subjectName)
-    examInfo.exam_seconds = Number(route.query.exam_seconds)
+    examInfo.name = String(props.exam_name)
+    examInfo.subjectId = Number(props.sub_id)
+    examInfo.subjectName = String(props.sub_name)
+    examInfo.exam_seconds = Number(props.exam_secs)
     examInfo.question_num = 0
 
     // examInfo.title = '【Python四级】2022.03'
@@ -119,9 +124,8 @@ onMounted(() => {
     getQuestionList()
 })
 
-onBeforeRouteLeave((to, from, next) => {
+onUnmounted(() => {
     if (examInfo.state != ExamState.ONGOING) {
-        next()
         return
     }
     ElMessageBox.confirm(
@@ -135,12 +139,12 @@ onBeforeRouteLeave((to, from, next) => {
             distinguishCancelAndClose: true,//区分取消与关闭
         }
     ).then((action) => {
-        next(false)
+        // next(false)
     }).catch((err) => {
         if (err == 'cancel') {
-            next()
+            // next()
         } else {
-            next(false)
+            // next(false)
         }
     })
 })
@@ -211,6 +215,8 @@ const submitQuiz = () => {
 
 <style lang='scss' scoped>
 .layout-container-exam {
+    height: 100%;
+
     .el-divider:deep(.el-divider__text) {
         background-color: transparent;
     }
@@ -259,7 +265,6 @@ const submitQuiz = () => {
         height: 36px;
         position: relative;
         background-color: var(--el-color-primary-light-7);
-        border-radius: 10px 10px 0 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -270,6 +275,7 @@ const submitQuiz = () => {
     .el-aside {
         // color: var(--el-text-color-primary);
         background-color: var(--el-color-primary-light-8);
+
     }
 
     .el-radio {
@@ -280,29 +286,16 @@ const submitQuiz = () => {
         font-weight: bold;
     }
 
-    // .el-button--primary.is-active,
-    // .el-button--primary:active {
-    //     background: rgb(230, 162, 60);
-    //     border-color: rgb(230, 162, 60);
-    //     color: #fff;
-    // }
-
     .el-button--primary:focus {
         background-color: var(--el-color-primary);
         background-color: var(--el-color-primary);
         // color: #fff;
     }
 
-    // .el-button--primary:hover {
-    //     background-color:chocolate;
-    //     // border-color: rgb(230, 162, 60);
-    //     color: #fff;
-    // }
-
     .el-main {
         background-color: white;
         padding: 0;
-        height: calc(100vh - 100px);
+        max-height: calc(90vh - 56px);
     }
 }
 </style>

@@ -28,8 +28,10 @@
             <div>{{ currentInfo.q.description }}</div>
             <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
             <div v-if="showAnswer">
-                <div>【考生答案】<el-tag type='error' size="large" effect="dark" round> {{ currentInfo.q.user_answer }}</el-tag></div>
-                <div>【正确答案】<el-tag type='success' size="large" effect="dark" round> {{ currentInfo.q.answer }}</el-tag></div>
+                <div>【考生答案】<el-tag type='error' size="large" effect="dark" round> {{ currentInfo.q.user_answer }}</el-tag>
+                </div>
+                <div>【正确答案】<el-tag type='success' size="large" effect="dark" round> {{ currentInfo.q.answer }}</el-tag>
+                </div>
             </div>
         </div>
     </el-drawer>
@@ -56,15 +58,14 @@ const onDetailsClicked = (index: number) => {
     currentInfo.drawerVisible = true;
 }
 onMounted(() => {
-    // Api.getSubjectList().then(res => {
-    //     console.log('sssss', res.data.results)
-    //     appInfo.subjectList = res.data.results
-    // })
-    var uid = Api.loadUserIdFromStorage()
-    Api.getWrongSetsMixed(uid, -1).then(res => {
+    Api.getWrongSetsMixed(-1).then(res => {
         var keys = Object.keys(res.data)
-        keys.forEach(key => wrongSets[key] = res.data[key])
-        currentInfo.subject = keys[0]
+        keys.forEach(key => {
+            if (res.data[key].length > 0) {
+                wrongSets[key] = res.data[key]
+                currentInfo.subject = key
+            }
+        })
     })
 })
 </script>

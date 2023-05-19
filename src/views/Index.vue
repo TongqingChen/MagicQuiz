@@ -59,6 +59,7 @@ onMounted(()=>{
 <style lang="scss" scoped>
 .layout {
     height: 100%;
+    overflow-y: hidden;
 
     .header {
         padding: 0;
@@ -76,7 +77,8 @@ onMounted(()=>{
     .main {
         background-color: #f5f7fa;
         color: black;
-        padding: 10px;
+        padding: 5px;
+        height: calc(100vh - 48px);
     }
 }
 </style>

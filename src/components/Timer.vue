@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onUnmounted, reactive, watch } from 'vue'
+import { onBeforeUnmount, reactive, watch } from 'vue'
 
 const data = reactive({
     timer: 0,
@@ -72,7 +72,7 @@ watch(
         }
     })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
     clearInterval(data.timer)
 })
 </script>

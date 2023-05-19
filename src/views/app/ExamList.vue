@@ -30,7 +30,7 @@
     <div class="pagination-block">
         <el-pagination background :page-size="quizPages.pageSize" :total="quizPages.quizNum" layout="prev, pager, next"
             @current-change="onPageChanged"></el-pagination>
-    </div>
+    </div>        
 </template>
 
 
@@ -44,13 +44,18 @@ import { SubjectList } from '@/types/subject'
 
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router';
+import { ElMessageBox } from 'element-plus';
+import ExamDialog from './ExamDialog.vue';
 
 const store = useStore()
 const router = useRouter()
+
 const currentSubjectId = ref(-1)
 
 const subjectList = reactive(new SubjectList())
 const quizPages = reactive(new QuizPages())
+
+
 
 const getQuizList = () => {
     quizPages.currentPage = 1
@@ -102,10 +107,21 @@ const onPageChanged = (page: number) => (
 )
 
 const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
-    router.push({
-        path: subjectId == 3 ? 'oral_math' : '/exam',
-        query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
+    ElMessageBox.confirm(
+        `开始【${subjectName}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
+        '请确认',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(() => {
+        router.push({
+            path: subjectId == 3 ? 'oral_math' : '/exam',
+            query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
+        })
     })
+
 }
 </script>
 <style lang="scss" scoped>
@@ -163,6 +179,7 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
         margin-bottom: 5px;
     }
 
+
 }
 
 .pagination-block {
@@ -171,4 +188,37 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     margin-top: 10px;
     justify-content: center;
 }
+</style>
+
+<style lang="scss">
+.roll-dialog {
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+    height: 90vh;
+
+    .el-dialog__header {
+        display: none;
+    }
+    .dialog-content{
+        max-height: calc(90vh - 20px)!important;
+    }
+    .el-dialog__body {
+        padding: 10px;
+        // min-height: 100px;
+        overflow-y: auto;
+    }
+}
+
+
+// :deep(.el-dialog) {
+// position: relative;
+// margin-top: 10px !important;
+// background: #FFFFFF;
+// border-radius: 2px;
+// -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+// box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+// -webkit-box-sizing: border-box;
+// box-sizing: border-box;
+// width: 50%;
+// height: 60%;
 </style>
