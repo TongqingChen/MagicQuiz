@@ -2,14 +2,18 @@
     <el-card v-if="dataLoaded">
         <template #header>
             <div class="card-header">
-                <el-tag effect="dark" type="success"> <el-icon> <List /> </el-icon>【小习惯，大成就】</el-tag>
+                <el-tag effect="dark" type="success"> <el-icon>
+                        <List />
+                    </el-icon>【小习惯，大成就】</el-tag>
                 <!-- <el-tag round type="warning">天道酬勤，厚积薄发</el-tag> -->
                 <el-button-group>
                     <el-button type="success" :icon="ArrowLeft" size="small" @click="onWeekButtonClicked(-1)">上周</el-button>
                     <el-button type="success" size="small" @click="onWeekButtonClicked(0)">今天</el-button>
                     <el-button type="success" size="small" @click="onWeekButtonClicked(1)">下周<el-icon
-                            class="el-icon--right"> <ArrowRight /> </el-icon>
-                        </el-button>
+                            class="el-icon--right">
+                            <ArrowRight />
+                        </el-icon>
+                    </el-button>
                 </el-button-group>
             </div>
         </template>
@@ -127,7 +131,7 @@ onMounted(() => {
 const onSwitchChanged = async (row: any, col: number) => {
     var success = false
     await ElMessageBox.confirm(
-        row.checks[col] ? '确定打卡吗？' : '确定取消打卡吗？',
+        `【${row.name}】` + (row.checks[col] ? '确定打卡吗？' : '确定取消打卡吗？'),
         '请确认',
         {
             confirmButtonText: '确定',

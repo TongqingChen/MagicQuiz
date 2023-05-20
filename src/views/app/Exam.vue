@@ -4,7 +4,8 @@
             <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
             <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
-                :duration_secs="examInfo.exam_seconds" :blink="true" start_text='【考试剩余】' @end_event="uploadExamResults">
+                :duration_secs="examInfo.exam_seconds" :blink="blink" 
+                start_text='【考试剩余】' @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
                 @click="submitQuiz">提交</el-button>
@@ -70,11 +71,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
-import { QuizResult } from '@/types/http'
+import { IWrongSet, QuizResult } from '@/types/http'
 import Timer from '@/components/Timer.vue'
 import { ArrowLeft, Check, Close } from '@element-plus/icons-vue'
+import { ISettings, SetID } from '@/types/settings';
 
 const route = useRoute()
+const blink = ref(true)
 const examInfo = reactive(new ExamInfo())
 
 let ijPairs = reactive([[0, 0]])
@@ -87,36 +90,64 @@ const getQuestionList = () => {
     examInfo.state = ExamState.IDLE
     examInfo.start_time = Date.now()
     examInfo.name = String(route.query.name)
-    examInfo.subjectId = Number(route.query.subjectId)
-    examInfo.subjectName = String(route.query.subjectName)
+    examInfo.subjectName = String(route.query.sub_name)
     examInfo.exam_seconds = Number(route.query.exam_seconds)
     examInfo.question_num = 0
 
-    // examInfo.title = '【Python四级】2022.03'
-    Api.getQuestionListByQuizId(examInfo.id).then(res => {
-        let questions: Question[] = res.data.results
-        examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
-        { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
-        { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
-        examInfo.scores = 0
-        ijPairs = []
-        var i = 0
-        questions.forEach(q => {
-            ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
-            examInfo.meta[q.type].qList.push(
-                {
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
-                })
-            examInfo.scores += q.score
+    if (examInfo.id >= 0) {
+        // examInfo.title = '【Python四级】2022.03'
+        Api.getQuestionListByQuizId(examInfo.id).then(res => {
+            let questions: Question[] = res.data.results
+            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
+            { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
+            { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
+            examInfo.scores = 0
+            ijPairs = []
+            var i = 0
+            questions.forEach(q => {
+                ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
+                examInfo.meta[q.type].qList.push(
+                    {
+                        index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
+                        image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
+                    })
+                examInfo.scores += q.score
+            })
+            examInfo.question_num = questions.length
+            examInfo.state = ExamState.ONGOING
         })
-        examInfo.question_num = questions.length
-        examInfo.state = ExamState.ONGOING
-    })
+    } else { //-1表示错题集
+        Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
+            const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
+            const types = ["选择", "判断", "编程"]
+            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: types[QueType.CHOICE], icon: "Message", qList: [] },
+            { typeId: QueType.LOGIC, typeName: types[QueType.LOGIC], icon: "Setttings", qList: [] },
+            { typeId: QueType.CODING, typeName: types[QueType.CODING], icon: "Menu", qList: [] }]
+            examInfo.scores = 0
+            ijPairs = []
+            var i = 0
+            wrong_set.forEach(w => {
+                var t_id = types.indexOf(w.type)
+                ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
+                examInfo.meta[t_id].qList.push(
+                    {
+                        index: i++, id: w.qid, type: t_id, title: w.title, description: w.description,
+                        image: w.image, answer: w.answer, displayType: 'default', userAnswer: '未作答', score: w.score
+                    })
+                examInfo.scores += w.score
+            })
+            examInfo.question_num = wrong_set.length
+            examInfo.state = ExamState.ONGOING
+        })
+    }
 }
 
 onMounted(() => {
     getQuestionList()
+    var s: ISettings = Api.loadSettings()
+    if (s) {
+        blink.value = s.data[SetID.EXAM_TIME_BLINK].value
+    }
 })
 
 onBeforeRouteLeave((to, from, next) => {
@@ -190,7 +221,9 @@ const uploadExamResults = async () => {
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
     results.meta.use_minutes = Math.round((Date.now() - examInfo.start_time) / 1000 / 60)
     await Api.postQuestionsResult(results.questions)
-    await Api.postQuizResult(results.meta)
+    if (examInfo.id >= 0) { //错题集不提交考试记录
+        await Api.postQuizResult(results.meta)
+    }
     ElMessage.success('考试提交成功!')
 }
 

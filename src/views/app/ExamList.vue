@@ -118,10 +118,9 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     ).then(() => {
         router.push({
             path: subjectId == 3 ? 'oral_math' : '/exam',
-            query: { id: quizId, name: quizName, subjectId: subjectId, subjectName: subjectName, exam_seconds: exam_minutes * 60 }
+            query: { id: quizId, name: quizName, sub_name: subjectName, exam_seconds: exam_minutes * 60 }
         })
     })
-
 }
 </script>
 <style lang="scss" scoped>

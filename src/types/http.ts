@@ -38,6 +38,7 @@ export interface IWrongSet {
     title: string;
     type: string;
     description: string;
+    score: number;
     image: string;
     answer: string;
     user_answer: string;
@@ -50,6 +51,7 @@ export class WrongSet implements IWrongSet {
     title: string = '';
     type: string = '';
     description: string = '';
+    score: number = 0;
     image: string = '';
     answer: string = '';
     user_answer: string = '';

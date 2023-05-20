@@ -20,10 +20,16 @@
             </template>
         </el-table-column>
     </el-table>
+    <el-affix v-if="currentInfo.subject.length > 0" position="bottom" :offset="20">
+        <el-tooltip placement="right" content="错题考试">
+            <el-button type="primary" :icon="Edit" circle @click="startExamInWrongSet" />
+        </el-tooltip>
+    </el-affix>
     <el-drawer v-model="currentInfo.drawerVisible" :with-header="false" direction="ltr" size="64%"
-        @open="() => showAnswer = false">
+        @open="showAnswer = false">
         <div class="question">
-            <div style="color: darkblue;">{{ currentInfo.q.title }}</div>
+            <div style="color: darkblue;">【{{ currentInfo.subject }}】【{{ currentInfo.q.quiz_name }}】{{ currentInfo.q.title }}
+            </div>
             <el-image v-if="currentInfo.q.image != ''" :src="currentInfo.q.image" fit="scale-down" />
             <div>{{ currentInfo.q.description }}</div>
             <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
@@ -41,7 +47,11 @@
 import { Api } from '@/request/index';
 import { onMounted, reactive, ref } from 'vue';
 import { IWrongSet, WrongSet } from '@/types/http';
+import { Edit } from '@element-plus/icons-vue'
+import { ElMessageBox } from 'element-plus';
+import { useRouter } from 'vue-router';
 
+const router = useRouter()
 const showAnswer = ref(false)
 
 var wrongSets: { [key: string]: IWrongSet[] } = reactive(
@@ -58,7 +68,7 @@ const onDetailsClicked = (index: number) => {
     currentInfo.drawerVisible = true;
 }
 onMounted(() => {
-    Api.getWrongSetsMixed(-1).then(res => {
+    Api.getWrongSetsMixedBySubName().then(res => {
         var keys = Object.keys(res.data)
         keys.forEach(key => {
             if (res.data[key].length > 0) {
@@ -68,6 +78,23 @@ onMounted(() => {
         })
     })
 })
+const startExamInWrongSet = () => {
+    const exam_minutes = 60
+    ElMessageBox.confirm(
+        `开始【${currentInfo.subject}《错题集》】(${exam_minutes}分钟)考试吗？`,
+        '请确认',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(() => {
+        router.push({
+            path: '/exam',
+            query: { id: -1, name: '错题集', sub_name: currentInfo.subject, exam_seconds: exam_minutes * 60 }
+        })
+    })
+}
 </script>
 
 <style lang="scss" scoped>

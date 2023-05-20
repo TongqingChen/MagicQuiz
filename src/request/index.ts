@@ -1,9 +1,10 @@
 import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
+import { ISettings, Settings } from '@/types/settings'
 
 const Axios = axios.create({
-    //baseURL: 'http://192.168.1.7:2345/',
-    baseURL: 'http://localhost:8000/',
+    baseURL: 'http://192.168.1.7:2345/',
+    // baseURL: 'http://localhost:8000/',
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8;"
@@ -72,7 +73,7 @@ export class Api {
     }
 
     static updateUserInfo(data: any) {
-        var user_id = Api.loadUserIdFromStorage()
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `users/${user_id}/`,
             method: "PATCH",
@@ -104,15 +105,16 @@ export class Api {
             method: "GET"
         })
     }
-    static getWrongSetsByUserIdAndSubjectIdAndPageId(user_id: number, sub_id: number, page_id: number) {
+    static getWrongSetsBySubjectId(sub_id: number) {
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: `wrongsets/?page=${page_id}&user__id=${user_id}&sub_id=${sub_id}`,
+            url: `wrongsets/?user__id=${user_id}&question__quiz__subject__id=${sub_id}`,
             method: "GET"
         })
     }
 
     static getBigDays() {
-        var user_id = Api.loadUserIdFromStorage()
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `bigdays/?user__id=${user_id}`,
             method: "GET"
@@ -120,7 +122,7 @@ export class Api {
     }
 
     static getHabbits() {
-        var user_id = Api.loadUserIdFromStorage()
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `habbits/?user__id=${user_id}&enabled=true`,
             method: "GET"
@@ -143,11 +145,11 @@ export class Api {
         })
     }
 
-    //sub_id=-1表示全部
-    static getWrongSetsMixed(sub_id: number) {
-        var user_id = Api.loadUserIdFromStorage()
+    //sub_name为空Null--表示全部
+    static getWrongSetsMixedBySubName(sub_name: string | null=null) {
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: `wrongsets_mixpost/?user_id=${user_id}&sub_id=${sub_id}`,
+            url: 'wrongsets_mixpost/?user_id=' + (sub_name ? `${user_id}&sub_name=${sub_name}` : `${user_id}`),
             method: "GET"
         })
     }
@@ -222,5 +224,17 @@ export class Api {
         } else {
             return 0
         }
+    }
+
+    static storeSettings(sets:ISettings){
+        localStorage.setItem("settings", JSON.stringify(sets))
+    }
+    static loadSettings() {
+        var str = localStorage.getItem("settings")
+        if (str) {
+            console.log('JSON.parse(str)', JSON.parse(str))
+            return JSON.parse(str)
+        }
+        return null
     }
 }

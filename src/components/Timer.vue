@@ -55,9 +55,20 @@ const stopTickToc = () => {
     // 清除掉定时器
     if (!data.is_stoped) {
         data.is_stoped = true
-        var mins = Math.round((props.count_down ? (props.duration_secs - data.durationSecs) : data.durationSecs) / 60)
+        var secs = props.count_down ? (props.duration_secs - data.durationSecs) : data.durationSecs
+        data.text = '【用时】'
+        var t = Math.floor(secs / 3600)
+        if (t > 0) {
+            data.text += `${t}时`
+        }
+        secs = secs % (3600)
+        t = Math.floor(secs / 60)
+        if (t > 0) {
+            data.text += `${t}分`
+        }
+        t = secs % 60
+        data.text += `${t}秒`
         clearInterval(data.timer)
-        data.text = `【用时】${mins}分钟`
         data.blinkFlag = true
     }
 }

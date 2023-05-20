@@ -26,7 +26,7 @@ const meta = computed(() => {
     var days = Math.ceil((obj.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
     return {
         days: isNaN(days) ? '--' : Math.abs(days),
-        color: days >= 0 ? 'darkblue' : 'gray',
+        color: days >= 0 ? (days <= 3 ? 'red' : 'darkblue') : 'gray',
         label: isNaN(days) ? '' : (days == 0 ? '天' : (days > 0 ? '天后' : '天前'))
     }
 })
@@ -36,10 +36,6 @@ const props = defineProps(["date", "title", "description"])
 <style lang="scss" scoped>
 .box-card {
     font-size: 12px;
-    // font-weight: bold;
-    // margin-bottom: 0px;
-    // width: 250px;
-
     .card-header {
         display: flex;
         justify-content: center;

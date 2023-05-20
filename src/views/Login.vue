@@ -17,6 +17,10 @@
                     <!-- <el-button class="login-btn" @click="resetForm(ruleFormRef)">重置</el-button> -->
                     <el-button class="login-btn" @click="resetForm">重置</el-button>
                 </el-form-item>
+                <el-form-item style="display: flex; align-content: space-between;">
+                    <el-link class="login-btn" type="primary" href="http://192.168.1.7:2345/admin">管理员后台</el-link>
+                    <el-link class="login-btn" type="primary">忘记密码</el-link>
+                </el-form-item>
             </el-form>
         </div>
     </div>
