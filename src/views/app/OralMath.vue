@@ -3,7 +3,7 @@
         <el-header>
             <span>【{{ math_info.name }}】</span>
             <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING"
-                :duration_secs="math_info.exam_seconds" :blink="true" start_text='【已用时间】' :count_down="false"
+                :duration_secs="math_info.exam_seconds" :blink="blink" start_text='【已用时间】' :count_down="false"
                 @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
@@ -25,13 +25,14 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, ref } from 'vue'
 import Timer from '@/components/Timer.vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { Api } from '@/request'
 import { ExamState } from '@/types/question'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { QuizResult } from '@/types/http'
+import { ISettings, SetID } from '@/types/settings'
 
 const math_info = reactive({
     id: 0,
@@ -41,6 +42,8 @@ const math_info = reactive({
     start_time: 0,
     meta: [{ title: '', answer: 0, user_answer: 0, mark: '' }]
 })
+
+const blink = ref(true)
 const route = useRoute()
 
 onMounted(() => {
@@ -48,6 +51,10 @@ onMounted(() => {
     math_info.name = String(route.query.name)
     math_info.exam_seconds = Number(route.query.exam_seconds)
     math_info.state = ExamState.ONGOING
+    var s: ISettings = Api.loadSettings()
+    if (s) {
+        blink.value = s.data[SetID.EXAM_TIME_BLINK].value
+    }
     Api.getOralMath(math_info.id).then((res) => {
         math_info.meta = []
         res.data.forEach((r: any[]) =>
