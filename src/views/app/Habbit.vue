@@ -9,8 +9,8 @@
                 <el-button-group>
                     <el-button type="success" :icon="ArrowLeft" size="small" @click="onWeekButtonClicked(-1)">上周</el-button>
                     <el-button type="success" size="small" @click="onWeekButtonClicked(0)">今天</el-button>
-                    <el-button type="success" size="small" @click="onWeekButtonClicked(1)">下周<el-icon
-                            class="el-icon--right">
+                    <el-button :disabled="habbits.start_day >= habbits.first_day_this_week" type="success" size="small"
+                        @click="onWeekButtonClicked(1)">下周<el-icon class="el-icon--right">
                             <ArrowRight />
                         </el-icon>
                     </el-button>
@@ -113,6 +113,7 @@ onMounted(() => {
     habbits.today = date.toString()
     date.goToFirstDayOfThisWeek()
     habbits.start_day = date.toString()
+    habbits.first_day_this_week = habbits.start_day
     date.goToDaysLater(6)
     habbits.end_day = date.toString()
     Api.getHabbits().then(res => {

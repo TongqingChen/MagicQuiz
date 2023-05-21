@@ -4,8 +4,7 @@
             <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
             <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
-                :duration_secs="examInfo.exam_seconds" :blink="blink" 
-                start_text='【考试剩余】' @end_event="uploadExamResults">
+                :duration_secs="examInfo.exam_seconds" :blink="blink" start_text='【考试剩余】' @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
                 @click="submitQuiz">提交</el-button>
@@ -25,8 +24,7 @@
             <el-main v-if="activeQ.meta.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px;">
                     <div class="answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED">
-                        【正确答案】{{ activeQ.meta.answer }}
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED">【正确答案】{{ activeQ.meta.answer }}
                     </div>
                     <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
                     <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
@@ -286,6 +284,7 @@ const submitQuiz = () => {
         font-weight: bold;
         color: darkblue;
         font-size: 14px;
+        white-space: pre-wrap;
     }
 
     .el-header {
