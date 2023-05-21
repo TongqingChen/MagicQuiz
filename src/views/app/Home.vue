@@ -176,7 +176,7 @@ const meta: any = reactive({
                 name: '分数',
                 min: 0,
                 max: 100,
-                interval: 20,
+                interval: 10,
                 axisLabel: {
                     formatter: '{value}'
                 }
