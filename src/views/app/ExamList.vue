@@ -13,7 +13,7 @@
                 <template #header>
                     <div class="card-header">
                         <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
-                        <el-button class="button" link type="success"
+                        <el-button class="button" :icon="Edit" link type="success"
                             @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
                     </div>
                 </template>
@@ -22,6 +22,7 @@
                     <li>{{ quiz.subject == 3 ? "加数个数" : "判断题数" }}：{{ quiz.logic_num }}</li>
                     <li>{{ quiz.subject == 3 ? "题目数" : "编程题数" }}：{{ quiz.coding_num }}</li>
                     <li>考试时长：{{ quiz.exam_minutes }}分钟</li>
+                    <li>最新考试：{{ quiz.last_exam_time }}</li>
                 </div>
             </el-card>
         </el-col>
@@ -30,7 +31,22 @@
     <div class="pagination-block">
         <el-pagination background :page-size="quizPages.pageSize" :total="quizPages.quizNum" layout="prev, pager, next"
             @current-change="onPageChanged"></el-pagination>
-    </div>        
+    </div>
+    <el-dialog v-model="showDialog" title="选择题目数量" width="80%" center>
+        <el-form label-position="right" :label-width="200">
+            <el-form-item v-for="q in randomQuiz" :label="q.label">
+                <el-slider v-model="q.num" show-input size="small" />
+            </el-form-item>
+            <el-form-item label="操作">
+                <el-button type="primary" @click="onRandomQuiz">开始考试</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+    <el-affix v-if="currentSubjectId != -1 && currentSubjectId != 3" position="bottom" :offset="20">
+        <el-tooltip placement="right" content="随机考试">
+            <el-button type="success" :icon="Edit" circle @click="showDialog = true" />
+        </el-tooltip>
+    </el-affix>
 </template>
 
 
@@ -41,21 +57,31 @@ import { computed } from '@vue/reactivity';
 import { Api } from '@/request/index'
 
 import { SubjectList } from '@/types/subject'
-
-import { useStore } from 'vuex'
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
-import ExamDialog from './ExamDialog.vue';
+import { Edit } from '@element-plus/icons-vue';
 
-const store = useStore()
 const router = useRouter()
 
 const currentSubjectId = ref(-1)
 
 const subjectList = reactive(new SubjectList())
 const quizPages = reactive(new QuizPages())
+const showDialog = ref(false)
+const randomQuiz = reactive([
+    { label: '选择', num: 15 },
+    { label: '判断', num: 10 },
+    { label: '编程', num: 2 },
+    { label: '时长(分钟)', num: 60 }
+])
 
-
+const getSubjectNameById = (id: number) => {
+    var sub = subjectList.data.find(s => { return s.id == id })
+    if (!sub) {
+        return null
+    }
+    return sub.name
+}
 
 const getQuizList = () => {
     quizPages.currentPage = 1
@@ -71,7 +97,7 @@ const getQuizList = () => {
                     subjectList.data[i].count++;
                 }
             }
-            q.subject_name = store.getters.getSubjectNameById(q.subject)
+            q.subject_name = getSubjectNameById(q.subject)
         })
         subjectList.data[0].count = quizPages.quizNum
         subjectList.data = subjectList.data.filter(s => s.count > 0)
@@ -79,18 +105,12 @@ const getQuizList = () => {
 }
 
 onMounted(() => {
-    if (store.getters.isValid) {
-        subjectList.data = store.getters.getSubjectList
+    Api.getSubjectList().then((res: { data: { results: [] }; }) => {
+        subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
         getQuizList()
-    } else {
-        Api.getSubjectList().then((res: { data: { results: [] }; }) => {
-            subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
-            store.commit('setSubjectList', subjectList.data)
-            getQuizList()
-        })
-    }
-}
-)
+    })
+})
+
 const onSubjectSelected = () => {
     quizPages.quizDisplay = quizPages.quizList.filter((value: { subject: number; }) => {
         return (currentSubjectId.value == -1) ? true : value.subject == currentSubjectId.value
@@ -106,15 +126,30 @@ const onPageChanged = (page: number) => (
     quizPages.currentPage = page
 )
 
+const onRandomQuiz = () => {
+    showDialog.value = false
+    var sub_name = getSubjectNameById(currentSubjectId.value)
+    if (!sub_name) {
+        return
+    }
+    router.push({
+        path: '/exam',
+        query: {
+            id: -2, name: '随机测试', sub_name: sub_name,
+            choice_num: randomQuiz[0].num, logic_num: randomQuiz[1].num,
+            coding_num: randomQuiz[2].num, exam_seconds: randomQuiz[3].num * 60
+        }
+    })
+}
+
 const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
     ElMessageBox.confirm(
         `开始【${subjectName}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
-        '请确认',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
+        '请确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+    }
     ).then(() => {
         router.push({
             path: subjectId == 3 ? 'oral_math' : '/exam',
@@ -144,7 +179,6 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
         font-size: 12px;
         font-weight: bold;
         margin-bottom: 10px;
-        // width: 250px;
 
         .card-header {
             display: flex;
@@ -154,11 +188,9 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
         }
 
         .card-body {
-            height: 80px;
+            height: 96px;
             padding: 20px;
             color: darkcyan;
-            // background-image: url('@/assets/python.svg');
-            // background-size: 100% 100%;
         }
     }
 
@@ -170,15 +202,13 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
 
     .el-card :deep(.el-card__body) {
         padding: 0px;
-        background-color: powderblue;
+        background-color: #c6e2ff;
     }
 
     .el-card:hover {
         margin-top: -5px;
         margin-bottom: 5px;
     }
-
-
 }
 
 .pagination-block {
@@ -198,26 +228,14 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     .el-dialog__header {
         display: none;
     }
-    .dialog-content{
-        max-height: calc(90vh - 20px)!important;
+
+    .dialog-content {
+        max-height: calc(90vh - 20px) !important;
     }
+
     .el-dialog__body {
         padding: 10px;
-        // min-height: 100px;
         overflow-y: auto;
     }
 }
-
-
-// :deep(.el-dialog) {
-// position: relative;
-// margin-top: 10px !important;
-// background: #FFFFFF;
-// border-radius: 2px;
-// -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-// box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-// -webkit-box-sizing: border-box;
-// box-sizing: border-box;
-// width: 50%;
-// height: 60%;
 </style>

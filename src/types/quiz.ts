@@ -8,6 +8,7 @@ export interface IQuiz {
     choice_num: number,
     logic_num: number,
     coding_num: number,
+    last_exam_time: string,
     exam_minutes: number
 }
 

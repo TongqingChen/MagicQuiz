@@ -1,6 +1,6 @@
 import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
-import { ISettings, Settings } from '@/types/settings'
+import { ISettings } from '@/types/settings'
 
 const Axios = axios.create({
     baseURL: 'http://192.168.1.7:2345/',
@@ -88,14 +88,23 @@ export class Api {
         })
     }
     static getQuizList() {
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: "quizs/",
+            url: `quizs/?user_id=${user_id}`,
             method: "GET"
         })
     }
     static getQuestionListByQuizId(id: number) {
         return Axios({
             url: `questions/?quiz__id=${id}`,
+            method: "GET"
+        })
+    }
+    static getQuestionListRandom(sub_name: string, nums: number[]) {
+        var url = `random_quiz/?sub_name=${sub_name}`
+        nums.forEach(n => url += `&nums=${n}`)
+        return Axios({
+            url: url,
             method: "GET"
         })
     }
@@ -146,7 +155,7 @@ export class Api {
     }
 
     //sub_name为空Null--表示全部
-    static getWrongSetsMixedBySubName(sub_name: string | null=null) {
+    static getWrongSetsMixedBySubName(sub_name: string | null = null) {
         const user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: 'wrongsets_mixpost/?user_id=' + (sub_name ? `${user_id}&sub_name=${sub_name}` : `${user_id}`),
@@ -226,13 +235,12 @@ export class Api {
         }
     }
 
-    static storeSettings(sets:ISettings){
+    static storeSettings(sets: ISettings) {
         localStorage.setItem("settings", JSON.stringify(sets))
     }
     static loadSettings() {
         var str = localStorage.getItem("settings")
         if (str) {
-            console.log('JSON.parse(str)', JSON.parse(str))
             return JSON.parse(str)
         }
         return null

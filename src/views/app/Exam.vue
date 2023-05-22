@@ -3,7 +3,7 @@
         <el-header>
             <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
-            <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING"
+            <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING" :count_down="true"
                 :duration_secs="examInfo.exam_seconds" :blink="blink" start_text='【考试剩余】' @end_event="uploadExamResults">
             </Timer>
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
@@ -23,7 +23,7 @@
             </el-aside>
             <el-main v-if="activeQ.meta.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px;">
-                    <div class="answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
+                    <div class="user-answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
                     <div class="answer" v-if="examInfo.state == ExamState.FINISHED">【正确答案】{{ activeQ.meta.answer }}
                     </div>
                     <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
@@ -81,7 +81,7 @@ const examInfo = reactive(new ExamInfo())
 let ijPairs = reactive([[0, 0]])
 
 const autoNext = ref(false)
-const textType = computed(() => { return autoNext.value ? "primary" : "default" })
+const textType = computed(() => { return autoNext.value ? "primary" : "info" })
 
 const getQuestionList = () => {
     examInfo.id = Number(route.query.id)
@@ -93,7 +93,6 @@ const getQuestionList = () => {
     examInfo.question_num = 0
 
     if (examInfo.id >= 0) {
-        // examInfo.title = '【Python四级】2022.03'
         Api.getQuestionListByQuizId(examInfo.id).then(res => {
             let questions: Question[] = res.data.results
             examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
@@ -104,17 +103,16 @@ const getQuestionList = () => {
             var i = 0
             questions.forEach(q => {
                 ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
-                examInfo.meta[q.type].qList.push(
-                    {
-                        index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                        image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
-                    })
+                examInfo.meta[q.type].qList.push({
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
+                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
+                })
                 examInfo.scores += q.score
             })
             examInfo.question_num = questions.length
             examInfo.state = ExamState.ONGOING
         })
-    } else { //-1表示错题集
+    } else if (examInfo.id == -1) { //-1表示错题集
         Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
             const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
             const types = ["选择", "判断", "编程"]
@@ -127,14 +125,36 @@ const getQuestionList = () => {
             wrong_set.forEach(w => {
                 var t_id = types.indexOf(w.type)
                 ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
-                examInfo.meta[t_id].qList.push(
-                    {
-                        index: i++, id: w.qid, type: t_id, title: w.title, description: w.description,
-                        image: w.image, answer: w.answer, displayType: 'default', userAnswer: '未作答', score: w.score
-                    })
+                examInfo.meta[t_id].qList.push({
+                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description,
+                    image: w.image, answer: w.answer, displayType: 'default', userAnswer: '未作答', score: w.score
+                })
                 examInfo.scores += w.score
             })
             examInfo.question_num = wrong_set.length
+            examInfo.state = ExamState.ONGOING
+        })
+    } else if (examInfo.id == -2) {
+        var choice_num = Number(route.query.choice_num)
+        var logic_num = Number(route.query.logic_num)
+        var coding_num = Number(route.query.coding_num)
+        Api.getQuestionListRandom(examInfo.subjectName, [choice_num, logic_num, coding_num]).then(res => {
+            let questions: Question[] = res.data
+            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
+            { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
+            { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
+            examInfo.scores = 0
+            ijPairs = []
+            var i = 0
+            questions.forEach(q => {
+                ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
+                examInfo.meta[q.type].qList.push({
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
+                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
+                })
+                examInfo.scores += q.score
+            })
+            examInfo.question_num = questions.length
             examInfo.state = ExamState.ONGOING
         })
     }
@@ -155,15 +175,14 @@ onBeforeRouteLeave((to, from, next) => {
     }
     ElMessageBox.confirm(
         '正在考试中，离开页面数据将会丢失，考试中断！',
-        '确认离开吗？',
-        {
-            confirmButtonText: '继续考试',
-            cancelButtonText: '确认离开',
-            type: 'warning',
-            closeOnPressEscape: false,//按下 ESC 键关闭弹窗
-            distinguishCancelAndClose: true,//区分取消与关闭
-        }
-    ).then((action) => {
+        '确认离开吗？', {
+        confirmButtonText: '继续考试',
+        cancelButtonText: '确认离开',
+        type: 'warning',
+        closeOnPressEscape: false,//按下 ESC 键关闭弹窗
+        distinguishCancelAndClose: true,//区分取消与关闭
+    }
+    ).then(() => {
         next(false)
     }).catch((err) => {
         if (err == 'cancel') {
@@ -245,12 +264,10 @@ const submitQuiz = () => {
     .el-divider:deep(.el-divider__text) {
         background-color: transparent;
     }
-
     .el-divider {
         padding: 0px;
         margin: 16px 0;
     }
-
     .question-zone {
         display: flex;
         flex-wrap: wrap;
@@ -265,28 +282,28 @@ const submitQuiz = () => {
             width: 45px;
         }
     }
-
     .question {
         padding-left: 10px;
-
         margin: 0px;
         font-size: 14px;
         white-space: pre-wrap;
-
         .title {
             font-weight: bold;
             // color: darkblue;
             font-size: 14px;
         }
     }
-
     .answer {
         font-weight: bold;
-        color: darkblue;
+        color: darkgreen;
         font-size: 14px;
         white-space: pre-wrap;
     }
-
+    .user-answer{
+        font-weight: bold;
+        color: darkblue;
+        font-size: 14px;
+    }
     .el-header {
         height: 36px;
         position: relative;
@@ -298,12 +315,10 @@ const submitQuiz = () => {
         font-size: 12px;
         font-weight: bold;
     }
-
     .el-aside {
         // color: var(--el-text-color-primary);
         background-color: var(--el-color-primary-light-8);
     }
-
     .el-radio {
         margin-left: 16px;
         margin-right: 0px;
@@ -311,26 +326,11 @@ const submitQuiz = () => {
         // color: darkblue;
         font-weight: bold;
     }
-
-    // .el-button--primary.is-active,
-    // .el-button--primary:active {
-    //     background: rgb(230, 162, 60);
-    //     border-color: rgb(230, 162, 60);
-    //     color: #fff;
-    // }
-
     .el-button--primary:focus {
         background-color: var(--el-color-primary);
         background-color: var(--el-color-primary);
         // color: #fff;
     }
-
-    // .el-button--primary:hover {
-    //     background-color:chocolate;
-    //     // border-color: rgb(230, 162, 60);
-    //     color: #fff;
-    // }
-
     .el-main {
         background-color: white;
         padding: 0;
