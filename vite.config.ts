@@ -40,13 +40,20 @@ export default defineConfig({
 		}
 	},
 	build: {
-		
+
 	},
 
 	server: {
 		// https: true, // 是否开启 https
 		open: false, // 是否自动在浏览器打开
 		cors: true, // 允许跨域  8月更新
+		// proxy: {
+		// 	'^/api': {
+		// 		target: 'http://localhost:8000',   //代理接口
+		// 		changeOrigin: true,
+		// 		rewrite: (path) => path.replace(/^\/api/, '')
+		// 	}
+		// },
 		host: true,
 		port: 3000, // 端口号
 		headers: {

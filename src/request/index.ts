@@ -2,9 +2,17 @@ import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 import { ISettings } from '@/types/settings'
 
+let api_base_url = ''
+// vite
+if (import.meta.env.DEV == true) {
+    api_base_url = 'http://localhost:8000/'
+} else if (import.meta.env.PROD == true) {
+    api_base_url = 'http://192.168.1.7:2345/'
+}
+
 const Axios = axios.create({
-    baseURL: 'http://192.168.1.7:2345/',
-    // baseURL: 'http://localhost:8000/',
+    // baseURL: 'http://192.168.1.7:2345/',
+    baseURL: api_base_url,
     timeout: 5000,
     headers: {
         "Content-Type": "application/json;charset=utf-8;"
@@ -207,6 +215,13 @@ export class Api {
             url: "api/token/verify/",
             method: "POST",
             data: { "token": token }
+        })
+    }
+
+    static getArticles() {
+        return Axios({
+            url: "articles/",
+            method: "GET"
         })
     }
 

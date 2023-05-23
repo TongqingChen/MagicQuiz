@@ -13,7 +13,8 @@
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button class="login-btn" type="primary" @click="submitForm(ruleFormRef)" @keydown.enter="keyDown">登录</el-button>
+                    <el-button class="login-btn" type="primary" @click="submitForm(ruleFormRef)"
+                        @keydown.enter="keyDown">登录</el-button>
                     <!-- <el-button class="login-btn" @click="resetForm(ruleFormRef)">重置</el-button> -->
                     <el-button class="login-btn" @click="resetForm">重置</el-button>
                 </el-form-item>
@@ -31,7 +32,8 @@ import { ElMessage, FormInstance } from "element-plus";
 import { onMounted, onUnmounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { User, Lock } from '@element-plus/icons-vue'
-import {Api} from '@/request/index'
+import { Api } from '@/request/index'
+import { HttpStatusCode } from "axios";
 
 
 const router = useRouter()
@@ -60,10 +62,13 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 Api.storeUserInfo(res.data)
                 // 跳转页面
                 router.push('/')
-            }).catch(err=>{
-                ElMessage.error(`用户名或密码错误，${err.code}`)
-            }
-            )
+            }).catch(err => {
+                if (err.response.status == HttpStatusCode.Unauthorized) {
+                    ElMessage.error(`用户名或密码错误，${err.code}`)
+                } else {
+                    ElMessage.error(`服务器不可用，${err.code}`)
+                }
+            })
         } else {
             ElMessage.error('用户名或密码不符合规则')
             return false
@@ -75,13 +80,13 @@ const resetForm = () => {
     loginData.user.username = ""
     loginData.user.password = ""
 }
-const keyDown=(e:any)=>{
-    if(e.keyCode==13 || e.keyCode==100){
+const keyDown = (e: any) => {
+    if (e.keyCode == 13 || e.keyCode == 100) {
         submitForm(ruleFormRef.value)
     }
 }
-onMounted(()=>window.addEventListener('keydown', keyDown))
-onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
+onMounted(() => window.addEventListener('keydown', keyDown))
+onUnmounted(() => window.removeEventListener('keydown', keyDown, false))
 </script>
 
 
@@ -102,6 +107,7 @@ onUnmounted(()=>window.removeEventListener('keydown', keyDown, false))
         left: 50%;
         top: 50%;
         transform: translate(-50%, -50%);
+
         .title {
             font-size: 24px;
             font-weight: bold;

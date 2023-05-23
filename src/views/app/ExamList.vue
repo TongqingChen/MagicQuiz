@@ -188,7 +188,7 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
         }
 
         .card-body {
-            height: 96px;
+            height: 90px;
             padding: 20px;
             color: darkcyan;
         }

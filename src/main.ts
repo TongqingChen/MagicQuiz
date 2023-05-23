@@ -10,14 +10,22 @@ import 'element-plus/theme-chalk/el-message.css'
 import 'element-plus/theme-chalk/el-overlay.css'
 import 'uno.css'
 
+import VMdPreview from '@kangc/v-md-editor/lib/preview';
+import '@kangc/v-md-editor/lib/style/preview.css';
+import githubTheme from '@kangc/v-md-editor/lib/theme/github.js';
+import '@kangc/v-md-editor/lib/theme/style/github.css';
+
+// highlightjs
+import hljs from 'highlight.js';
+
+VMdPreview.use(githubTheme, {Hljs: hljs,});
+
+
 const app = createApp(App)
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
     app.component(key, component)
 }
-// if(sessionStorage.getItem('store')){
-//     store.replaceState(Object.assign({}, store.state, JSON.parse(String(sessionStorage.getItem('store')))))
-// }
-// window.addEventListener('beforeunload', ()=>{sessionStorage.setItem('store', JSON.stringify(store.state))})
 app.use(router)
 app.use(store)
+app.use(VMdPreview)
 app.mount('#app')
