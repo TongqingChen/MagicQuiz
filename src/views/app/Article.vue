@@ -15,7 +15,8 @@
             </el-aside>
 
             <el-main>
-                <h1 v-if="currArticle.id > 0" align="center" style="margin:10px;font-size:larger">{{ currArticle.title }}</h1>
+                <h1 v-if="currArticle.id > 0" align="center" style="margin:10px;font-size:larger">{{ currArticle.title }}
+                </h1>
                 <p v-if="currArticle.id > 0" class='article-info'>
                     <el-avatar size="small" :src="currArticle.user_avatar" />
                     <el-text>作者: {{ currArticle.user }}</el-text>
@@ -25,6 +26,13 @@
                     <el-text>更新: {{ currArticle.update_time }}</el-text>
                 </p>
                 <v-md-preview :text="currArticle.content"></v-md-preview>
+                <div v-if="currArticle.attachment && currArticle.attachment.length > 0">
+                    <VueOfficeDocx v-if="currArticle.attach_type == 0" :src="currArticle.attachment"
+                        :options="{ width: 1024 }" />
+                    <VueOfficePdf v-if="currArticle.attach_type == 1" :src="currArticle.attachment"
+                        :options="{ width: 1024 }" />
+                    <el-link v-if="currArticle.attach_type < 0" :href="currArticle.attachment" type="primary">下载</el-link>
+                </div>
             </el-main>
         </el-container>
     </div>
@@ -35,6 +43,8 @@ import { onMounted, reactive, ref } from 'vue';
 import { Api } from '@/request'
 import { Folder } from '@element-plus/icons-vue';
 import { IArticles, Article } from '@/types/wiki'
+import VueOfficePdf from '@vue-office/pdf';
+import VueOfficeDocx from '@vue-office/docx';
 
 let currActive = ref('-1')
 let currArticle = reactive(new Article())
@@ -51,7 +61,7 @@ onMounted(() => {
             }
             meta[cid].articles.push(e)
         });
-        if(res.data.results.length>0){
+        if (res.data.results.length > 0) {
             currActive.value = String(res.data.results[0].id)
             onArticleSelected(currActive.value, '')
         }
@@ -64,6 +74,8 @@ const onArticleSelected = (key: string, path: string) => {
         if (t) {
             currArticle.copyFrom(t)
             currActive.value = String(t.id)
+            console.log('crur', currArticle)
+
             return key
         }
     })
@@ -99,8 +111,8 @@ const onArticleSelected = (key: string, path: string) => {
     height: calc(100vh - 58px);
 }
 
-.article-info{
-    margin:0px;
+.article-info {
+    margin: 0px;
     font-size: small;
     display: flex;
     justify-content: center;
