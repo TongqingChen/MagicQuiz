@@ -76,7 +76,7 @@ const uploadExamResults = async () => {
     results.meta.note = `[${math_info.name}]${correct_count}/${math_info.meta.length}`
     results.meta.user = user_id
     results.meta.quiz = math_info.id
-    results.meta.abs_score = correct_count
+    results.meta.abs_score = Math.round(correct_count * 100 / math_info.meta.length) //correct_count
     results.meta.rel_score = Math.round(correct_count * 100 / math_info.meta.length)
     results.meta.use_minutes = Math.round((Date.now() - math_info.start_time) / 1000 / 60)
     await Api.postQuizResult(results.meta)

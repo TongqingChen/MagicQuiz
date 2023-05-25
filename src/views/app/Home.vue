@@ -62,7 +62,7 @@
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
                         <el-table-column prop="quiz_name" sortable label="试卷名" />
-                        <el-table-column prop="rel_score" sortable label="得分" />
+                        <el-table-column prop="abs_score" sortable label="得分" />
                         <el-table-column prop="use_minutes" sortable label="分钟" />
                         <el-table-column prop="date_time" sortable label="考试时间" />
                         <el-table-column prop="note" label="备注" />
@@ -244,7 +244,7 @@ onMounted(async () => {
                 meta.exam_his[k] = info.exam_record[k]
                 for (var i = 0; i < meta.chart_display_num; i++) {
                     scores.push(i < info.exam_record[k].length ? {
-                        'value': info.exam_record[k][i].rel_score, 'date_time': info.exam_record[k][i].date_time,
+                        'value': info.exam_record[k][i].abs_score, 'date_time': info.exam_record[k][i].date_time,
                         'quiz': info.exam_record[k][i].quiz_name, 'use_mins': info.exam_record[k][i].use_minutes
                     } : { 'value': 0, 'date_time': 'NA', 'quiz': 'NA', 'use_mins': 0 })
                 }
