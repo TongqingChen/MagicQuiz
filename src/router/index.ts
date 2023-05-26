@@ -51,6 +51,12 @@ const routes: Array<RouteRecordRaw> = [
                         meta: { title: "知识库", icon: "el-icon-s-home", visible: true, is_child: true },
                     },
                     {
+                        path: "/greatEvent",
+                        name: 'greatEvent',
+                        component: () => import('@/views/app/GreatEvent.vue'),
+                        meta: { title: "大事记", icon: "el-icon-s-home", visible: true, is_child: true },
+                    },
+                    {
                         path: "/userInfo",
                         name: 'userInfo',
                         component: () => import('@/views/app/UserInfo.vue'),

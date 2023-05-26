@@ -21,3 +21,7 @@ export interface IBigDay {
     description: string,
     date: string,
 }
+
+export interface IGreatEvent extends IBigDay{
+    image: string
+}

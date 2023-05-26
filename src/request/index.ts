@@ -133,7 +133,7 @@ export class Api {
     static getBigDays() {
         const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: `bigdays/?user__id=${user_id}`,
+            url: `bigdays/?user__id=${user_id}&enabled=true`,
             method: "GET"
         })
     }
@@ -142,6 +142,13 @@ export class Api {
         const user_id = Api.loadUserIdFromStorage()
         return Axios({
             url: `habbits/?user__id=${user_id}&enabled=true`,
+            method: "GET"
+        })
+    }
+    static getGreatEvents() {
+        const user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: `great_events/?user__id=${user_id}&enabled=true`,
             method: "GET"
         })
     }
