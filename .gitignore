@@ -21,7 +21,10 @@ dist-ssr
 *.njsproj
 *.sun
 *.sw?
-*.d.ts
+auto-imports.d.ts
+components.d.ts
+src/vite-env.d.ts
 yarn.lock
 .vscode/
 package-lock.json
+dist/

@@ -13,8 +13,8 @@
             <el-aside width="164px">
                 <el-scrollbar style="height:100%">
                     <div v-for="qs in examInfo.meta" style="margin: 5px;">
-                        <el-divider>{{ qs.typeName }}</el-divider>
-                        <div class="question-zone">
+                        <el-divider v-if="qs.qList.length>0">{{ qs.typeName }}</el-divider>
+                        <div class="question-zone" v-if="qs.qList.length>0">
                             <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
                                 @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
                         </div>
