@@ -6,6 +6,10 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import UnoCss from 'unocss/vite'
 // import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import { resolve } from 'path'
+import mkcert from 'vite-plugin-mkcert'
+import fs from 'fs'
+import path from 'path'
+
 
 
 // https://vitejs.dev/config/
@@ -19,6 +23,7 @@ export default defineConfig({
 		Components({
 			resolvers: [ElementPlusResolver()],
 		}),
+		// mkcert()
 		// createSvgIconsPlugin(
 		//    {
 		//   // 指定需要缓存的图标文件夹
@@ -44,7 +49,10 @@ export default defineConfig({
 	},
 
 	server: {
-		// https: true, // 是否开启 https
+		// https: {
+		// 	cert: fs.readFileSync(path.join(__dirname, 'keys/localhost+1.crt')),
+		// 	key: fs.readFileSync(path.join(__dirname, 'keys/localhost+1-key.pem')),
+		// },
 		open: false, // 是否自动在浏览器打开
 		cors: true, // 允许跨域  8月更新
 		// proxy: {

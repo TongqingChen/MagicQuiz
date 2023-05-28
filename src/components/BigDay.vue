@@ -2,9 +2,10 @@
     <el-tooltip :content="description" placement="top" :disabled="!(description && description.length > 0)">
         <el-card class="box-card">
             <template #header>
-                <div class="card-header">
+                <el-text size="small" style="color:white" truncated>{{ title }}</el-text>
+                <!-- <div class="card-header">
                     <span>{{ title }}</span>
-                </div>
+                </div> -->
             </template>
             <div class="card-body" :style="`color: ${meta.color}`">
                 <div>
@@ -38,15 +39,14 @@ const props = defineProps(["date", "title", "description"])
 .box-card {
     font-size: 12px;
 
-    .card-header {
-        display: flex;
-        justify-content: center;
-        color: white;
-        align-items: center;
-        padding: 5px 0px;
-        font-weight: bold;
-    }
-
+    // .card-header {
+    //     display: flex;
+    //     justify-content: center;
+    //     color: white;
+    //     align-items: center;
+    //     padding: 5px 0px;
+    //     font-weight: bold;
+    // }
     .card-body {
         display: flex;
         flex-direction: column;
@@ -56,7 +56,7 @@ const props = defineProps(["date", "title", "description"])
 }
 
 .el-card :deep(.el-card__header) {
-    padding: 0px 8px;
+    padding: 4px 4px 0px 4px;
     background-color: #3f94d0;
 }
 

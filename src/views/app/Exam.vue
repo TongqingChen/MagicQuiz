@@ -13,8 +13,8 @@
             <el-aside width="164px">
                 <el-scrollbar style="height:100%">
                     <div v-for="qs in examInfo.meta" style="margin: 5px;">
-                        <el-divider v-if="qs.qList.length>0">{{ qs.typeName }}</el-divider>
-                        <div class="question-zone" v-if="qs.qList.length>0">
+                        <el-divider v-if="qs.qList.length > 0">{{ qs.typeName }}</el-divider>
+                        <div class="question-zone" v-if="qs.qList.length > 0">
                             <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
                                 @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
                         </div>
@@ -80,7 +80,7 @@ const examInfo = reactive(new ExamInfo())
 
 let ijPairs = reactive([[0, 0]])
 
-const autoNext = ref(false)
+const autoNext = ref(true)
 const textType = computed(() => { return autoNext.value ? "primary" : "info" })
 
 const getQuestionList = () => {
@@ -120,7 +120,8 @@ const getQuestionList = () => {
             { typeId: QueType.LOGIC, typeName: types[QueType.LOGIC], icon: "Setttings", qList: [] },
             { typeId: QueType.CODING, typeName: types[QueType.CODING], icon: "Menu", qList: [] }]
             examInfo.scores = 0
-            ijPairs = []
+            wrong_set.sort((w1, w2) => { return types.indexOf(w1.type) - types.indexOf(w2.type) })
+
             var i = 0
             wrong_set.forEach(w => {
                 var t_id = types.indexOf(w.type)
@@ -264,10 +265,12 @@ const submitQuiz = () => {
     .el-divider:deep(.el-divider__text) {
         background-color: transparent;
     }
+
     .el-divider {
         padding: 0px;
         margin: 16px 0;
     }
+
     .question-zone {
         display: flex;
         flex-wrap: wrap;
@@ -282,28 +285,33 @@ const submitQuiz = () => {
             width: 45px;
         }
     }
+
     .question {
         padding-left: 10px;
         margin: 0px;
         font-size: 14px;
         white-space: pre-wrap;
+
         .title {
             font-weight: bold;
             // color: darkblue;
             font-size: 14px;
         }
     }
+
     .answer {
         font-weight: bold;
         color: darkgreen;
         font-size: 14px;
         white-space: pre-wrap;
     }
-    .user-answer{
+
+    .user-answer {
         font-weight: bold;
         color: darkblue;
         font-size: 14px;
     }
+
     .el-header {
         height: 36px;
         position: relative;
@@ -315,10 +323,12 @@ const submitQuiz = () => {
         font-size: 12px;
         font-weight: bold;
     }
+
     .el-aside {
         // color: var(--el-text-color-primary);
         background-color: var(--el-color-primary-light-8);
     }
+
     .el-radio {
         margin-left: 16px;
         margin-right: 0px;
@@ -326,11 +336,13 @@ const submitQuiz = () => {
         // color: darkblue;
         font-weight: bold;
     }
+
     .el-button--primary:focus {
         background-color: var(--el-color-primary);
         background-color: var(--el-color-primary);
         // color: #fff;
     }
+
     .el-main {
         background-color: white;
         padding: 0;
