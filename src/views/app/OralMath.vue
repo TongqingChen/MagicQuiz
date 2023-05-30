@@ -82,7 +82,7 @@ const uploadExamResults = async () => {
     error_count = math_info.meta.length - correct_count
     var user_id = Api.loadUserIdFromStorage()
     var results = new QuizResult()
-    results.meta.note = `[${math_info.name}]${correct_count}/${math_info.meta.length}`
+    results.meta.note = `[${math_info.name}]加数:${math_info.digital_num}个, 最大: ${math_info.max_digital}, ${correct_count}/${math_info.meta.length}`
     results.meta.user = user_id
     results.meta.quiz = math_info.id
     results.meta.abs_score = Math.round(correct_count * 100 / math_info.meta.length) //correct_count
