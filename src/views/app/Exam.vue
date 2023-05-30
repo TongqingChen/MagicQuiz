@@ -217,6 +217,7 @@ const uploadExamResults = async () => {
     var results = new QuizResult()
     var total_score = 0
     var correct_count = [0, 0, 0]
+    var error_count = [0, 0, 0]
     examInfo.meta.forEach(qs => {
         qs.qList.forEach(q => {
             q.displayType = q.userAnswer == q.answer ? "success" : "danger"
@@ -232,8 +233,11 @@ const uploadExamResults = async () => {
                 })
             }
         })
+        error_count[qs.typeId] = qs.qList.length - correct_count[qs.typeId]
     })
-    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}, 判断: ${correct_count[QueType.LOGIC]}/${examInfo.meta[QueType.LOGIC].qList.length}`
+
+    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}` +
+        `判断: ${correct_count[QueType.LOGIC]}/${examInfo.meta[QueType.LOGIC].qList.length}`
     results.meta.user = user_id
     results.meta.quiz = examInfo.id
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
@@ -242,7 +246,11 @@ const uploadExamResults = async () => {
     if (examInfo.id >= 0) { //错题集不提交考试记录
         await Api.postQuizResult(results.meta)
     }
-    ElMessage.success('考试提交成功!')
+    ElMessageBox.alert(`得分: ${results.meta.abs_score}/${total_score}<br/>` +
+        (results.meta.abs_score == total_score ? '恭喜您获得满分💯' :
+            `选择题: ${correct_count[QueType.CHOICE]} ✅, ${error_count[QueType.CHOICE]} ❌<br/>` +
+            `判断题: ${correct_count[QueType.LOGIC]} ✅, ${error_count[QueType.LOGIC]} ❌`), '考试结果',
+        { type: results.meta.abs_score == total_score ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
 
 const submitQuiz = () => {

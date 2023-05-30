@@ -8,7 +8,7 @@
                     <el-divider direction="vertical" />
                     <el-text type="primary" size="small">{{ evt.description }}</el-text>
                 </template>
-                <img v-if="evt.image" :src="evt.image" class="image" />
+                <el-image v-if="evt.image" :src="evt.image" :preview-src-list="[evt.image]" class="image" />
                 <el-text v-else type="info" size="small">{{ evt.description }}</el-text>
             </el-card>
         </el-timeline-item>

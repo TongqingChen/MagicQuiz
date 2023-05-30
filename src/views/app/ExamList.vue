@@ -18,10 +18,11 @@
                     </div>
                 </template>
                 <div class="card-body">
-                    <li>{{ quiz.subject == 3 ? "最大数" : "选择题数" }}：{{ quiz.choice_num }}</li>
-                    <li>{{ quiz.subject == 3 ? "加数个数" : "判断题数" }}：{{ quiz.logic_num }}</li>
-                    <li>{{ quiz.subject == 3 ? "题目数" : "编程题数" }}：{{ quiz.coding_num }}</li>
-                    <li>考试时长：{{ quiz.exam_minutes }}分钟</li>
+                    <li v-if="quiz.subject != 3">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
+                    <li v-if="quiz.subject != 3">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
+                    <li v-if="quiz.subject != 3">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
+                    <li v-if="quiz.subject != 3">考试时长：{{ quiz.exam_minutes }}分钟</li>
+                    <li v-else>点击【开始考试】后配置</li>
                     <li>最新考试：{{ quiz.last_exam_time }}</li>
                 </div>
             </el-card>
@@ -34,15 +35,15 @@
     </div>
     <el-dialog v-model="showDialog" title="选择题目数量" width="80%" center>
         <el-form label-position="right" :label-width="200">
-            <el-form-item v-for="q in randomQuiz" :label="q.label">
-                <el-slider v-model="q.num" show-input size="small" />
+            <el-form-item v-for="q in (currentSubjectId == 3 ? oralMathConfig : randomQuiz)" :label="q.label">
+                <el-slider v-model="q.val" show-input size="small" show-stops :min="q.min" :max="q.max" :step="q.step" />
             </el-form-item>
             <el-form-item label="操作">
                 <el-button type="primary" @click="onRandomQuiz">开始考试</el-button>
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-affix v-if="currentSubjectId != -1 && currentSubjectId != 3" position="bottom" :offset="20">
+    <el-affix v-if="currentSubjectId >= 0" position="bottom" :offset="20">
         <el-tooltip placement="right" content="随机考试">
             <el-button type="success" :icon="Edit" circle @click="showDialog = true" />
         </el-tooltip>
@@ -64,15 +65,22 @@ import { Edit } from '@element-plus/icons-vue';
 const router = useRouter()
 
 const currentSubjectId = ref(-1)
+const currentQuizId = ref(-1)
 
 const subjectList = reactive(new SubjectList())
 const quizPages = reactive(new QuizPages())
 const showDialog = ref(false)
 const randomQuiz = reactive([
-    { label: '选择', num: 15 },
-    { label: '判断', num: 10 },
-    { label: '编程', num: 2 },
-    { label: '时长(分钟)', num: 60 }
+    { label: '选择', val: 15, min: 5, max: 100, step: 5 },
+    { label: '判断', val: 10, min: 5, max: 100, step: 5 },
+    { label: '编程', val: 2, min: 0, max: 20, step: 1 },
+    { label: '时长(分钟)', val: 60, min: 10, max: 120, step: 10 }
+])
+const oralMathConfig = reactive([
+    { label: '加数个数', val: 2, min: 2, max: 10, step: 1 },
+    { label: '加数最大值', val: 20, min: 10, max: 100, step: 10 },
+    { label: '题目个数', val: 40, min: 10, max: 100, step: 10 },
+    { label: '时长(分钟)', val: 10, min: 5, max: 30, step: 5 }
 ])
 
 const getSubjectNameById = (id: number) => {
@@ -128,6 +136,17 @@ const onPageChanged = (page: number) => (
 
 const onRandomQuiz = () => {
     showDialog.value = false
+    if (currentSubjectId.value == 3) {
+        router.push({
+            path: '/oral_math',
+            query: {
+                id: currentQuizId.value, name: '数学口算', digital_num: oralMathConfig[0].val,
+                max_digital: oralMathConfig[1].val, q_num: oralMathConfig[2].val,
+                exam_seconds: oralMathConfig[3].val * 60
+            }
+        })
+        return
+    }
     var sub_name = getSubjectNameById(currentSubjectId.value)
     if (!sub_name) {
         return
@@ -136,13 +155,18 @@ const onRandomQuiz = () => {
         path: '/exam',
         query: {
             id: -2, name: '随机测试', sub_name: sub_name,
-            choice_num: randomQuiz[0].num, logic_num: randomQuiz[1].num,
-            coding_num: randomQuiz[2].num, exam_seconds: randomQuiz[3].num * 60
+            choice_num: randomQuiz[0].val, logic_num: randomQuiz[1].val,
+            coding_num: randomQuiz[2].val, exam_seconds: randomQuiz[3].val * 60
         }
     })
 }
 
 const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
+    if (subjectId == 3) {
+        currentQuizId.value = quizId
+        showDialog.value = true
+        return
+    }
     ElMessageBox.confirm(
         `开始【${subjectName}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
         '请确认', {
@@ -152,7 +176,7 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     }
     ).then(() => {
         router.push({
-            path: subjectId == 3 ? 'oral_math' : '/exam',
+            path: '/exam',
             query: { id: quizId, name: quizName, sub_name: subjectName, exam_seconds: exam_minutes * 60 }
         })
     })

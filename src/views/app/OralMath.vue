@@ -37,10 +37,13 @@ import { ISettings, SetID } from '@/types/settings'
 const math_info = reactive({
     id: 0,
     name: '',
+    digital_num: 2,
+    max_digital: 30,
+    que_num: 40,
     state: ExamState.IDLE,
     exam_seconds: 0,
     start_time: 0,
-    meta: [{ title: '', answer: 0, user_answer: 0, mark: '' }]
+    meta: [{ title: '', answer: 0, user_answer: '', mark: '' }]
 })
 
 const blink = ref(true)
@@ -50,15 +53,18 @@ onMounted(() => {
     math_info.id = Number(route.query.id)
     math_info.name = String(route.query.name)
     math_info.exam_seconds = Number(route.query.exam_seconds)
+    math_info.digital_num = Number(route.query.digital_num)
+    math_info.max_digital = Number(route.query.max_digital)
+    math_info.que_num = Number(route.query.q_num)
     math_info.state = ExamState.ONGOING
     var s: ISettings = Api.loadSettings()
     if (s) {
         blink.value = s.data[SetID.EXAM_TIME_BLINK].value
     }
-    Api.getOralMath(math_info.id).then((res) => {
+    Api.getOralMath(math_info.digital_num, math_info.max_digital, math_info.que_num).then((res) => {
         math_info.meta = []
         res.data.forEach((r: any[]) =>
-            math_info.meta.push({ title: r[0], answer: r[1], user_answer: 0, mark: '' })
+            math_info.meta.push({ title: r[0], answer: r[1], user_answer: '', mark: '' })
         )
         math_info.start_time = Date.now()
     })
@@ -67,10 +73,13 @@ onMounted(() => {
 const uploadExamResults = async () => {
     math_info.state = ExamState.FINISHED
     var correct_count = 0
+    var error_count = 0
     math_info.meta.forEach(m => {
-        m.mark = m.answer == m.user_answer ? '✅' : '❌'
-        correct_count += m.answer == m.user_answer ? 1 : 0
+        var flag = String(m.answer) == m.user_answer
+        m.mark = flag ? '✅' : '❌'
+        correct_count += flag ? 1 : 0
     })
+    error_count = math_info.meta.length - correct_count
     var user_id = Api.loadUserIdFromStorage()
     var results = new QuizResult()
     results.meta.note = `[${math_info.name}]${correct_count}/${math_info.meta.length}`
@@ -80,7 +89,9 @@ const uploadExamResults = async () => {
     results.meta.rel_score = Math.round(correct_count * 100 / math_info.meta.length)
     results.meta.use_minutes = Math.round((Date.now() - math_info.start_time) / 1000 / 60)
     await Api.postQuizResult(results.meta)
-    ElMessage.success('考试提交成功!')
+    ElMessageBox.alert(`得分: ${results.meta.abs_score}/100<br/>` +
+        (correct_count == math_info.meta.length ? "恭喜您获得满分💯" : `详情: ${correct_count} ✅, ${error_count} ❌<br/>`), '考试结果',
+        { type: correct_count == math_info.meta.length ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
 
 const submitQuiz = () => {
