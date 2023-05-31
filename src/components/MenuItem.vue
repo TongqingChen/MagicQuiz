@@ -19,12 +19,15 @@
         </el-menu-item>
         <template v-if="menu.meta.padding">
             <div class="flex-grow"></div>
+            <el-button link :icon="FullScreen" type="primary" @click="screenfull.toggle()">全屏</el-button>
         </template>
+        
     </template>
 </template>
 
 <script lang="ts" setup>
-
+import { FullScreen } from "@element-plus/icons-vue";
+import screenfull from "screenfull";
 defineProps(['menuList'])
 </script>
 

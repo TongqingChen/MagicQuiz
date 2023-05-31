@@ -21,6 +21,7 @@
     "mkcert": "^1.5.1",
     "nginx": "^1.0.8",
     "sass": "^1.62.0",
+    "screenfull": "^6.0.2",
     "unocss": "^0.51.8",
     "unplugin-auto-import": "^0.15.3",
     "unplugin-vue-components": "^0.24.1",

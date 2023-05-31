@@ -105,6 +105,7 @@ let settings = reactive(new Settings())
 const showSettings = ref(false)
 
 const meta: any = reactive({
+    version: '1.3.20230531',
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
@@ -206,7 +207,7 @@ const onLinkClicked = (index: number) => {
                 meta.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
             }
             ElMessage.success({
-                message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}`,
+                message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}[${meta.version}]`,
                 duration: 1000
             })
             break
