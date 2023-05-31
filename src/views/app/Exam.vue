@@ -83,7 +83,7 @@ let ijPairs = reactive([[0, 0]])
 const autoNext = ref(true)
 const textType = computed(() => { return autoNext.value ? "primary" : "info" })
 
-const getQuestionList = () => {
+const getQuestionList = async() => {
     examInfo.id = Number(route.query.id)
     examInfo.state = ExamState.IDLE
     examInfo.start_time = Date.now()
@@ -93,7 +93,7 @@ const getQuestionList = () => {
     examInfo.question_num = 0
 
     if (examInfo.id >= 0) {
-        Api.getQuestionListByQuizId(examInfo.id).then(res => {
+        await Api.getQuestionListByQuizId(examInfo.id).then(res => {
             let questions: Question[] = res.data.results
             examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
             { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
@@ -113,7 +113,7 @@ const getQuestionList = () => {
             examInfo.state = ExamState.ONGOING
         })
     } else if (examInfo.id == -1) { //-1表示错题集
-        Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
+        await Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
             const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
             const types = ["选择", "判断", "编程"]
             examInfo.meta = [{ typeId: QueType.CHOICE, typeName: types[QueType.CHOICE], icon: "Message", qList: [] },
@@ -139,7 +139,7 @@ const getQuestionList = () => {
         var choice_num = Number(route.query.choice_num)
         var logic_num = Number(route.query.logic_num)
         var coding_num = Number(route.query.coding_num)
-        Api.getQuestionListRandom(examInfo.subjectName, [choice_num, logic_num, coding_num]).then(res => {
+        await Api.getQuestionListRandom(examInfo.subjectName, [choice_num, logic_num, coding_num]).then(res => {
             let questions: Question[] = res.data
             examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
             { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
@@ -161,11 +161,14 @@ const getQuestionList = () => {
     }
 }
 
-onMounted(() => {
-    getQuestionList()
+onMounted(async() => {
     var s: ISettings = Api.loadSettings()
     if (s) {
         blink.value = s.data[SetID.EXAM_TIME_BLINK].value
+    }
+    await getQuestionList()
+    if(examInfo.question_num>0){
+        onQuestionClicked(0)
     }
 })
 

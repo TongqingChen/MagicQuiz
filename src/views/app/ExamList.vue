@@ -114,7 +114,6 @@ const getQuizList = () => {
 
 onMounted(() => {
     Api.getSubjectList().then((res: { data: [] }) => {
-        console.log(res)
         subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data)
         getQuizList()
     })
