@@ -22,7 +22,7 @@
                     <li v-if="quiz.subject != 3">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
                     <li v-if="quiz.subject != 3">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
                     <li v-if="quiz.subject != 3">考试时长：{{ quiz.exam_minutes }}分钟</li>
-                    <li v-else>点击【开始考试】后配置</li>
+                    <li v-else>点击【开始考试】配置</li>
                     <li>最新考试：{{ quiz.last_exam_time }}</li>
                 </div>
             </el-card>
@@ -94,8 +94,8 @@ const getSubjectNameById = (id: number) => {
 const getQuizList = () => {
     quizPages.currentPage = 1
     quizPages.subject = { id: 0, name: "Python四级", count: 0 }
-    Api.getQuizList().then((res: { data: { results: any; }; }) => {
-        quizPages.quizList = res.data.results
+    Api.getQuizList().then((res: { data: [] }) => {
+        quizPages.quizList = res.data
         quizPages.quizNum = quizPages.quizList.length
         quizPages.quizDisplay = quizPages.quizList
         subjectList.data.forEach((s: { count: number; }) => { s.count = 0 })
@@ -113,8 +113,9 @@ const getQuizList = () => {
 }
 
 onMounted(() => {
-    Api.getSubjectList().then((res: { data: { results: [] }; }) => {
-        subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data.results)
+    Api.getSubjectList().then((res: { data: [] }) => {
+        console.log(res)
+        subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data)
         getQuizList()
     })
 })

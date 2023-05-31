@@ -90,15 +90,16 @@ export class Api {
     }
 
     static getSubjectList() {
+        const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: "subjects/",
+            url: `user_subject_info/?user_id=${user_id}&code=subject`,
             method: "GET"
         })
     }
     static getQuizList() {
         const user_id = Api.loadUserIdFromStorage()
         return Axios({
-            url: `quizs/?user_id=${user_id}`,
+            url: `user_subject_info/?user_id=${user_id}&code=quiz`,
             method: "GET"
         })
     }

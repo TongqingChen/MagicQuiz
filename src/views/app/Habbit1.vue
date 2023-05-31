@@ -17,7 +17,7 @@
                 </el-button-group>
             </div>
         </template>
-        <el-table :data="habbits.data" border style="width: 100%; font-size:12px" table-layout="auto" stripe
+        <el-table :data="habbtsDisp" border style="width: 100%; font-size:12px" table-layout="auto" stripe
             :row-style="{ height: 0 + 'px' }" :cell-style="{ padding: '0px' }" :header-cell-style="{ padding: '0px' }">
             <el-table-column label="名称" fixed align="center">
                 <template #default="scope">{{ scope.row.name }}<span v-if="scope.row.description.length > 0">({{
@@ -41,20 +41,34 @@
                 </template>
             </el-table-column>
         </el-table>
+        <el-button style="width:100%" text size="small" type="primary" :icon="ArrowDownBold" @click="unfoldHabbit">展开</el-button>
     </el-card>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { Habbits, IHabbit } from '@/types/habbit';
-import { Check, ArrowLeft, ArrowRight, List, Location } from '@element-plus/icons-vue';
+import { Habbits, IHabbit, deepCopyHabbit } from '@/types/habbit';
+import { Check, ArrowLeft, ArrowRight, List, ArrowDownBold } from '@element-plus/icons-vue';
 import { ADate } from '@/utils/date'
 import { Api } from '@/request';
 import { ElMessageBox } from 'element-plus';
 
 const dataLoaded = ref(false)
 var habbits = reactive(new Habbits())
-
+let habbtsDisp: IHabbit[] = reactive([])
+const DEFAULT_DISPLAY_NUM = 50
+const unfoldHabbit = ()=>{
+    // habbtsDisp.splice(0, habbtsDisp.length)
+    habbtsDisp = habbits.data.slice(0, habbits.data.length)
+    habbtsDisp.pop()
+    // habbtsDisp.splice(0, habbtsDisp.length)
+    // habbits.data.forEach(h=>{
+    //     habbtsDisp.push({id:0, description:'', name:'', times_per_week:0, checks:[]})
+    //     deepCopyHabbit(h, habbtsDisp[habbtsDisp.length-1])
+    // })
+    // habbtsDisp[0].name = "*"+habbits.data[0].name
+    console.log(habbtsDisp, habbits.data)
+}
 const dateTitles = computed(() => {
     var titles = []
     var date = new ADate(habbits.start_day)
@@ -118,17 +132,16 @@ onMounted(() => {
     habbits.end_day = date.toString()
     Api.getHabbits().then(res => {
         habbits.data = res.data.results
-        habbits.data.forEach(h => {
-            h.checks = [false, false, false, false, false, false, false]
-        } )
+        habbits.data.forEach(h => h.checks = [false, false, false, false, false, false, false])
+        if (!getHabbitRecord()) {
+            return
+        }
+        habbtsDisp = habbits.data.slice(0, Math.min(DEFAULT_DISPLAY_NUM, habbits.data.length))
+        dataLoaded.value = true
         return
     }).catch(err => {
         return
     })
-    if (!getHabbitRecord()) {
-        return
-    }
-    dataLoaded.value = true
 })
 
 const onSwitchChanged = async (row: any, col: number) => {

@@ -6,6 +6,14 @@ export interface IHabbit {
     checks: boolean[], //length = 7 from monday to sunday
 }
 
+export function deepCopyHabbit(from:IHabbit, to:IHabbit){
+    to.id = from.id
+    to.name = from.name
+    to.description = from.description
+    to.times_per_week = from.times_per_week
+    to.checks = from.checks
+}
+
 export class Habbits {
     start_day: string = ''
     end_day: string = ''
