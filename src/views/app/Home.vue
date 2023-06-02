@@ -253,6 +253,7 @@ onMounted(async () => {
                     name: k,
                     type: 'line',
                     data: scores.reverse(),
+                    label: { show: true },
                     smooth: true
                 })
             }
