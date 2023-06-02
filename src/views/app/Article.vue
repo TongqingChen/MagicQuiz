@@ -5,9 +5,7 @@
                 <el-menu @select="onArticleSelected" :default-active="currActive">
                     <el-sub-menu v-for="m in meta" :index="m.category">
                         <template #title>
-                            <el-icon>
-                                <Folder />
-                            </el-icon>
+                            <el-icon><Folder /></el-icon>
                             {{ m.category }}</template>
                         <el-menu-item v-for="a in m.articles" :index="String(a.id)">{{ a.title }}</el-menu-item>
                     </el-sub-menu>
@@ -27,10 +25,8 @@
                 </p>
                 <v-md-preview :text="currArticle.content"></v-md-preview>
                 <div v-if="currArticle.attachment && currArticle.attachment.length > 0">
-                    <VueOfficeDocx v-if="currArticle.attach_type == 0" :src="currArticle.attachment"
-                        :options="{ width: 1024 }" />
-                    <VueOfficePdf v-if="currArticle.attach_type == 1" :src="currArticle.attachment"
-                        :options="{ width: 1024 }" />
+                    <VueOfficeDocx v-if="currArticle.attach_type == 0" :src="currArticle.attachment"/>
+                    <VueOfficePdf v-if="currArticle.attach_type == 1" :src="currArticle.attachment"/>
                     <el-link v-if="currArticle.attach_type < 0" :href="currArticle.attachment" type="primary">下载</el-link>
                 </div>
             </el-main>
