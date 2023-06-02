@@ -33,3 +33,11 @@ export interface IBigDay {
 export interface IGreatEvent extends IBigDay{
     image: string
 }
+
+export class GreatEvent implements IGreatEvent{
+    user: number = 0
+    name: string = ''
+    description: string = ''
+    date: string = '2022-10-24'
+    image: string = ''
+}

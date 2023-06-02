@@ -23,7 +23,7 @@
                     <li v-if="quiz.subject != 3">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
                     <li v-if="quiz.subject != 3">考试时长：{{ quiz.exam_minutes }}分钟</li>
                     <li v-else>点击【开始考试】配置</li>
-                    <li>最新考试：{{ quiz.last_exam_time }}</li>
+                    <li>最近考试：{{ quiz.last_exam_time }}</li>
                 </div>
             </el-card>
         </el-col>
@@ -78,8 +78,8 @@ const randomQuiz = reactive([
 ])
 const oralMathConfig = reactive([
     { label: '加数个数', val: 2, min: 2, max: 10, step: 1 },
-    { label: '加数最大值', val: 20, min: 10, max: 100, step: 10 },
-    { label: '题目个数', val: 40, min: 10, max: 100, step: 10 },
+    { label: '加数最大值', val: 30, min: 10, max: 100, step: 10 },
+    { label: '题目个数', val: 60, min: 10, max: 100, step: 10 },
     { label: '时长(分钟)', val: 10, min: 5, max: 30, step: 5 }
 ])
 

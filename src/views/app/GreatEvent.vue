@@ -13,19 +13,40 @@
             </el-card>
         </el-timeline-item>
     </el-timeline>
+    <el-dialog v-model="showDialog" title="添加大事记" width="80%" center>
+        <el-form label-position="right" :label-width="200">
+            <el-form-item label="事件名称">
+                <el-input v-model="greatEvent.name" placeholder="Please input" clearable/>
+            </el-form-item>
+            <el-form-item label="事件时间">
+                <el-input v-model="greatEvent.date" type="date" placeholder=""/>
+            </el-form-item>
+            <el-form-item label="操作">
+                <el-button type="primary" @click="">添加</el-button>
+            </el-form-item>
+        </el-form>
+    </el-dialog>
+    <el-affix v-if="false" position="bottom" :offset="20">
+        <el-tooltip placement="right" content="添加大事件">
+            <el-button type="success" :icon="Plus" circle @click="" />
+        </el-tooltip>
+    </el-affix>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive } from 'vue';
-import { IGreatEvent } from '@/types/habbit'
+import { onMounted, reactive, ref } from 'vue';
+import { IGreatEvent, GreatEvent} from '@/types/habbit'
 import { Api } from '@/request'
+import {Plus} from '@element-plus/icons-vue'
 
 let greatEvents: IGreatEvent[] = reactive([])
-
+// 未完成
+let greatEvent = reactive(new GreatEvent)
+const showDialog = ref(false)
 onMounted(() => {
     Api.getGreatEvents().then(res => {
         greatEvents.splice(0, greatEvents.length)
-        res.data.results.forEach((r: { user: any; name: any; description: any; image: any; date: any; }) => greatEvents.push({
+        res.data.results.forEach((r:  IGreatEvent ) => greatEvents.push({
             user: r.user,
             name: r.name,
             description: r.description,

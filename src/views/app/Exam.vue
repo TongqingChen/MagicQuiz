@@ -83,7 +83,7 @@ let ijPairs = reactive([[0, 0]])
 const autoNext = ref(true)
 const textType = computed(() => { return autoNext.value ? "primary" : "info" })
 
-const getQuestionList = async() => {
+const getQuestionList = async () => {
     examInfo.id = Number(route.query.id)
     examInfo.state = ExamState.IDLE
     examInfo.start_time = Date.now()
@@ -161,13 +161,13 @@ const getQuestionList = async() => {
     }
 }
 
-onMounted(async() => {
+onMounted(async () => {
     var s: ISettings = Api.loadSettings()
     if (s) {
         blink.value = s.data[SetID.EXAM_TIME_BLINK].value
     }
     await getQuestionList()
-    if(examInfo.question_num>0){
+    if (examInfo.question_num > 0) {
         onQuestionClicked(0)
     }
 })
@@ -258,13 +258,8 @@ const uploadExamResults = async () => {
 
 const submitQuiz = () => {
     ElMessageBox.confirm(
-        '确定提交并结束考试吗？',
-        '请确认',
-        {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning',
-        }
+        '确定提交并结束考试吗？', '请确认',
+        { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }
     ).then(() => {
         uploadExamResults()
     })
