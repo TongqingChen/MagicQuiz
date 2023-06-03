@@ -22,14 +22,14 @@
         </el-row>
 
         <!-- big day -->
-        <el-scrollbar>
-            <div style="flex-wrap: wrap; flex-direction: row">
-                <el-row v-if="settings.data[SetID.BIG_DAY].value" :gutter="8" class="mb-4">
+        <el-scrollbar v-if="settings.data[SetID.BIG_DAY].value">
+            <!-- <div style="display: flex; width: 100%;"> -->
+                <el-row :gutter="8" class="mb-4" style="display: flex; flex-wrap: nowrap;">
                     <el-col v-for="d in meta.big_days" :xs="6" :sm="3" :lg="2" class="mb-2">
                         <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
                     </el-col>
                 </el-row>
-            </div>
+            <!-- </div> -->
         </el-scrollbar>
 
         <!-- habbit -->
@@ -112,7 +112,7 @@ let settings = reactive(new Settings())
 const showSettings = ref(false)
 
 const meta: any = reactive({
-    version: '1.3.20230531',
+    version: '1.4.20230603',
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
