@@ -22,11 +22,15 @@
         </el-row>
 
         <!-- big day -->
-        <el-row v-if="settings.data[SetID.BIG_DAY].value" :gutter="8" class="mb-4">
-            <el-col v-for="d in meta.big_days" :xs="6" :sm="3" :lg="3" class="mb-2">
-                <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
-            </el-col>
-        </el-row>
+        <el-scrollbar>
+            <div style="flex-wrap: wrap; flex-direction: row">
+                <el-row v-if="settings.data[SetID.BIG_DAY].value" :gutter="8" class="mb-4">
+                    <el-col v-for="d in meta.big_days" :xs="6" :sm="3" :lg="2" class="mb-2">
+                        <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
+                    </el-col>
+                </el-row>
+            </div>
+        </el-scrollbar>
 
         <!-- habbit -->
         <el-row v-if="settings.data[SetID.HABBIT].value" :gutter="8" class="mb-4">
@@ -38,7 +42,7 @@
         <!-- 数据卡片 -->
         <el-row v-if="settings.data[SetID.DATA].value" :gutter="8" class="mb-4">
             <el-col v-for="d in meta.statics" :xs="12" :sm="6" :lg="6" class="mb-2">
-                <DataCard :title="d.title" :data="d.data" :icon="d.icon"></DataCard>
+                <DataCard :title="d.title" :data="d.data" :icon="d.icon" @click="d.click"></DataCard>
             </el-col>
         </el-row>
 
@@ -58,7 +62,7 @@
                             }})</el-radio-button>
                         </el-radio-group>
                     </div>
-                    <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="404px"
+                    <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="404"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
                         <el-table-column prop="quiz_name" sortable label="试卷名" />
@@ -100,6 +104,9 @@ import { ADate } from '@/utils/date';
 import HabbitVue from './Habbit.vue';
 import { Setting } from '@element-plus/icons-vue'
 import { Settings, SetID } from '@/types/settings';
+import { useRouter } from 'vue-router';
+
+const router = useRouter()
 
 let settings = reactive(new Settings())
 const showSettings = ref(false)
@@ -111,9 +118,9 @@ const meta: any = reactive({
     big_days: [],
     statics: [
         { title: '科目数', icon: 'Notebook', data: 0 },
-        { title: '试卷数', icon: 'Document', data: 0 },
+        { title: '试卷数', icon: 'Document', data: 0, click: () => { router.push('/examList') } },
         { title: '题库数', icon: 'Collection', data: 0 },
-        { title: '错题数', icon: 'FolderDelete', data: 0 },
+        { title: '错题数', icon: 'FolderDelete', data: 0, click: () => { router.push('/wrongSet') } },
     ],
     quotes: [
         "不积跬步无以至千里，不积小流无以成江海。——荀子",
@@ -285,12 +292,12 @@ onMounted(async () => {
             }
         })
         meta.big_days = afterdays.concat(beforedays.reverse())
-        var lack_num = meta.big_days.length % 8
-        if (lack_num > 0) {
-            for (var i = 0; i < 8 - lack_num; i++) {
-                meta.big_days.push({ name: 'TO BE ADDED', description: '待添加', date: '--' })
-            }
-        }
+        // var lack_num = meta.big_days.length % 8
+        // if (lack_num > 0) {
+        //     for (var i = 0; i < 8 - lack_num; i++) {
+        //         meta.big_days.push({ name: 'TO BE ADDED', description: '待添加', date: '--' })
+        //     }
+        // }
     }
     ).catch(err => {
         ElMessage.error('纪念日数据加载失败', err.status)
@@ -302,6 +309,7 @@ onMounted(async () => {
 const saveSettings = () => {
     Api.storeSettings(settings)
     ElMessage.success('配置保存成功')
+    showSettings.value = false
 }
 
 </script>

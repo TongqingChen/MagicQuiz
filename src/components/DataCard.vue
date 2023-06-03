@@ -2,9 +2,10 @@
     <el-card >
     <div class="data-box">
         <div class="text-[#40c9c6] hover:!text-white hover:bg-[#40c9c6] p-3 rounded">
-            <el-icon style="width: 32px; height: 32px;">
+            <!-- <el-icon style="width: 32px; height: 32px;" @click="emits('click')">
                 <component :is="props.icon" style="width: 100%; height: 100%;" />
-            </el-icon>
+            </el-icon> -->
+            <el-button size="large" type="success" :icon="props.icon" circle @click="emits('click')"/>
             <!-- <svg-icon icon-class="uv" size="3em" /> -->
         </div>
         <div class="flex flex-col space-y-3">
@@ -22,6 +23,8 @@ const props = defineProps<{
     title: string,
     data: number,
 }>()
+
+const emits = defineEmits(['click'])
 
 </script>
 

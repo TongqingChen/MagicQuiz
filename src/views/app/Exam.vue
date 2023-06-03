@@ -239,7 +239,7 @@ const uploadExamResults = async () => {
         error_count[qs.typeId] = qs.qList.length - correct_count[qs.typeId]
     })
 
-    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}` +
+    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}, ` +
         `判断: ${correct_count[QueType.LOGIC]}/${examInfo.meta[QueType.LOGIC].qList.length}`
     results.meta.user = user_id
     results.meta.quiz = examInfo.id
