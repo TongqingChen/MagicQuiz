@@ -23,9 +23,10 @@
                 <template #default="scope">{{ scope.row.name }}<span v-if="scope.row.description.length > 0">({{
                     scope.row.description }})</span></template>
             </el-table-column>
-            <el-table-column v-for="(d, col) in dateTitles" align="center" :label="d.substring(5)">
-                <el-table-column align="center" :label="habbits.week_titles[col]"
-                    :class-name="d == habbits.today ? 'bg-gray' : 'default_cell'">
+            <el-table-column v-for="(d, col) in titles" align="center" :label="d.date.substring(5)"
+                :label-class-name="col >= 5 ? 'bg-gray' : 'default_cell'">
+                <el-table-column align="center" :label="d.week"
+                    :class-name="d.date == habbits.today ? 'bg-gray' : 'default_cell'">
                     <template #default="scope">
                         <el-switch size="small" style="--el-switch-on-color: #13ce66;" v-model="scope.row.checks[col]"
                             inline-prompt :active-icon="Check" @change="onSwitchChanged(scope.row, col)" />
@@ -46,7 +47,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { Habbits, IHabbit } from '@/types/habbit';
+import { Habbits, IHabbit, ITitle } from '@/types/habbit';
 import { Check, ArrowLeft, ArrowRight, List, Location } from '@element-plus/icons-vue';
 import { ADate } from '@/utils/date'
 import { Api } from '@/request';
@@ -55,11 +56,14 @@ import { ElMessageBox } from 'element-plus';
 const dataLoaded = ref(false)
 var habbits = reactive(new Habbits())
 
-const dateTitles = computed(() => {
-    var titles = []
+const titles = computed(() => {
+    var titles: ITitle[] = []
     var date = new ADate(habbits.start_day)
+    var weeks = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
     for (var i = 0; i < 7; i++) {
-        titles.push(date.toString())
+        var n: number = 0;
+        habbits.data.forEach(h => n += (h.checks[i] ? 1 : 0))
+        titles.push({ date: date.toString(), week: `${weeks[i]}(${n})` })
         date.goToDaysLater(1)
     }
     return titles
@@ -87,7 +91,8 @@ const getHabbitRecord = () => {
         habbits.data.forEach(h => {
             h.checks = [false, false, false, false, false, false, false]
             for (var i = 0; i < h.checks.length; i++) {
-                h.checks[i] = res.data.results.some((d: { habbit: number; date: string; }) => (d.habbit == h.id && dateTitles.value[i] == d.date))
+                h.checks[i] = res.data.results.some((d: { habbit: number; date: string; }) =>
+                    (d.habbit == h.id && titles.value[i].date == d.date))
             }
         })
         return true
@@ -120,7 +125,7 @@ onMounted(() => {
         habbits.data = res.data.results
         habbits.data.forEach(h => {
             h.checks = [false, false, false, false, false, false, false]
-        } )
+        })
         return
     }).catch(err => {
         return
@@ -142,7 +147,7 @@ const onSwitchChanged = async (row: any, col: number) => {
             type: 'warning',
         }
     ).then(async () => {
-        await Api.postHabbitRecord(row.id, dateTitles.value[col], row.checks[col]
+        await Api.postHabbitRecord(row.id, titles.value[col].date, row.checks[col]
         ).then(res => success = true
         ).catch(err => success = false)
     }).catch(err => success = false)

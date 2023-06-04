@@ -65,7 +65,7 @@
 
 <script lang='ts' setup>
 import { reactive, onMounted, ref, computed } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
@@ -204,6 +204,13 @@ const onQuestionClicked = (index: number) => {
 }
 const onAnswerSelected = () => {
     if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
+        // ElNotification({title: 'A', message: activeQ.answers[activeQ.meta.type], type: 'success', position: 'top-left' })
+        ElMessage({
+            message: `<h2>${activeQ.answers[activeQ.meta.type]}</h2>`,
+            center: true,
+            duration: 800,
+            dangerouslyUseHTMLString: true
+        })
         var i = ijPairs[activeQ.meta.index][0]
         var j = ijPairs[activeQ.meta.index][1]
         examInfo.meta[i].qList[j].userAnswer = activeQ.answers[activeQ.meta.type]
