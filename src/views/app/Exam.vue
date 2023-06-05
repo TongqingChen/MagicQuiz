@@ -3,9 +3,11 @@
         <el-header>
             <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
             <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}</span>
-            <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING" :count_down="true"
+            <!-- <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING" :count_down="true"
                 :duration_secs="examInfo.exam_seconds" :blink="blink" start_text='【考试剩余】' @end_event="uploadExamResults">
-            </Timer>
+            </Timer> -->
+            <FlipCounter :seconds="examInfo.exam_seconds" :type="3" :split="blink" :timeUnit="[':', ':', ':']"
+                :stop="examInfo.state == ExamState.FINISHED" @timeUp="uploadExamResults" />
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
                 @click="submitQuiz">提交</el-button>
         </el-header>
@@ -65,14 +67,15 @@
 
 <script lang='ts' setup>
 import { reactive, onMounted, ref, computed } from 'vue'
-import { ElMessage, ElMessageBox, ElNotification } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
 import { IWrongSet, QuizResult } from '@/types/http'
-import Timer from '@/components/Timer.vue'
+// import Timer from '@/components/Timer.vue'
 import { ArrowLeft, Check, Close } from '@element-plus/icons-vue'
 import { ISettings, SetID } from '@/types/settings';
+import FlipCounter from '@/components/FlipCounter.vue'
 
 const route = useRoute()
 const blink = ref(true)
@@ -114,6 +117,7 @@ const getQuestionList = async () => {
         })
     } else if (examInfo.id == -1) { //-1表示错题集
         await Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
+            console.log(res.data)
             const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
             const types = ["选择", "判断", "编程"]
             examInfo.meta = [{ typeId: QueType.CHOICE, typeName: types[QueType.CHOICE], icon: "Message", qList: [] },
@@ -121,8 +125,8 @@ const getQuestionList = async () => {
             { typeId: QueType.CODING, typeName: types[QueType.CODING], icon: "Menu", qList: [] }]
             examInfo.scores = 0
             wrong_set.sort((w1, w2) => { return types.indexOf(w1.type) - types.indexOf(w2.type) })
-
             var i = 0
+            ijPairs = []
             wrong_set.forEach(w => {
                 var t_id = types.indexOf(w.type)
                 ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
@@ -190,6 +194,8 @@ onBeforeRouteLeave((to, from, next) => {
         next(false)
     }).catch((err) => {
         if (err == 'cancel') {
+            examInfo.state = ExamState.FINISHED
+            console.log('leaves...')
             next()
         } else {
             next(false)
@@ -205,12 +211,12 @@ const onQuestionClicked = (index: number) => {
 const onAnswerSelected = () => {
     if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
         // ElNotification({title: 'A', message: activeQ.answers[activeQ.meta.type], type: 'success', position: 'top-left' })
-        ElMessage({
-            message: `<h2>${activeQ.answers[activeQ.meta.type]}</h2>`,
-            center: true,
-            duration: 800,
-            dangerouslyUseHTMLString: true
-        })
+        // ElMessage({
+        //     message: `<h2>${activeQ.answers[activeQ.meta.type]}</h2>`,
+        //     center: true,
+        //     duration: 800,
+        //     dangerouslyUseHTMLString: true
+        // })
         var i = ijPairs[activeQ.meta.index][0]
         var j = ijPairs[activeQ.meta.index][1]
         examInfo.meta[i].qList[j].userAnswer = activeQ.answers[activeQ.meta.type]
@@ -251,7 +257,7 @@ const uploadExamResults = async () => {
     results.meta.user = user_id
     results.meta.quiz = examInfo.id
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
-    results.meta.use_minutes = Math.round((Date.now() - examInfo.start_time) / 1000 / 60)
+    results.meta.use_minutes = Math.max(1, Math.round((Date.now() - examInfo.start_time) / 1000 / 60))
     await Api.postQuestionsResult(results.questions)
     if (examInfo.id >= 0) { //错题集不提交考试记录
         await Api.postQuizResult(results.meta)

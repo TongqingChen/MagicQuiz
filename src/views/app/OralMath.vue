@@ -2,10 +2,12 @@
     <el-container>
         <el-header>
             <span>【{{ math_info.name }}】</span>
-            <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING"
+            <!-- <Timer style="color: red;" :start_flag="math_info.state == ExamState.ONGOING"
                 :duration_secs="math_info.exam_seconds" :blink="blink" start_text='【已用时间】' :count_down="false"
                 @end_event="uploadExamResults">
-            </Timer>
+            </Timer> -->
+            <FlipCounter :seconds="math_info.exam_seconds" :type="2" :split="blink" :timeUnit="[':', ':', ':']"
+                :stop="math_info.state == ExamState.FINISHED" @timeUp="uploadExamResults" />
             <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
                 @click="submitQuiz">提交</el-button>
         </el-header>
@@ -26,7 +28,8 @@
 
 <script setup lang="ts">
 import { reactive, onMounted, ref } from 'vue'
-import Timer from '@/components/Timer.vue'
+// import Timer from '@/components/Timer.vue'
+import FlipCounter from '@/components/FlipCounter.vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { Api } from '@/request'
 import { ExamState } from '@/types/question'
@@ -58,9 +61,7 @@ onMounted(() => {
     math_info.que_num = Number(route.query.q_num)
     math_info.state = ExamState.ONGOING
     var s: ISettings = Api.loadSettings()
-    if (s) {
-        blink.value = s.data[SetID.EXAM_TIME_BLINK].value
-    }
+    s && (blink.value = s.data[SetID.EXAM_TIME_BLINK].value)
     Api.getOralMath(math_info.digital_num, math_info.max_digital, math_info.que_num).then((res) => {
         math_info.meta = []
         res.data.forEach((r: any[]) =>
@@ -87,7 +88,7 @@ const uploadExamResults = async () => {
     results.meta.quiz = math_info.id
     results.meta.abs_score = Math.round(correct_count * 100 / math_info.meta.length) //correct_count
     results.meta.rel_score = Math.round(correct_count * 100 / math_info.meta.length)
-    results.meta.use_minutes = Math.round((Date.now() - math_info.start_time) / 1000 / 60)
+    results.meta.use_minutes = Math.max(1, Math.round((Date.now() - math_info.start_time) / 1000 / 60))
     await Api.postQuizResult(results.meta)
     ElMessageBox.alert(`得分: ${results.meta.abs_score}/100<br/>` +
         (correct_count == math_info.meta.length ? "恭喜您获得满分💯" : `详情: ${correct_count} ✅, ${error_count} ❌<br/>`), '考试结果',
@@ -128,7 +129,9 @@ onBeforeRouteLeave((to, from, next) => {
         next(false)
     }).catch((err) => {
         if (err == 'cancel') {
-            next()
+            math_info.state = ExamState.FINISHED
+            console.log('leaves...')
+            next()    
         } else {
             next(false)
         }

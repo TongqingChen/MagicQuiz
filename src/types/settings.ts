@@ -23,7 +23,7 @@ export class Settings implements ISettings {
         { name: '习惯打卡', value: true },
         { name: '统计卡片', value: true },
         { name: '考试记录', value: true },
-        { name: '考试时间闪烁', value: true }]
+        { name: '时间数字拆分', value: true }]
     copyFrom(set: ISettings) {
         this.data = set.data
     }
