@@ -70,8 +70,6 @@ const onArticleSelected = (key: string, path: string) => {
         if (t) {
             currArticle.copyFrom(t)
             currActive.value = String(t.id)
-            console.log('crur', currArticle)
-
             return key
         }
     })

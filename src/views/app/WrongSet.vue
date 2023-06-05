@@ -8,7 +8,7 @@
     <el-table :data="wrongSets[currentInfo.subject]" stripe border
         style="width: 100%; color:darkslategray; font-size: 13px;">
         <el-table-column fixed type='index' width="32px" />
-        <el-table-column prop="quiz_name" label="试卷名" width="72px" sortable />
+        <el-table-column prop="quiz_name" label="试卷名" width="88px" sortable />
         <el-table-column prop="type" label="题型" width="60px" sortable />
         <el-table-column prop="title" label="题目" />
         <el-table-column prop="description" label="描述" />

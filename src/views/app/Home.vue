@@ -112,7 +112,7 @@ let settings = reactive(new Settings())
 const showSettings = ref(false)
 
 const meta: any = reactive({
-    version: '1.4.20230603',
+    version: '1.5.20230606',
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
