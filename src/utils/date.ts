@@ -23,7 +23,9 @@ export class ADate {
     }
     goToFirstDayOfThisWeek() {
         var week_num = this.date.getDay()
-        this.goToDaysLater(week_num == 0 ? -6 : (1 - week_num))
+        if (week_num != 1) {
+            this.goToDaysLater(week_num == 0 ? -6 : (1 - week_num))
+        }
     }
 }
 

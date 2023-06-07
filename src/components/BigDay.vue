@@ -12,7 +12,7 @@
                     <span style="font-size: 20px; font-weight: bold;">{{ meta.days }}</span>
                     <span style="font-size: 12px;">{{ meta.label }}</span>
                 </div>
-                <span style="font-size: 12px;">{{ date }}</span>
+                <span style="font-size: 12px;">{{ date }}, {{ meta.week }}</span>
             </div>
         </el-card>
     </el-tooltip>
@@ -26,10 +26,12 @@ const meta = computed(() => {
     var obj = new Date(props.date)
     var days = Math.ceil((obj.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
     const tags = ['前', '昨', '今', '明', '后']
+    const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
     return {
         days: isNaN(days) ? '--' : (days > -3 && days < 3 ? tags[days + 2] : Math.abs(days)),
         color: days >= 0 ? (days <= 3 ? 'red' : 'darkblue') : 'gray',
-        label: isNaN(days) ? '' : (days > -3 && days < 3 ? '天' : (days > 0 ? '天后' : '天前'))
+        label: isNaN(days) ? '' : (days > -3 && days < 3 ? '天' : (days > 0 ? '天后' : '天前')),
+        week: weeks[obj.getDay()]
     }
 })
 const props = defineProps(["date", "title", "description"])

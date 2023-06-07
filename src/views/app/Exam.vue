@@ -194,9 +194,8 @@ onBeforeRouteLeave((to, from, next) => {
         next(false)
     }).catch((err) => {
         if (err == 'cancel') {
-            examInfo.state = ExamState.FINISHED
-            console.log('leaves...')
             next()
+            examInfo.state = ExamState.FINISHED
         } else {
             next(false)
         }
