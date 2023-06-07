@@ -13,6 +13,7 @@ export class Question {
     description: string = ""
     image: string | null = null
     answer: string = ""
+    analysis: string = ""
     userAnswer: string = ""
     displayType: string = ""
     score: number = 0

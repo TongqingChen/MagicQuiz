@@ -41,6 +41,7 @@ export interface IWrongSet {
     score: number;
     image: string;
     answer: string;
+    analysis: string;
     user_answer: string;
     level: string;
     record_times: number;
@@ -54,6 +55,7 @@ export class WrongSet implements IWrongSet {
     score: number = 0;
     image: string = '';
     answer: string = '';
+    analysis: string = '';
     user_answer: string = '';
     level: string = '';
     record_times: number = 0;

@@ -25,22 +25,27 @@
             <el-button type="primary" :icon="Edit" circle @click="startExamInWrongSet" />
         </el-tooltip>
     </el-affix>
-    <el-drawer v-model="currentInfo.drawerVisible" :with-header="false" direction="ltr" size="64%"
-        @open="showAnswer = false">
+    <el-dialog v-model="currentInfo.drawerVisible" destroy-on-close draggable>
+        <template #header>
+            <div>{{ currentInfo.q.qid }}.【{{ currentInfo.subject }}】{{ currentInfo.q.quiz_name }}</div>
+        </template>
         <div class="question">
-            <div style="color: darkblue;">【{{ currentInfo.subject }}】【{{ currentInfo.q.quiz_name }}】{{ currentInfo.q.title }}
-            </div>
+            <div class="question">{{ currentInfo.q.title }}</div>
             <el-image v-if="currentInfo.q.image != ''" :src="currentInfo.q.image" fit="scale-down" />
             <div>{{ currentInfo.q.description }}</div>
-            <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
             <div v-if="showAnswer">
-                <div>【考生答案】<el-tag type='error' size="large" effect="dark" round> {{ currentInfo.q.user_answer }}</el-tag>
-                </div>
-                <div>【正确答案】<el-tag type='success' size="large" effect="dark" round> {{ currentInfo.q.answer }}</el-tag>
-                </div>
+                <div style="color: darkred; font-weight: bold;"><el-tag type='error' size='small'
+                        effect="dark">考生答案</el-tag> {{ currentInfo.q.user_answer }}</div>
+                <div style="color: darkgreen; font-weight: bold;"><el-tag type='success' size='small'
+                        effect="dark">正确答案</el-tag> {{ currentInfo.q.answer }}</div>
+                <div style="color: darkgreen;"><el-tag type='success' size='small' effect="dark">题目解析</el-tag> {{
+                    currentInfo.q.analysis }}</div>
             </div>
         </div>
-    </el-drawer>
+        <template #footer>
+            <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
+        </template>
+    </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -64,6 +69,7 @@ const currentInfo: { subject: string, drawerVisible: boolean, q: IWrongSet } = r
     q: new WrongSet()
 })
 const onDetailsClicked = (index: number) => {
+    showAnswer.value = false
     currentInfo.q = wrongSets[currentInfo.subject][index]
     currentInfo.drawerVisible = true;
 }
@@ -108,9 +114,9 @@ const startExamInWrongSet = () => {
 .question {
     font-size: 14px;
     white-space: pre-wrap;
+    color: darkblue;
 }
 
 .el-table:deep(.cell) {
     padding: 0 4px;
-}
-</style>
+}</style>

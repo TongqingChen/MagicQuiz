@@ -25,9 +25,9 @@
             </el-aside>
             <el-main v-if="activeQ.meta.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px;">
-                    <div class="user-answer">【考生答案】{{ activeQ.meta.userAnswer }} </div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED">【正确答案】{{ activeQ.meta.answer }}
-                    </div>
+                    <div class="user-answer"><el-tag size="small" effect="dark">考生答案</el-tag>{{ activeQ.meta.userAnswer }} </div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success" effect="dark">正确答案</el-tag>{{ activeQ.meta.answer }}</div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success" effect="dark">题目解析</el-tag>{{ activeQ.meta.analysis }}</div>
                     <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
                     <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
                     <el-button-group style="padding-left: 6px;">
@@ -107,8 +107,8 @@ const getQuestionList = async () => {
             questions.forEach(q => {
                 ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
                 examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, image: q.image,
+                    answer: q.answer, analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
             })
@@ -131,8 +131,8 @@ const getQuestionList = async () => {
                 var t_id = types.indexOf(w.type)
                 ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
                 examInfo.meta[t_id].qList.push({
-                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description,
-                    image: w.image, answer: w.answer, displayType: 'default', userAnswer: '未作答', score: w.score
+                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description, image: w.image,
+                    answer: w.answer, analysis: w.analysis, displayType: 'default', userAnswer: '未作答', score: w.score
                 })
                 examInfo.scores += w.score
             })
@@ -154,8 +154,8 @@ const getQuestionList = async () => {
             questions.forEach(q => {
                 ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
                 examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, answer: q.answer, displayType: 'default', userAnswer: '未作答', score: q.score
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, image: q.image,
+                    answer: q.answer, analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
             })

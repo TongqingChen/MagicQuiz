@@ -11,8 +11,8 @@ if (import.meta.env.DEV == true) {
 }
 
 const Axios = axios.create({
-    baseURL: 'http://192.168.1.7:2345/',
-    // baseURL: api_base_url,
+    // baseURL: 'http://192.168.1.7:2345/',
+    baseURL: api_base_url,
     timeout: 6000,
     headers: {
         "Content-Type": "application/json;charset=utf-8;"
