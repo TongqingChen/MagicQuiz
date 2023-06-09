@@ -25,13 +25,13 @@ const routes: Array<RouteRecordRaw> = [
                 path: '/questionBank',
                 name: 'questionBank',
                 component: () => import('@/views/app/QuestionBank.vue'),
-                meta: { title: "题库", icon: "Memo", visible: false, is_child: false },
+                meta: { title: "题库", icon: "Memo", visible: true, is_child: false },
             },
             {
                 path: '/wrongSet',
                 name: 'wrongSet',
                 component: () => import('@/views/app/WrongSet.vue'),
-                meta: { title: "错题", icon: "Memo", visible: true, is_child: false },
+                meta: { title: "错题", icon: "DocumentDelete", visible: true, is_child: false },
             },
             {
                 path: '/user',

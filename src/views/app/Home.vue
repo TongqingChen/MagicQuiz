@@ -57,6 +57,7 @@
             <el-col :sm="12" class="mb-4">
                 <el-card>
                     <div class="subject">
+                        科目: 
                         <el-radio-group v-model="meta.current_sub" size="small">
                             <el-radio-button v-for="(val, key) in meta.exam_his" :label="key"> {{ key }}({{ val.length
                             }})</el-radio-button>
@@ -221,7 +222,6 @@ const onLinkClicked = (index: number) => {
     }
 }
 
-// const store = useStore()
 onMounted(async () => {
     onLinkClicked(0)
     onLinkClicked(1)
@@ -235,9 +235,7 @@ onMounted(async () => {
     meta.user.avatar = ui.avatar
     meta.data_loaded = false
     var s = Api.loadSettings()
-    if (s) {
-        settings.copyFrom(s)
-    }
+    s && settings.copyFrom(s)
     await Api.getOverviewInfo().then(res => {
         let info: IOverviewInfo = res.data
         meta.statics[0].data = info.subject_num
@@ -323,6 +321,7 @@ const saveSettings = () => {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
+        font-size: 14px;
         font-weight: bold;
     }
 

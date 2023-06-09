@@ -107,8 +107,9 @@ const getQuestionList = async () => {
             questions.forEach(q => {
                 ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
                 examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, image: q.image,
-                    answer: q.answer, analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, 
+                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer,
+                    analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
             })
@@ -131,8 +132,9 @@ const getQuestionList = async () => {
                 var t_id = types.indexOf(w.type)
                 ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
                 examInfo.meta[t_id].qList.push({
-                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description, image: w.image,
-                    answer: w.answer, analysis: w.analysis, displayType: 'default', userAnswer: '未作答', score: w.score
+                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description, 
+                    image: w.image, difficulty_level: 0, answer: w.answer, analysis: w.analysis,
+                    displayType: 'default', userAnswer: '未作答', score: w.score
                 })
                 examInfo.scores += w.score
             })
@@ -154,8 +156,9 @@ const getQuestionList = async () => {
             questions.forEach(q => {
                 ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
                 examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, image: q.image,
-                    answer: q.answer, analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, 
+                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, 
+                    analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
             })

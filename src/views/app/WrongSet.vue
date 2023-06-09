@@ -5,7 +5,7 @@
             <el-radio-button v-for="(val, key) in wrongSets" :label="key"> {{ key }}({{ val.length }})</el-radio-button>
         </el-radio-group>
     </div>
-    <el-table :data="wrongSets[currentInfo.subject]" stripe border
+    <el-table :data="wrongSets[currentInfo.subject]" stripe border v-loading="loading"
         style="width: 100%; color:darkslategray; font-size: 13px;">
         <el-table-column fixed type='index' width="32px" />
         <el-table-column prop="quiz_name" label="试卷名" width="88px" sortable />
@@ -25,7 +25,7 @@
             <el-button type="primary" :icon="Edit" circle @click="startExamInWrongSet" />
         </el-tooltip>
     </el-affix>
-    <el-dialog v-model="currentInfo.drawerVisible" destroy-on-close draggable>
+    <!-- <el-dialog v-model="currentInfo.drawerVisible" destroy-on-close draggable>
         <template #header>
             <div>{{ currentInfo.q.qid }}.【{{ currentInfo.subject }}】{{ currentInfo.q.quiz_name }}</div>
         </template>
@@ -45,7 +45,12 @@
         <template #footer>
             <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
         </template>
-    </el-dialog>
+    </el-dialog> -->
+    <QuestionDialog :visible="currentInfo.drawerVisible"
+        :header="`${currentInfo.q.qid}.【${currentInfo.subject}】${currentInfo.q.quiz_name}`" :title="currentInfo.q.title"
+        :image="currentInfo.q.image" :description="currentInfo.q.description" :analysis="currentInfo.q.analysis"
+        :answer="currentInfo.q.answer" :userAnswer="currentInfo.q.user_answer" @close="currentInfo.drawerVisible = false">
+    </QuestionDialog>
 </template>
 
 <script lang="ts" setup>
@@ -55,10 +60,10 @@ import { IWrongSet, WrongSet } from '@/types/http';
 import { Edit } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
+import QuestionDialog from '@/views/app/QuestionDialog.vue';
 
 const router = useRouter()
-const showAnswer = ref(false)
-
+let loading = ref(true)
 var wrongSets: { [key: string]: IWrongSet[] } = reactive(
     {}
 )
@@ -69,9 +74,9 @@ const currentInfo: { subject: string, drawerVisible: boolean, q: IWrongSet } = r
     q: new WrongSet()
 })
 const onDetailsClicked = (index: number) => {
-    showAnswer.value = false
     currentInfo.q = wrongSets[currentInfo.subject][index]
     currentInfo.drawerVisible = true;
+    console.log(currentInfo.drawerVisible)
 }
 onMounted(() => {
     Api.getWrongSetsMixedBySubName().then(res => {
@@ -79,9 +84,13 @@ onMounted(() => {
         keys.forEach(key => {
             if (res.data[key].length > 0) {
                 wrongSets[key] = res.data[key]
-                currentInfo.subject = key
             }
         })
+        keys = Object.keys(wrongSets)
+        if (keys.length > 0) {
+            currentInfo.subject = keys[0]
+        }
+        loading.value = false
     })
 })
 const startExamInWrongSet = () => {
@@ -119,4 +128,5 @@ const startExamInWrongSet = () => {
 
 .el-table:deep(.cell) {
     padding: 0 4px;
-}</style>
+}
+</style>

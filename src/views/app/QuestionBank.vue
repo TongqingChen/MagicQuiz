@@ -1,83 +1,112 @@
 <template>
     <div class="subject">
-        <span>科目：</span>
-        <el-radio-group v-model="appInfo.currentSubjectId" @change="" size="small">
-            <el-radio-button v-for="sub in appInfo.subjectList" :label="sub.id"> {{ sub.name }}</el-radio-button>
-        </el-radio-group>
+        <el-tag size="small" effect="dark">选择试卷</el-tag>
+        <el-cascader v-model="qid" size="small" :options="options" @change="changeValue" style="width:300px" />
     </div>
-    <el-table :data="tableData" style="width: 100%">
-        <el-table-column fixed prop="date" label="Date" width="150" />
-        <el-table-column prop="name" label="Name" width="120" />
-        <el-table-column prop="state" label="State" width="120" />
-        <el-table-column prop="city" label="City" width="120" />
-        <el-table-column prop="address" label="Address" width="600" />
-        <el-table-column prop="zip" label="Zip" width="120" />
-        <el-table-column fixed="right" label="Operations" width="120">
-            <template #default>
-                <el-button link type="primary" size="small" @click="handleClick">Detail</el-button>
-                <el-button link type="primary" size="small">Edit</el-button>
+    <el-table :data="qList" style="width: 100%; font-size: 12px;" stripe border v-loading="loading">
+        <el-table-column fixed type='index' width="32px" />
+        <el-table-column label="题型" width="40px">
+            <template #default="scope">{{ qTypes[scope.row.type] }}</template>
+        </el-table-column>
+        <el-table-column prop="title" label="题目" />
+        <el-table-column prop="description" label="描述" />
+        <el-table-column label="难度" width="40px">
+            <template #default="scope">{{ qDifficulty[scope.row.difficulty_level] }}</template>
+        </el-table-column>
+        <el-table-column fixed="right" label="查看" width="40px">
+            <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="questionSelected(scope.$index)">详情</el-button>
             </template>
         </el-table-column>
     </el-table>
+    <QuestionDialog :visible="detailsVisible" :header="currQ.header" :title="currQ.title" :image="currQ.image"
+        :description="currQ.description" :analysis="currQ.analysis" :answer="currQ.answer" :userAnswer="null"
+        @close="detailsVisible = false">
+    </QuestionDialog>
 </template>
 
 <script lang="ts" setup>
 import { Api } from '@/request';
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
+import { IQuestion, Question } from '@/types/question';
+import QuestionDialog from '@/views/app/QuestionDialog.vue'
 
-const handleClick = () => {
-    console.log('click')
+interface IQuizTitle {
+    value: number,
+    label: string,
+}
+interface ISubjectTitle {
+    value: number,
+    label: string,
+    children: IQuizTitle[]
 }
 
-const appInfo = reactive({
-    currentSubjectId: 0,
-    subjectList: [{id:0, name:''}],
+const qTypes = ['选择', '判断', '编程']
+const qDifficulty = ['简单', '一般', '困难']
+const options: ISubjectTitle[] = reactive([])
+let qList: IQuestion[] = reactive([])
+let currQ: { header: string, title: string, description: string, image: string | null, analysis: string, answer: string } = reactive({
+    header: '',
+    title: '',
+    description: '',
+    image: '',
+    analysis: '',
+    answer: ''
 })
+const qid = reactive([0, 0])
+const detailsVisible = ref(false)
+const loading = ref(false)
+const questionSelected = (idx: number) => {
+    console.log(idx)
+    currQ.title = qList[idx].title
+    currQ.description = qList[idx].description
+    currQ.image = qList[idx].image
+    currQ.analysis = qList[idx].analysis
+    currQ.answer = qList[idx].answer
+    detailsVisible.value = true
+}
+const changeValue = (v: any) => {
+    loading.value = true
+    var sub = options.find(s => s.value == v[0])
+    if (sub) {
+        currQ.header = `【${sub.label}】`
+        var quiz = sub.children.find(q => q.value == v[1])
+        quiz && (currQ.header += quiz.label)
+    }
+    qList.splice(0, qList.length)
+    Api.getQuestionListByQuizId(v[1]).then(res => {
+        var i = 1
+        res.data.results.forEach((d: IQuestion) => {
+            qList.push({
+                index: i++, id: d.id, type: d.type, title: d.title,
+                description: d.description, image: d.image, analysis: d.analysis,
+                difficulty_level: d.difficulty_level, score: d.score, answer: d.answer
+            })
+        })
+        loading.value = false
+    })
+}
 
-onMounted(()=>{
-    Api.getSubjectList().then(res=>{
-        appInfo.subjectList = res.data.results
+onMounted(async () => {
+    await Api.getSubjectList().then(res => {
+        res.data.forEach((d: { id: any; name: any; }) => {
+            d.id != 3 && options.push({
+                value: d.id, label: d.name, children: []
+            })
+        });
+    })
+    await Api.getQuizList().then(res => {
+        res.data.forEach((d: { subject: number; id: number; name: any; }) => {
+            var q = options.find(t => t.value == d.subject)
+            q && q.children.push({ value: d.id, label: d.name })
+        })
+        if (options.length > 0 && options[0].children.length > 0) {
+            qid[0] = options[0].value
+            qid[1] = options[0].children[0].value
+            changeValue(qid)
+        }
     })
 })
-
-const tableData = [
-    {
-        date: '2016-05-03',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Home',
-    },
-    {
-        date: '2016-05-02',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Office',
-    },
-    {
-        date: '2016-05-04',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Home',
-    },
-    {
-        date: '2016-05-01',
-        name: 'Tom',
-        state: 'California',
-        city: 'Los Angeles',
-        address: 'No. 189, Grove St, Los Angeles',
-        zip: 'CA 90036',
-        tag: 'Office',
-    },
-]
 </script>
 
 <style lang="scss" scoped>
@@ -86,5 +115,10 @@ const tableData = [
     align-items: center;
     margin-bottom: 10px;
     font-weight: bold;
+    width: 100%;
+}
+
+.el-table:deep(.cell) {
+    padding: 0 4px;
 }
 </style>

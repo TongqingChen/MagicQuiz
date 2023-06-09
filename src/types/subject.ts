@@ -1,9 +1,6 @@
-export interface ISubject{
+export interface ISubject {
     id: number,
     name: string,
+    logo: string,
     count: number
-}
-
-export class SubjectList{
-    data:ISubject[] = []
 }

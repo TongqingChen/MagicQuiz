@@ -55,6 +55,7 @@ onMounted(() => {
 .el-card:deep(.el-card__header) {
   padding: 8px 18px;
   font-size: 14px;
+  font-weight: bold;
 }
 // .el-card:deep(.el-card__body) {
 //         margin-top: -20px;

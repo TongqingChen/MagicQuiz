@@ -4,8 +4,21 @@ export enum QueType {
     LOGIC,
     CODING
 }
+export interface IQuestion {
+    index: number,
+    id: number,
+    type: number,
+    title: string,
+    description: string,
+    image: string | null,
+    answer: string,
+    analysis: string,
+    difficulty_level: number,
+    score: number,
+}
 
-export class Question {
+
+export class Question implements IQuestion {
     index: number = -1 //index in an exam
     id: number = -1 //identify 
     type: number = QueType.UNKNOWN
@@ -14,6 +27,7 @@ export class Question {
     image: string | null = null
     answer: string = ""
     analysis: string = ""
+    difficulty_level: number = -1;
     userAnswer: string = ""
     displayType: string = ""
     score: number = 0

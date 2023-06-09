@@ -1,27 +1,26 @@
 <template>
     <div class="subject">
         <span>科目：</span>
-        <el-radio-group v-model="currentSubjectId" @change="onSubjectSelected" size="small">
-            <el-radio-button v-for="sub in subjectList.data" :label="sub.id"> {{ sub.name }}({{ sub.count
-            }})</el-radio-button>
+        <el-radio-group v-model="quizPages.subject.id" @change="onSubjectSelected" size="small">
+            <el-radio-button v-for="sub in subjectList" :label="sub.id">
+                {{ sub.name }}({{ sub.count }})</el-radio-button>
         </el-radio-group>
     </div>
 
     <el-row :gutter="20" class="home-card">
-        <el-col v-for="quiz in quizShown.quizList" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
-            <el-card class="box-card">
+        <el-col v-for="quiz in quizShown" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+            <el-card shadow="hover" class="box-card"
+                @click.native="onStartExamClicked(quiz.id, quiz.name, quiz.exam_minutes)">
                 <template #header>
                     <div class="card-header">
-                        <span>【{{ quiz.subject_name }}】{{ quiz.name }}</span>
-                        <el-button class="button" :icon="Edit" link type="success"
-                            @click="onStartExamClicked(quiz.id, quiz.name, quiz.subject, quiz.subject_name, quiz.exam_minutes)">开始考试</el-button>
+                        <span>【{{ quizPages.subject.name }}】{{ quiz.name }}</span>
                     </div>
                 </template>
-                <div class="card-body">
-                    <li v-if="quiz.subject != 3">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
-                    <li v-if="quiz.subject != 3">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
-                    <li v-if="quiz.subject != 3">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
-                    <li v-if="quiz.subject != 3">考试时长：{{ quiz.exam_minutes }}分钟</li>
+                <div class="card-body" :style="cardBodyStyle()">
+                    <li v-if="!isOralMath">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
+                    <li v-if="!isOralMath">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
+                    <li v-if="!isOralMath">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
+                    <li v-if="!isOralMath">考试时长：{{ quiz.exam_minutes }}分钟</li>
                     <li v-else>点击【开始考试】配置</li>
                     <li>最近考试：{{ quiz.last_exam_time }}</li>
                 </div>
@@ -29,13 +28,13 @@
         </el-col>
     </el-row>
 
-    <div class="pagination-block">
+    <div class="pagination-block" v-if="quizPages.subject.count > quizPages.pageSize">
         <el-pagination background :page-size="quizPages.pageSize" :total="quizPages.quizNum" layout="prev, pager, next"
             @current-change="onPageChanged"></el-pagination>
     </div>
     <el-dialog v-model="showDialog" title="选择题目数量" width="80%" center>
         <el-form label-position="right" :label-width="200">
-            <el-form-item v-for="q in (currentSubjectId == 3 ? oralMathConfig : randomQuiz)" :label="q.label">
+            <el-form-item v-for="q in (isOralMath ? oralMathConfig : randomQuiz)" :label="q.label">
                 <el-slider v-model="q.val" show-input size="small" show-stops :min="q.min" :max="q.max" :step="q.step" />
             </el-form-item>
             <el-form-item label="操作">
@@ -43,7 +42,7 @@
             </el-form-item>
         </el-form>
     </el-dialog>
-    <el-affix v-if="currentSubjectId >= 0" position="bottom" :offset="20">
+    <el-affix v-if="quizPages.subject.id >= 0" position="bottom" :offset="20">
         <el-tooltip placement="right" content="随机考试">
             <el-button type="success" :icon="Edit" circle @click="showDialog = true" />
         </el-tooltip>
@@ -52,22 +51,23 @@
 
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { QuizPages } from '@/types/quiz'
-import { computed } from '@vue/reactivity';
 import { Api } from '@/request/index'
 
-import { SubjectList } from '@/types/subject'
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
 import { Edit } from '@element-plus/icons-vue';
+import { ISubject } from '@/types/subject';
 
 const router = useRouter()
 
-const currentSubjectId = ref(-1)
+const isOralMath = computed(() => {
+    return (quizPages.subject.id == 3)
+})
 const currentQuizId = ref(-1)
 
-const subjectList = reactive(new SubjectList())
+let subjectList: ISubject[] = reactive([])
 const quizPages = reactive(new QuizPages())
 const showDialog = ref(false)
 const randomQuiz = reactive([
@@ -83,52 +83,52 @@ const oralMathConfig = reactive([
     { label: '时长(分钟)', val: 10, min: 5, max: 30, step: 5 }
 ])
 
-const getSubjectNameById = (id: number) => {
-    var sub = subjectList.data.find(s => { return s.id == id })
-    if (!sub) {
-        return null
-    }
-    return sub.name
-}
-
 const getQuizList = () => {
     quizPages.currentPage = 1
-    quizPages.subject = { id: 0, name: "Python四级", count: 0 }
     Api.getQuizList().then((res: { data: [] }) => {
         quizPages.quizList = res.data
         quizPages.quizNum = quizPages.quizList.length
-        quizPages.quizDisplay = quizPages.quizList
-        subjectList.data.forEach((s: { count: number; }) => { s.count = 0 })
-        quizPages.quizList.forEach((q: { subject: any; subject_name: any; }) => {
-            for (var i = 1; i < subjectList.data.length; i++) {
-                if (q.subject == subjectList.data[i].id) {
-                    subjectList.data[i].count++;
-                }
-            }
-            q.subject_name = getSubjectNameById(q.subject)
+        quizPages.quizList.forEach(q => {
+            var s = subjectList.find(s => s.id == q.subject)
+            s && s.count++
         })
-        subjectList.data[0].count = quizPages.quizNum
-        subjectList.data = subjectList.data.filter(s => s.count > 0)
+        quizPages.quizDisplay = quizPages.quizList
+        subjectList = subjectList.filter(s => s.count > 0)
+        subjectList.length > 0 && (quizPages.subject.id = subjectList[0].id)
+        onSubjectSelected()
     })
 }
 
-onMounted(() => {
-    Api.getSubjectList().then((res: { data: [] }) => {
-        subjectList.data = [{ id: -1, name: '全部', count: 0 }].concat(res.data)
+const cardBodyStyle = () => {
+    const colors = ['#c6e2ff', 'wheat', '#48F4DB']
+    var idx = subjectList.findIndex(v => v.id == quizPages.subject.id)
+    return {
+        'background-color': colors[idx % colors.length],
+    }
+}
+
+onMounted(async () => {
+    await Api.getSubjectList().then(async (res: { data: ISubject[] }) => {
+        subjectList = res.data
+        subjectList.forEach(s => s.count = 0)
         getQuizList()
     })
 })
 
 const onSubjectSelected = () => {
-    quizPages.quizDisplay = quizPages.quizList.filter((value: { subject: number; }) => {
-        return (currentSubjectId.value == -1) ? true : value.subject == currentSubjectId.value
+    quizPages.quizDisplay = quizPages.quizList.filter(q => {
+        return q.subject == quizPages.subject.id
     })
     quizPages.quizNum = quizPages.quizDisplay.length
+    var s = subjectList.find(s => s.id == quizPages.subject.id)
+    if (s) {
+        quizPages.subject.name = s.name
+        quizPages.subject.logo = s.logo
+        quizPages.subject.count = s.count
+    }
 }
-const quizShown = reactive({
-    quizList: computed(() => {
-        return quizPages.quizDisplay.slice((quizPages.currentPage - 1) * quizPages.pageSize, quizPages.currentPage * quizPages.pageSize)
-    })
+const quizShown = computed(() => {
+    return quizPages.quizDisplay.slice((quizPages.currentPage - 1) * quizPages.pageSize, quizPages.currentPage * quizPages.pageSize)
 })
 const onPageChanged = (page: number) => (
     quizPages.currentPage = page
@@ -136,7 +136,7 @@ const onPageChanged = (page: number) => (
 
 const onRandomQuiz = () => {
     showDialog.value = false
-    if (currentSubjectId.value == 3) {
+    if (isOralMath.value) {
         router.push({
             path: '/oral_math',
             query: {
@@ -147,28 +147,24 @@ const onRandomQuiz = () => {
         })
         return
     }
-    var sub_name = getSubjectNameById(currentSubjectId.value)
-    if (!sub_name) {
-        return
-    }
     router.push({
         path: '/exam',
         query: {
-            id: -2, name: '随机测试', sub_name: sub_name,
+            id: -2, name: '随机测试', sub_name: quizPages.subject.name,
             choice_num: randomQuiz[0].val, logic_num: randomQuiz[1].val,
             coding_num: randomQuiz[2].val, exam_seconds: randomQuiz[3].val * 60
         }
     })
 }
 
-const onStartExamClicked = (quizId: number, quizName: string, subjectId: number, subjectName: string, exam_minutes: number) => {
-    if (subjectId == 3) {
+const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: number) => {
+    if (isOralMath.value) {
         currentQuizId.value = quizId
         showDialog.value = true
         return
     }
     ElMessageBox.confirm(
-        `开始【${subjectName}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
+        `开始【${quizPages.subject.name}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
         '请确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -177,7 +173,10 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
     ).then(() => {
         router.push({
             path: '/exam',
-            query: { id: quizId, name: quizName, sub_name: subjectName, exam_seconds: exam_minutes * 60 }
+            query: {
+                id: quizId, name: quizName, sub_name: quizPages.subject.name,
+                exam_seconds: exam_minutes * 60
+            }
         })
     })
 }
@@ -226,12 +225,12 @@ const onStartExamClicked = (quizId: number, quizName: string, subjectId: number,
 
     .el-card :deep(.el-card__body) {
         padding: 0px;
-        background-color: #c6e2ff;
     }
 
     .el-card:hover {
-        margin-top: -5px;
-        margin-bottom: 5px;
+        margin-top: -2px;
+        margin-bottom: 2px;
+        cursor: pointer;
     }
 }
 

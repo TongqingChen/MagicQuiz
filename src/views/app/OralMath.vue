@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted, ref } from 'vue'
+import { reactive, onMounted, ref, onUnmounted, onBeforeUnmount } from 'vue'
 // import Timer from '@/components/Timer.vue'
 import FlipCounter from '@/components/FlipCounter.vue'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
