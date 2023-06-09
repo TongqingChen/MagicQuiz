@@ -113,14 +113,14 @@ let settings = reactive(new Settings())
 const showSettings = ref(false)
 
 const meta: any = reactive({
-    version: '1.6.20230607',
+    version: '1.7.20230609',
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
     statics: [
         { title: '科目数', icon: 'Notebook', data: 0 },
         { title: '试卷数', icon: 'Document', data: 0, click: () => { router.push('/examList') } },
-        { title: '题库数', icon: 'Collection', data: 0 },
+        { title: '题库数', icon: 'Collection', data: 0, click: () => { router.push('/questionBank') } },
         { title: '错题数', icon: 'FolderDelete', data: 0, click: () => { router.push('/wrongSet') } },
     ],
     quotes: [
