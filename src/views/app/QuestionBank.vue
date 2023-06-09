@@ -1,9 +1,14 @@
 <template>
     <div class="subject">
-        <el-tag size="small" effect="dark">选择试卷</el-tag>
-        <el-cascader v-model="qid" size="small" :options="options" @change="changeValue" style="width:300px" />
+        试卷：
+        <el-cascader v-model="qid" size="small" :options="options" @change="changeValue" style="width:220px" />
+        题型：
+        <el-radio-group v-model="currType" size="small">
+            <el-radio-button label="-1">全部</el-radio-button>
+            <el-radio-button v-for="(val, index) in qTypes" :label="index"> {{ val }}</el-radio-button>
+        </el-radio-group>
     </div>
-    <el-table :data="qList" style="width: 100%; font-size: 12px;" stripe border v-loading="loading">
+    <el-table :data="qListDisplay" style="width: 100%; font-size: 12px;" stripe border v-loading="loading">
         <el-table-column fixed type='index' width="32px" />
         <el-table-column label="题型" width="40px">
             <template #default="scope">{{ qTypes[scope.row.type] }}</template>
@@ -27,8 +32,8 @@
 
 <script lang="ts" setup>
 import { Api } from '@/request';
-import { onMounted, reactive, ref } from 'vue';
-import { IQuestion, Question } from '@/types/question';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { IQuestion } from '@/types/question';
 import QuestionDialog from '@/views/app/QuestionDialog.vue'
 
 interface IQuizTitle {
@@ -44,7 +49,11 @@ interface ISubjectTitle {
 const qTypes = ['选择', '判断', '编程']
 const qDifficulty = ['简单', '一般', '困难']
 const options: ISubjectTitle[] = reactive([])
+const currType = ref(-1)
 let qList: IQuestion[] = reactive([])
+const qListDisplay = computed(() => {
+    return qList.filter(q => { return currType.value < 0 || q.type == currType.value })
+})
 let currQ: { header: string, title: string, description: string, image: string | null, analysis: string, answer: string } = reactive({
     header: '',
     title: '',
@@ -53,7 +62,7 @@ let currQ: { header: string, title: string, description: string, image: string |
     analysis: '',
     answer: ''
 })
-const qid = reactive([0, 0])
+let qid = reactive([0, 0])
 const detailsVisible = ref(false)
 const loading = ref(false)
 const questionSelected = (idx: number) => {
@@ -74,6 +83,7 @@ const changeValue = (v: any) => {
         quiz && (currQ.header += quiz.label)
     }
     qList.splice(0, qList.length)
+    currType.value = -1
     Api.getQuestionListByQuizId(v[1]).then(res => {
         var i = 1
         res.data.results.forEach((d: IQuestion) => {
