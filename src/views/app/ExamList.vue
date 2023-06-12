@@ -17,7 +17,7 @@
                     </div>
                 </template>
                 <div class="card-body" :style="cardBodyStyle()">
-                    <ol>
+                    <ol style="margin: 0; padding-left: 10px;">
                         <li v-if="!isOralMath">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
                         <li v-if="!isOralMath">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
                         <li v-if="!isOralMath">{{ "编程题数" }}：{{ quiz.coding_num }}</li>

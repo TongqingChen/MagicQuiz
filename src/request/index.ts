@@ -3,7 +3,7 @@ import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 import { ISettings } from '@/types/settings'
 import { ElMessage } from 'element-plus'
 
-let api_base_url = 'http://localhost:8000/'
+let api_base_url = 'http://192.168.1.7:2345/'
 
 const Axios = axios.create({
     baseURL: api_base_url,
