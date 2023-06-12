@@ -19,7 +19,7 @@
                     <el-button class="login-btn" @click="resetForm">重置</el-button>
                 </el-form-item>
                 <el-form-item style="display: flex; align-content: space-between;">
-                    <el-link class="login-btn" type="primary" href="http://192.168.1.7:2345/admin">管理员后台</el-link>
+                    <el-link class="login-btn" type="primary" href="http://localhost:8000/admin">管理员后台</el-link>
                     <el-link class="login-btn" type="primary">忘记密码</el-link>
                 </el-form-item>
             </el-form>
@@ -64,9 +64,9 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 router.push('/')
             }).catch(err => {
                 if (err.response.status == HttpStatusCode.Unauthorized) {
-                    ElMessage.error(`用户名或密码错误，${err.code}`)
+                    ElMessage.error(`用户名或密码错误`)
                 } else {
-                    ElMessage.error(`服务器不可用，${err.code}`)
+                    ElMessage.error(`服务器不可用`)
                 }
             })
         } else {

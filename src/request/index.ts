@@ -1,17 +1,11 @@
 import axios, { HttpStatusCode } from 'axios'
 import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 import { ISettings } from '@/types/settings'
+import { ElMessage } from 'element-plus'
 
-let api_base_url = ''
-// vite
-if (import.meta.env.DEV == true) {
-    api_base_url = 'http://localhost:8000/'
-} else if (import.meta.env.PROD == true) {
-    api_base_url = 'http://192.168.1.7:2345/'
-}
+let api_base_url = 'http://localhost:8000/'
 
 const Axios = axios.create({
-    // baseURL: 'http://192.168.1.7:2345/',
     baseURL: api_base_url,
     timeout: 6000,
     headers: {
@@ -32,25 +26,26 @@ Axios.interceptors.request.use((config) => {
     return Promise.reject(error)
 })
 //响应拦截
-Axios.interceptors.response.use((response) => {
+Axios.interceptors.response.use(response => {
     return response
-}, async (error) => {
+}, async err => {
     // localStorage.clear()
-    if (error.config.url == "api/token/refresh/") {
+    if (err.config.url == "api/token/refresh/") {
         Api.clearUserInfo()
     }
-    else if (error.response.status == HttpStatusCode.Unauthorized) {
+    else if (err.response.status == HttpStatusCode.Unauthorized) {
         var ui = Api.loadUserInfoFromStorage()
         if (ui != null) {
             let res = await Api.refreshToken(ui.refresh)
             ui.access = res.data.access
             ui.refresh = res.data.refresh
             Api.storeUserInfo(ui)
-            error.config.headers['Authorization'] = `Bearer ${res.data.access}`
-            return axios.request(error.config)
+            err.config.headers['Authorization'] = `Bearer ${res.data.access}`
+            return axios.request(err.config)
         }
     }
-    return Promise.reject(error)
+    ElMessage.error(`${err.message}(${err.response.statusText})`)
+    return Promise.reject(err)
 }
 )
 
