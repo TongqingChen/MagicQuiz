@@ -22,7 +22,7 @@
                         <li v-if="!isOralMath">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
                         <li v-if="!isOralMath">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
                         <li v-if="!isOralMath">考试时长：{{ quiz.exam_minutes }}分钟</li>
-                        <li v-else>点击【开始考试】配置</li>
+                        <li v-else>点击卡片根据提示配置考试信息</li>
                         <li>最近考试：{{ quiz.last_exam_time }}</li>
                     </ol>
                 </div>

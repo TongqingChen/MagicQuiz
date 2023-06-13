@@ -66,7 +66,7 @@
 
 
 <script lang='ts' setup>
-import { reactive, onMounted, ref, computed } from 'vue'
+import { reactive, onMounted, ref, computed, onBeforeUnmount } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
@@ -179,6 +179,10 @@ onMounted(async () => {
     }
 })
 
+onBeforeUnmount(()=>{
+    examInfo.state = ExamState.FINISHED
+})
+
 onBeforeRouteLeave((to, from, next) => {
     if (examInfo.state != ExamState.ONGOING) {
         next()
@@ -198,7 +202,6 @@ onBeforeRouteLeave((to, from, next) => {
     }).catch((err) => {
         if (err == 'cancel') {
             next()
-            examInfo.state = ExamState.FINISHED
         } else {
             next(false)
         }

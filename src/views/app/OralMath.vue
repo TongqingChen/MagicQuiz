@@ -70,6 +70,9 @@ onMounted(() => {
         math_info.start_time = Date.now()
     })
 })
+onBeforeUnmount(()=>{
+    math_info.state = ExamState.FINISHED
+})
 
 const uploadExamResults = async () => {
     math_info.state = ExamState.FINISHED
@@ -130,7 +133,6 @@ onBeforeRouteLeave((to, from, next) => {
     }).catch((err) => {
         if (err == 'cancel') {
             next()
-            math_info.state = ExamState.FINISHED
         } else {
             next(false)
         }

@@ -63,10 +63,11 @@ const submitForm = (formEl: FormInstance | undefined) => {
                 // 跳转页面
                 router.push('/')
             }).catch(err => {
+                console.log(err)
                 if (err.response.status == HttpStatusCode.Unauthorized) {
-                    ElMessage.error(`用户名或密码错误`)
+                    ElMessage.error(`密码错误或激活已失效`)
                 } else {
-                    ElMessage.error(`服务器不可用`)
+                    ElMessage.error(`服务器不可用${err.response.status}`)
                 }
             })
         } else {

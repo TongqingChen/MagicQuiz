@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { Habbits, IHabbit, ITitle } from '@/types/habbit';
-import { Check, ArrowLeft, ArrowRight, List, Location } from '@element-plus/icons-vue';
+import { Check, ArrowLeft, ArrowRight, List } from '@element-plus/icons-vue';
 import { ADate } from '@/utils/date'
 import { Api } from '@/request';
 import { ElMessageBox } from 'element-plus';

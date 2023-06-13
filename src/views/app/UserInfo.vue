@@ -11,7 +11,7 @@
             <el-alert type="info" size="small" show-icon style="width: 300px;">点击头像修改; 支持jpg/jpeg/png; ≤2M;</el-alert>
         </el-form-item>
         <!-- <FormItem label="用户名" type="text" v-modelv-model="user.username"/> -->
-        <FormItem label="用户名" type="text" :disabled="!editEnabled" v-model="user.username" />
+        <FormItem label="用户名" type="text" :disabled="true" v-model="user.username" />
         <el-form-item label="姓名">
             <el-row :gutter="10">
                 <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
@@ -23,7 +23,7 @@
             </el-row>
         </el-form-item>
         <el-form-item label="性别">
-            <el-radio-group v-model="user.gender" :disabled="!editEnabled">
+            <el-radio-group v-model="gender" :disabled="!editEnabled">
                 <el-radio :label="1">男</el-radio>
                 <el-radio :label="2">女</el-radio>
             </el-radio-group>
@@ -34,7 +34,8 @@
         <FormItem label="学校" type="text" :disabled="!editEnabled" v-model="user.school" />
         <FormItem label="住址" type="text" :disabled="!editEnabled" v-model="user.address" />
         <FormItem label="身份证号" type="text" :disabled="!editEnabled" v-model="user.card_id" />
-        <FormItem label="注册时间" type="text" :disabled="!editEnabled" v-model="user.date_joined" />
+        <FormItem label="注册时间" type="text" :disabled="true" v-model="user.date_joined" />
+        <FormItem label="失效时间" type="text" :disabled="true" v-model="user.failure_time" />
         <el-form-item>
             <el-row :gutter="10">
                 <el-col :xs="12" :sm="8" :md="6" :lg="5" :xl="4">
@@ -60,9 +61,12 @@ const editEnabled = ref(false)
 const dataLoaded = ref(false)
 let user = reactive(new UserInfo())
 
+const gender = ref(1)
+
 onMounted(() => {
     Api.getUserInfo().then((res) => {
         user = res.data
+        gender.value = user.gender
         dataLoaded.value = true
         ElMessage.success('页面加载成功')
     }).catch((err) => ElMessage.error(`页面加载失败(${err.code})`))
@@ -102,15 +106,20 @@ const onUploadAvatar = (file: any, fileList: any) => {
 };
 
 const onSubmit = () => {
-    const loading = ElLoading.service({
-        fullscreen: true,
-        lock: true,
-        text: 'Loading',
-        background: 'rgba(0, 0, 0, 0.7)',
-    })
-    setTimeout(() => {
-        loading.close()
-    }, 2000)
+    var d = {
+        last_name: user.last_name,
+        first_name: user.first_name,
+        birthday: user.birthday,
+        gender: gender.value,
+        email: user.email,
+        mobile: user.mobile,
+        school: user.school,
+        address: user.address,
+        card_id: user.card_id
+    }
+    Api.updateUserInfo(d)
+        .then(res => ElMessage.success('信息修改成功'))
+        .catch(err => ElMessage.error("信息修改失败"))
 }
 </script>
 

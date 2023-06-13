@@ -100,6 +100,7 @@ export interface IUserInfoExt extends IUserInfo {
     school: string;
     card_id: string;
     date_joined: Date;
+    failure_time: string;
 }
 
 export class UserInfo {
@@ -116,19 +117,6 @@ export class UserInfo {
     address: string = ""
     card_id: string = ""
     date_joined: string = ""
-
-    extractEditableInfo() {
-        return {
-            "username": this.username,
-            "last_name": this.last_name,
-            "first_name": this.first_name,
-            "birthday": this.birthday,
-            "gender": this.gender,
-            "email": this.email,
-            "mobile": this.mobile,
-            "school": this.school,
-            "address": this.address,
-            "card_id": this.card_id,
-        }
-    }
+    failure_time: string = ''
 }
+

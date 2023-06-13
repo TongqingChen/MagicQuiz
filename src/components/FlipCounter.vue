@@ -24,7 +24,7 @@ export default {
     data() {
         return {
             isIE: false,
-            startTime: Date.now(),
+            timer: 0,
             timeArray: this.split ? new Array(this.type * 2).fill("0") : new Array(this.type).fill("00"),
             timeArrayT: this.split ? new Array(this.type * 2).fill("0") : new Array(this.type).fill("00"),
             isAnimate: this.split ? new Array(this.type * 2).fill(false) : new Array(this.type).fill(false)
@@ -38,9 +38,6 @@ export default {
         timeUnit: { type: Array, default: () => [] }
     },
     computed: {
-        endTime() {
-            return this.startTime + this.seconds * 1000
-        },
         step() {
             return this.split ? 2 : 1;
         },
@@ -55,6 +52,9 @@ export default {
             ];
             temp.length = this.type > 1 ? this.type : 1;
             return temp;
+        },
+        endTime() {
+            return Date.now() + this.seconds * 1000
         }
     },
     watch: {
@@ -74,7 +74,7 @@ export default {
         },
         endTime(newV) {
             if (newV > 0) {
-                this.start();
+                this.start(200)
             }
         }
     },
@@ -87,29 +87,28 @@ export default {
             this.isIE = true;
         }
         console.log('mounted...')
-        this.start(0);
     },
-    beforeUnmount(){
+    beforeUnmount() {
         console.log('beforeUnmount...')
         clearTimeout(this.timer);
     },
     methods: {
         // 开始倒计时
         start(step = 1000) {
-            clearTimeout(this.timer);
+            this.timer && clearTimeout(this.timer);
             this.timer = setTimeout(() => {
-                var t = this.endTime - Date.now()
+                var t = (this.endTime - Date.now()) / 1000.
                 if (t <= 0 && !this.stop) {
                     this.$emit("timeUp");
                     return
                 }
-                var day = Math.floor(t / 86400000)
-                t -= day * 86400000
-                var hour = Math.floor(t / 3600000); // 剩余的小时 已排除天
-                t -= hour * 3600000
-                var min = Math.floor(t / 60000); // 剩余的分钟 已排除天和小时
-                t -= min * 60000; // 剩余的秒
-                var sec = Math.floor(t / 1000); // 剩余
+                var day = Math.floor(t / 86400)
+                t -= day * 86400
+                var hour = Math.floor(t / 3600); // 剩余的小时 已排除天
+                t -= hour * 3600
+                var min = Math.floor(t / 60); // 剩余的分钟 已排除天和小时
+                t -= min * 60; // 剩余的秒
+                var sec = Math.floor(t); // 剩余
                 const type = Number(this.type);
                 let arr = [];
                 if (!this.split) {// 不分开
