@@ -25,9 +25,12 @@
             </el-aside>
             <el-main v-if="activeQ.meta.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px;">
-                    <div class="user-answer"><el-tag size="small" effect="dark">考生答案</el-tag>{{ activeQ.meta.userAnswer }} </div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success" effect="dark">正确答案</el-tag>{{ activeQ.meta.answer }}</div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success" effect="dark">题目解析</el-tag>{{ activeQ.meta.analysis }}</div>
+                    <div class="user-answer"><el-tag size="small" effect="dark">考生答案</el-tag>{{ activeQ.meta.userAnswer }}
+                    </div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
+                            effect="dark">正确答案</el-tag>{{ activeQ.meta.answer }}</div>
+                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
+                            effect="dark">题目解析</el-tag>{{ activeQ.meta.analysis }}</div>
                     <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
                     <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
                     <el-button-group style="padding-left: 6px;">
@@ -67,7 +70,7 @@
 
 <script lang='ts' setup>
 import { reactive, onMounted, ref, computed, onBeforeUnmount } from 'vue'
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 import { Question, ExamInfo, ExamState, QueType } from '@/types/question'
 import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
@@ -80,6 +83,7 @@ import FlipCounter from '@/components/FlipCounter.vue'
 const route = useRoute()
 const blink = ref(true)
 const examInfo = reactive(new ExamInfo())
+let qTypes = reactive([])
 
 let ijPairs = reactive([[0, 0]])
 
@@ -95,19 +99,29 @@ const getQuestionList = async () => {
     examInfo.exam_seconds = Number(route.query.exam_seconds)
     examInfo.question_num = 0
 
+    await Api.getQuestionTypes().then(res => {
+        qTypes = res.data
+    }).catch(err => {
+        ElMessage.error(`获取题型失败!${err}`)
+        return
+    })
+    activeQ.answers.splice(0, activeQ.answers.length)
+    qTypes.forEach(q => { 
+        examInfo.meta.push({ typeId: q[0], typeName: q[1], icon: 'Message', qList: [] }) 
+        activeQ.answers.push('')
+    })
+    examInfo.scores = 0
+    var i = 0
+    ijPairs = []
     if (examInfo.id >= 0) {
         await Api.getQuestionListByQuizId(examInfo.id).then(res => {
             let questions: Question[] = res.data.results
-            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
-            { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
-            { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
-            examInfo.scores = 0
-            ijPairs = []
-            var i = 0
+            questions.sort((q1, q2) => { return q1.type - q2.type })
             questions.forEach(q => {
-                ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
-                examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, 
+                var t_id = qTypes.findIndex(qt => qt[0] == q.type)
+                ijPairs.push([t_id, examInfo.meta[q.type].qList.length])
+                examInfo.meta[t_id].qList.push({
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
                     image: q.image, difficulty_level: q.difficulty_level, answer: q.answer,
                     analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
@@ -118,21 +132,13 @@ const getQuestionList = async () => {
         })
     } else if (examInfo.id == -1) { //-1表示错题集
         await Api.getWrongSetsMixedBySubName(examInfo.subjectName).then(res => {
-            console.log(res.data)
             const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
-            const types = ["选择", "判断", "编程"]
-            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: types[QueType.CHOICE], icon: "Message", qList: [] },
-            { typeId: QueType.LOGIC, typeName: types[QueType.LOGIC], icon: "Setttings", qList: [] },
-            { typeId: QueType.CODING, typeName: types[QueType.CODING], icon: "Menu", qList: [] }]
-            examInfo.scores = 0
-            wrong_set.sort((w1, w2) => { return types.indexOf(w1.type) - types.indexOf(w2.type) })
-            var i = 0
-            ijPairs = []
+            wrong_set.sort((w1, w2) => { return w1.type_id - w2.type_id })
             wrong_set.forEach(w => {
-                var t_id = types.indexOf(w.type)
-                ijPairs.push([t_id, examInfo.meta[t_id].qList.length])
+                var t_id = qTypes.findIndex(qt => qt[0] == w.type_id)
+                ijPairs.push([t_id, examInfo.meta[w.type_id].qList.length])
                 examInfo.meta[t_id].qList.push({
-                    index: i++, id: w.qid, type: t_id, title: w.title, description: w.description, 
+                    index: i++, id: w.qid, type: w.type_id, title: w.title, description: w.description,
                     image: w.image, difficulty_level: 0, answer: w.answer, analysis: w.analysis,
                     displayType: 'default', userAnswer: '未作答', score: w.score
                 })
@@ -147,17 +153,13 @@ const getQuestionList = async () => {
         var coding_num = Number(route.query.coding_num)
         await Api.getQuestionListRandom(examInfo.subjectName, [choice_num, logic_num, coding_num]).then(res => {
             let questions: Question[] = res.data
-            examInfo.meta = [{ typeId: QueType.CHOICE, typeName: "选择", icon: "Message", qList: [] },
-            { typeId: QueType.LOGIC, typeName: "判断", icon: "Setttings", qList: [] },
-            { typeId: QueType.CODING, typeName: "编程", icon: "Menu", qList: [] }]
-            examInfo.scores = 0
-            ijPairs = []
-            var i = 0
+            questions.sort((q1, q2) => { return q1.type - q2.type })
             questions.forEach(q => {
-                ijPairs.push([q.type, examInfo.meta[q.type].qList.length])
-                examInfo.meta[q.type].qList.push({
-                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description, 
-                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, 
+                var t_id = qTypes.findIndex(qt => qt[0] == q.type)
+                ijPairs.push([t_id, examInfo.meta[q.type].qList.length])
+                examInfo.meta[t_id].qList.push({
+                    index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
+                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer,
                     analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
@@ -179,7 +181,7 @@ onMounted(async () => {
     }
 })
 
-onBeforeUnmount(()=>{
+onBeforeUnmount(() => {
     examInfo.state = ExamState.FINISHED
 })
 
@@ -208,23 +210,18 @@ onBeforeRouteLeave((to, from, next) => {
     })
 })
 
-const activeQ = reactive({ meta: new Question(), answers: ["", "", ""] })
+const activeQ = reactive({ meta: new Question(), answers: [''] })
 const onQuestionClicked = (index: number) => {
     activeQ.meta = examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]
-    activeQ.answers[activeQ.meta.type] = activeQ.meta.userAnswer
+    var t_id = qTypes.findIndex(qt => qt[0] == activeQ.meta.type)
+    activeQ.answers[t_id] = activeQ.meta.userAnswer
 }
 const onAnswerSelected = () => {
     if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
-        // ElNotification({title: 'A', message: activeQ.answers[activeQ.meta.type], type: 'success', position: 'top-left' })
-        // ElMessage({
-        //     message: `<h2>${activeQ.answers[activeQ.meta.type]}</h2>`,
-        //     center: true,
-        //     duration: 800,
-        //     dangerouslyUseHTMLString: true
-        // })
         var i = ijPairs[activeQ.meta.index][0]
         var j = ijPairs[activeQ.meta.index][1]
-        examInfo.meta[i].qList[j].userAnswer = activeQ.answers[activeQ.meta.type]
+        var t_id = qTypes.findIndex(qt => qt[0] == activeQ.meta.type)
+        examInfo.meta[i].qList[j].userAnswer = activeQ.answers[t_id]
         examInfo.meta[i].qList[j].displayType = 'primary'
         if (autoNext.value && activeQ.meta.index < examInfo.question_num - 1) {
             onQuestionClicked(activeQ.meta.index + 1)
@@ -237,14 +234,19 @@ const uploadExamResults = async () => {
     var user_id = Api.loadUserIdFromStorage()
     var results = new QuizResult()
     var total_score = 0
-    var correct_count = [0, 0, 0]
-    var error_count = [0, 0, 0]
+    var correct_count: number[] = []
+    var error_count: number[] = []
+    qTypes.forEach(q => {
+        correct_count.push(0)
+        error_count.push(0)
+    })
+    var i = 0
     examInfo.meta.forEach(qs => {
         qs.qList.forEach(q => {
             q.displayType = q.userAnswer == q.answer ? "success" : "danger"
             if (q.userAnswer == q.answer) {
                 results.meta.abs_score += q.score
-                correct_count[q.type]++
+                correct_count[i]++
             }
             if (q.type != QueType.CODING) {
                 total_score += q.score
@@ -254,23 +256,26 @@ const uploadExamResults = async () => {
                 })
             }
         })
-        error_count[qs.typeId] = qs.qList.length - correct_count[qs.typeId]
+        error_count[i] = qs.qList.length - correct_count[i]
+        i++
     })
-
-    results.meta.note = `选择: ${correct_count[QueType.CHOICE]}/${examInfo.meta[QueType.CHOICE].qList.length}, ` +
-        `判断: ${correct_count[QueType.LOGIC]}/${examInfo.meta[QueType.LOGIC].qList.length}`
+    i = 0
+    var rsl_str = ''
+    qTypes.forEach(q => {
+        results.meta.note += `${q[1]}:${correct_count[i]}/${examInfo.meta[i].qList.length},`
+        rsl_str += `${q[1]}: ${correct_count[i]} ✅, ${error_count[i]} ❌<br/>`
+        i++
+    })
     results.meta.user = user_id
     results.meta.quiz = examInfo.id
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
     results.meta.use_minutes = Math.max(1, Math.round((Date.now() - examInfo.start_time) / 1000 / 60))
     await Api.postQuestionsResult(results.questions)
-    if (examInfo.id >= 0) { //错题集不提交考试记录
+    if (examInfo.id >= 0) { //错题集和随机考试不提交考试记录
         await Api.postQuizResult(results.meta)
     }
     ElMessageBox.alert(`得分: ${results.meta.abs_score}/${total_score}<br/>` +
-        (results.meta.abs_score == total_score ? '恭喜您获得满分💯' :
-            `选择题: ${correct_count[QueType.CHOICE]} ✅, ${error_count[QueType.CHOICE]} ❌<br/>` +
-            `判断题: ${correct_count[QueType.LOGIC]} ✅, ${error_count[QueType.LOGIC]} ❌`), '考试结果',
+        (results.meta.abs_score == total_score ? '恭喜您获得满分💯' : rsl_str), '考试结果',
         { type: results.meta.abs_score == total_score ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
 

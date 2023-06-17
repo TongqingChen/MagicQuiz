@@ -96,6 +96,7 @@ const getQuizList = () => {
         })
         quizPages.quizDisplay = quizPages.quizList
         subjectList = subjectList.filter(s => s.count > 0)
+        subjectList.reverse()
         subjectList.length > 0 && (quizPages.subject.id = subjectList[0].id)
         onSubjectSelected()
     })

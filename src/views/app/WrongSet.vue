@@ -76,7 +76,6 @@ const currentInfo: { subject: string, drawerVisible: boolean, q: IWrongSet } = r
 const onDetailsClicked = (index: number) => {
     currentInfo.q = wrongSets[currentInfo.subject][index]
     currentInfo.drawerVisible = true;
-    console.log(currentInfo.drawerVisible)
 }
 onMounted(() => {
     Api.getWrongSetsMixedBySubName().then(res => {

@@ -1,3 +1,5 @@
+import { QueType } from "./question";
+
 export interface IQuestionResult {
     user: number;
     question: number;
@@ -36,6 +38,7 @@ export interface IWrongSet {
     qid: number;
     quiz_name: string;
     title: string;
+    type_id: QueType;
     type: string;
     description: string;
     score: number;
@@ -50,6 +53,7 @@ export class WrongSet implements IWrongSet {
     qid: number = 0;
     quiz_name: string = '';
     title: string = '';
+    type_id: QueType = QueType.UNKNOWN;
     type: string = '';
     description: string = '';
     score: number = 0;

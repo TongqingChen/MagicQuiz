@@ -111,6 +111,12 @@ export class Api {
             method: "GET"
         })
     }
+    static getQuestionTypes() {
+        return Axios({
+            url: `question_types/`,
+            method: "GET"
+        })
+    }
     static getQuestionListRandom(sub_name: string, nums: number[]) {
         var url = `random_quiz/?sub_name=${sub_name}`
         nums.forEach(n => url += `&nums=${n}`)
