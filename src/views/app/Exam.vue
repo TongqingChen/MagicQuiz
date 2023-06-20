@@ -17,8 +17,8 @@
                     <div v-for="qs in examInfo.meta" style="margin: 5px;">
                         <el-divider v-if="qs.qList.length > 0">{{ qs.typeName }}</el-divider>
                         <div class="question-zone" v-if="qs.qList.length > 0">
-                            <el-button v-for="q in qs.qList" :type="q.displayType" class="question-button"
-                                @click="onQuestionClicked(q.index)">{{ q.index + 1 }}</el-button>
+                            <el-button v-for="q in qs.qList" :type="q.displayType" @click="onQuestionClicked(q.index)">{{
+                                q.doubt ? '❓' : q.index + 1 }} </el-button>
                         </div>
                     </div>
                 </el-scrollbar>
@@ -31,13 +31,16 @@
                             effect="dark">正确答案</el-tag>{{ activeQ.meta.answer }}</div>
                     <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
                             effect="dark">题目解析</el-tag>{{ activeQ.meta.analysis }}</div>
-                    <el-text :type="textType" size="small" style="padding-left: 6px;">自动下一题</el-text>
+                    <el-text :type="textType" size="small" style="padding-left: 6px;">自动下题</el-text>
                     <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
                     <el-button-group style="padding-left: 6px;">
+                        <el-button
+                            :disabled="activeQ.meta.index < 0 || activeQ.meta.index >= ijPairs.length || examInfo.state != ExamState.ONGOING"
+                            type="primary" size="small" @click="onDoubtBtnClicked">❓存疑</el-button>
                         <el-button :disabled="activeQ.meta.index == 0" type="primary" :icon="ArrowLeft" size="small"
-                            @click="onQuestionClicked(activeQ.meta.index - 1)">上一题</el-button>
+                            @click="onQuestionClicked(activeQ.meta.index - 1)">上题</el-button>
                         <el-button :disabled="activeQ.meta.index == ijPairs.length - 1" type="primary" size="small"
-                            @click="onQuestionClicked(activeQ.meta.index + 1)">下一题<el-icon class="el-icon--right">
+                            @click="onQuestionClicked(activeQ.meta.index + 1)">下题<el-icon class="el-icon--right">
                                 <ArrowRight />
                             </el-icon></el-button>
                     </el-button-group>
@@ -76,7 +79,7 @@ import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
 import { IWrongSet, QuizResult } from '@/types/http'
 // import Timer from '@/components/Timer.vue'
-import { ArrowLeft, Check, Close } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Check, Close } from '@element-plus/icons-vue'
 import { ISettings, SetID } from '@/types/settings';
 import FlipCounter from '@/components/FlipCounter.vue'
 
@@ -106,8 +109,8 @@ const getQuestionList = async () => {
         return
     })
     activeQ.answers.splice(0, activeQ.answers.length)
-    qTypes.forEach(q => { 
-        examInfo.meta.push({ typeId: q[0], typeName: q[1], icon: 'Message', qList: [] }) 
+    qTypes.forEach(q => {
+        examInfo.meta.push({ typeId: q[0], typeName: q[1], icon: 'Message', qList: [] })
         activeQ.answers.push('')
     })
     examInfo.scores = 0
@@ -122,7 +125,7 @@ const getQuestionList = async () => {
                 ijPairs.push([t_id, examInfo.meta[q.type].qList.length])
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer,
+                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, doubt: false,
                     analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
@@ -139,7 +142,7 @@ const getQuestionList = async () => {
                 ijPairs.push([t_id, examInfo.meta[w.type_id].qList.length])
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: w.qid, type: w.type_id, title: w.title, description: w.description,
-                    image: w.image, difficulty_level: 0, answer: w.answer, analysis: w.analysis,
+                    image: w.image, difficulty_level: 0, answer: w.answer, doubt: false, analysis: w.analysis,
                     displayType: 'default', userAnswer: '未作答', score: w.score
                 })
                 examInfo.scores += w.score
@@ -159,7 +162,7 @@ const getQuestionList = async () => {
                 ijPairs.push([t_id, examInfo.meta[q.type].qList.length])
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
-                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer,
+                    image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, doubt: false,
                     analysis: q.analysis, displayType: 'default', userAnswer: '未作答', score: q.score
                 })
                 examInfo.scores += q.score
@@ -216,6 +219,12 @@ const onQuestionClicked = (index: number) => {
     var t_id = qTypes.findIndex(qt => qt[0] == activeQ.meta.type)
     activeQ.answers[t_id] = activeQ.meta.userAnswer
 }
+
+const onDoubtBtnClicked = (() => {
+    var i = ijPairs[activeQ.meta.index][0]
+    var j = ijPairs[activeQ.meta.index][1]
+    examInfo.meta[i].qList[j].doubt = !examInfo.meta[i].qList[j].doubt
+})
 const onAnswerSelected = () => {
     if (activeQ.meta.index >= 0 && examInfo.state == ExamState.ONGOING) {
         var i = ijPairs[activeQ.meta.index][0]

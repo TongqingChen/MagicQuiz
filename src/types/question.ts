@@ -27,7 +27,8 @@ export class Question implements IQuestion {
     image: string | null = null
     answer: string = ""
     analysis: string = ""
-    difficulty_level: number = -1;
+    difficulty_level: number = -1
+    doubt: boolean = false
     userAnswer: string = ""
     displayType: string = ""
     score: number = 0
