@@ -51,7 +51,7 @@ let options: ISubjectTitle[] = reactive([])
 const currType = ref(0)
 let qList: IQuestion[] = reactive([])
 const qListDisplay = computed(() => {
-    return qList.filter(q => { return currType.value < 0 || q.type == currType.value })
+    return qList.filter(q => { return q.type == currType.value })
 })
 let currQ: { header: string, title: string, description: string, image: string | null, analysis: string, answer: string } = reactive({
     header: '',
@@ -65,11 +65,11 @@ let qid = reactive([0, 0])
 const detailsVisible = ref(false)
 const loading = ref(false)
 const questionSelected = (idx: number) => {
-    currQ.title = qList[idx].title
-    currQ.description = qList[idx].description
-    currQ.image = qList[idx].image
-    currQ.analysis = qList[idx].analysis
-    currQ.answer = qList[idx].answer
+    currQ.title = qListDisplay.value[idx].title
+    currQ.description = qListDisplay.value[idx].description
+    currQ.image = qListDisplay.value[idx].image
+    currQ.analysis = qListDisplay.value[idx].analysis
+    currQ.answer = qListDisplay.value[idx].answer
     detailsVisible.value = true
 }
 const changeValue = (v: any) => {
