@@ -9,14 +9,14 @@
             <FlipCounter :seconds="math_info.exam_seconds" :type="2" :split="blink" :timeUnit="[':', ':', ':']"
                 :stop="math_info.state == ExamState.FINISHED" @timeUp="uploadExamResults" />
             <el-button link type="primary" :disabled="math_info.state == ExamState.FINISHED"
-                @click="submitQuiz">提交</el-button>
+                @click="submitQuiz">交卷</el-button>
         </el-header>
         <el-main>
             <el-row :gutter="16" class="q-body">
                 <el-col v-for="m in math_info.meta" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                     <el-card>
                         <span class="question">{{ m.title }}</span>
-                        <el-input v-model="m.user_answer" :max="999" clearable type="number"
+                        <el-input class="clear-number-input" v-model="m.user_answer" :max="999" clearable type="number"
                             :disabled="math_info.state == ExamState.FINISHED"></el-input>
                         <span>{{ m.mark }}</span>
                     </el-card>
@@ -70,7 +70,7 @@ onMounted(() => {
         math_info.start_time = Date.now()
     })
 })
-onBeforeUnmount(()=>{
+onBeforeUnmount(() => {
     math_info.state = ExamState.FINISHED
 })
 
@@ -93,14 +93,15 @@ const uploadExamResults = async () => {
     results.meta.rel_score = Math.round(correct_count * 100 / math_info.meta.length)
     results.meta.use_minutes = Math.max(1, Math.round((Date.now() - math_info.start_time) / 1000 / 60))
     await Api.postQuizResult(results.meta)
-    ElMessageBox.alert(`得分: ${results.meta.abs_score}/100<br/>` +
-        (correct_count == math_info.meta.length ? "恭喜您获得满分💯" : `详情: ${correct_count} ✅, ${error_count} ❌<br/>`), '考试结果',
+    ElMessageBox.alert(`【得分】<b>${results.meta.abs_score}</b>/100<br/>【详情】` +
+        (correct_count == math_info.meta.length ? "恭喜您获得满分💯" : `<b>${correct_count}</b> ✅, <b>${error_count}<b/> ❌<br/>`) +
+        `【用时】<b>${((Date.now() - math_info.start_time) / 1000 / 60).toFixed(2)}<b/>分钟<br/>`, '考试结果',
         { type: correct_count == math_info.meta.length ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
 
 const submitQuiz = () => {
     ElMessageBox.confirm(
-        '确定提交并结束考试吗？',
+        '确定结束考试并交卷吗？',
         '请确认',
         {
             confirmButtonText: '确定',
@@ -183,5 +184,10 @@ onBeforeRouteLeave((to, from, next) => {
 
 .el-input {
     width: 100px;
+}
+
+.clear-number-input :deep(input[type="number"]::-webkit-outer-spin-button),
+.clear-number-input :deep(input[type="number"]::-webkit-inner-spin-button) {
+    -webkit-appearance: none !important;
 }
 </style>

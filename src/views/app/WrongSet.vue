@@ -5,13 +5,13 @@
             <el-radio-button v-for="(val, key) in wrongSets" :label="key"> {{ key }}({{ val.length }})</el-radio-button>
         </el-radio-group>
     </div>
-    <el-table :data="wrongSets[currentInfo.subject]" stripe border v-loading="loading"
+    <el-table :data="wrongSets[currentInfo.subject]" :row-class-name="tableRowClassName" border v-loading="loading"
         style="width: 100%; color:darkslategray; font-size: 13px;">
         <el-table-column fixed type='index' width="32px" />
-        <el-table-column prop="quiz_name" label="试卷名" width="88px" sortable />
+        <el-table-column prop="quiz_name" label="试卷名" width="88px" sortable show-overflow-tooltip />
         <el-table-column prop="type" label="题型" width="60px" sortable />
-        <el-table-column prop="title" label="题目" />
-        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="title" label="题目" show-overflow-tooltip />
+        <el-table-column prop="description" label="描述" show-overflow-tooltip />
         <el-table-column prop="level" label="难度" width="60px" sortable />
         <el-table-column prop="record_times" label="次数" width="60px" sortable />
         <el-table-column fixed="right" label="查看" width="40px">
@@ -25,27 +25,6 @@
             <el-button type="primary" :icon="Edit" circle @click="startExamInWrongSet" />
         </el-tooltip>
     </el-affix>
-    <!-- <el-dialog v-model="currentInfo.drawerVisible" destroy-on-close draggable>
-        <template #header>
-            <div>{{ currentInfo.q.qid }}.【{{ currentInfo.subject }}】{{ currentInfo.q.quiz_name }}</div>
-        </template>
-        <div class="question">
-            <div class="question">{{ currentInfo.q.title }}</div>
-            <el-image v-if="currentInfo.q.image != ''" :src="currentInfo.q.image" fit="scale-down" />
-            <div>{{ currentInfo.q.description }}</div>
-            <div v-if="showAnswer">
-                <div style="color: darkred; font-weight: bold;"><el-tag type='error' size='small'
-                        effect="dark">考生答案</el-tag> {{ currentInfo.q.user_answer }}</div>
-                <div style="color: darkgreen; font-weight: bold;"><el-tag type='success' size='small'
-                        effect="dark">正确答案</el-tag> {{ currentInfo.q.answer }}</div>
-                <div style="color: darkgreen;"><el-tag type='success' size='small' effect="dark">题目解析</el-tag> {{
-                    currentInfo.q.analysis }}</div>
-            </div>
-        </div>
-        <template #footer>
-            <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
-        </template>
-    </el-dialog> -->
     <QuestionDialog :visible="currentInfo.drawerVisible"
         :header="`${currentInfo.q.qid}.【${currentInfo.subject}】${currentInfo.q.quiz_name}`" :title="currentInfo.q.title"
         :image="currentInfo.q.image" :description="currentInfo.q.description" :analysis="currentInfo.q.analysis"
@@ -109,6 +88,13 @@ const startExamInWrongSet = () => {
         })
     })
 }
+
+const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) => {
+    if (rowIndex % 2 == 0) {
+        return 'success-row'
+    }
+    return ''
+}
 </script>
 
 <style lang="scss" scoped>
@@ -127,5 +113,12 @@ const startExamInWrongSet = () => {
 
 .el-table:deep(.cell) {
     padding: 0 4px;
+}
+</style>
+
+
+<style lang="scss">
+.success-row {
+    --el-table-tr-bg-color: var(--el-color-success-light-9) !important;
 }
 </style>

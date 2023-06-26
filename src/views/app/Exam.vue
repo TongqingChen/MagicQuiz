@@ -9,7 +9,7 @@
             <FlipCounter :seconds="examInfo.exam_seconds" :type="3" :split="blink" :timeUnit="[':', ':', ':']"
                 :stop="examInfo.state == ExamState.FINISHED" @timeUp="uploadExamResults" />
             <el-button link type="primary" :disabled="examInfo.state != ExamState.ONGOING"
-                @click="submitQuiz">提交</el-button>
+                @click="submitQuiz">交卷</el-button>
         </el-header>
         <el-container>
             <el-aside width="164px">
@@ -272,7 +272,7 @@ const uploadExamResults = async () => {
     var rsl_str = ''
     qTypes.forEach(q => {
         results.meta.note += `${q[1]}:${correct_count[i]}/${examInfo.meta[i].qList.length},`
-        rsl_str += `${q[1]}: ${correct_count[i]} ✅, ${error_count[i]} ❌<br/>`
+        rsl_str += `【${q[1]}】<b>${correct_count[i]}</b> ✅, <b>${error_count[i]}</b> ❌<br/>`
         i++
     })
     results.meta.user = user_id
@@ -283,14 +283,15 @@ const uploadExamResults = async () => {
     if (examInfo.id >= 0) { //错题集和随机考试不提交考试记录
         await Api.postQuizResult(results.meta)
     }
-    ElMessageBox.alert(`得分: ${results.meta.abs_score}/${total_score}<br/>` +
-        (results.meta.abs_score == total_score ? '恭喜您获得满分💯' : rsl_str), '考试结果',
+    ElMessageBox.alert(`【得分】${results.meta.abs_score}/${total_score}<br/>` +
+        (results.meta.abs_score == total_score ? '【信息】恭喜您获得满分💯' : rsl_str) +
+        `【用时】<b>${((Date.now() - examInfo.start_time) / 1000 / 60).toFixed(2)}</b>分钟<br/>`, '考试结果',
         { type: results.meta.abs_score == total_score ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
 
 const submitQuiz = () => {
     ElMessageBox.confirm(
-        '确定提交并结束考试吗？', '请确认',
+        '确定结束考试并交卷吗？', '请确认',
         { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }
     ).then(() => {
         uploadExamResults()

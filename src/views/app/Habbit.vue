@@ -17,8 +17,9 @@
                 </el-button-group>
             </div>
         </template>
-        <el-table :data="habbits.data" border style="width: 100%; font-size:12px" table-layout="auto" stripe
-            :row-style="{ height: 0 + 'px' }" :cell-style="{ padding: '0px' }" :header-cell-style="{ padding: '0px' }">
+        <el-table :data="habbits.data" border style="width: 100%; font-size:12px" table-layout="auto"
+            :row-class-name="tableRowClassName" :row-style="{ height: 0 + 'px' }" :cell-style="{ padding: '0px' }"
+            :header-cell-style="{ padding: '0px' }">
             <el-table-column label="名称" fixed align="center">
                 <template #default="scope">{{ scope.row.name }}<span v-if="scope.row.description.length > 0">({{
                     scope.row.description }})</span></template>
@@ -68,7 +69,12 @@ const titles = computed(() => {
     }
     return titles
 })
-
+const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) => {
+    if (rowIndex % 2) {
+        return 'success-row'
+    }
+    return ''
+}
 const onWeekButtonClicked = (id: number) => {
     if (id == 0) {
         var date = new ADate()
@@ -169,6 +175,14 @@ const onSwitchChanged = async (row: any, col: number) => {
         height: 22px;
     }
 }
+.bg-green {
+    background-color: var(--el-color-success-light-9);
+    .cell {
+        background-color: var(--el-color-success-light-9);
+        padding: 0px, 0px;
+        height: 22px;
+    }
+}
 
 .default_cell {
     .cell {
@@ -189,5 +203,10 @@ const onSwitchChanged = async (row: any, col: number) => {
 .el-card :deep(.el-card__header) {
     padding: 0px 8px !important;
     background-color: #3f94d0;
+}
+</style>
+<style lang="scss">
+.success-row {
+    --el-table-tr-bg-color: var(--el-color-success-light-9) !important;
 }
 </style>

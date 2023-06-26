@@ -7,13 +7,14 @@
             <el-radio-button v-for="(val, index) in qTypes" :label="index"> {{ val }}</el-radio-button>
         </el-radio-group>
     </div>
-    <el-table :data="qListDisplay" style="width: 100%; font-size: 12px;" stripe border v-loading="loading">
+    <el-table :data="qListDisplay" style="width: 100%; font-size: 12px;" :row-class-name="tableRowClassName" border
+        v-loading="loading">
         <el-table-column fixed type='index' width="32px" />
         <el-table-column label="题型" width="40px">
             <template #default="scope">{{ qTypes[scope.row.type] }}</template>
         </el-table-column>
-        <el-table-column prop="title" label="题目" />
-        <el-table-column prop="description" label="描述" />
+        <el-table-column prop="title" label="题目" show-overflow-tooltip />
+        <el-table-column prop="description" label="描述" show-overflow-tooltip />
         <el-table-column label="难度" width="40px">
             <template #default="scope">{{ qDifficulty[scope.row.difficulty_level] }}</template>
         </el-table-column>
@@ -93,7 +94,12 @@ const changeValue = (v: any) => {
         loading.value = false
     })
 }
-
+const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) => {
+    if (rowIndex % 2 == 0) {
+        return 'success-row'
+    }
+    return ''
+}
 onMounted(async () => {
     await Api.getSubjectList().then(res => {
         res.data.forEach((d: { id: any; name: any; }) => {
@@ -107,7 +113,7 @@ onMounted(async () => {
             var q = options.find(t => t.value == d.subject)
             q && q.children.push({ value: d.id, label: d.name })
         })
-        options = options.filter(op=>op.children.length>0)
+        options = options.filter(op => op.children.length > 0)
         if (options.length > 0 && options[0].children.length > 0) {
             qid[0] = options[0].value
             qid[1] = options[0].children[0].value
@@ -128,5 +134,10 @@ onMounted(async () => {
 
 .el-table:deep(.cell) {
     padding: 0 4px;
+}
+</style>
+<style lang="scss">
+.success-row {
+    --el-table-tr-bg-color: var(--el-color-success-light-9) !important;
 }
 </style>

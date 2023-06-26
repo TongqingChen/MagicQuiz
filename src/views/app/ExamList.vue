@@ -9,24 +9,26 @@
 
     <el-row :gutter="20" class="home-card">
         <el-col v-for="quiz in quizShown" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
-            <el-card shadow="hover" class="box-card"
-                @click.native="onStartExamClicked(quiz.id, quiz.name, quiz.exam_minutes)">
-                <template #header>
-                    <div class="card-header">
-                        <span>【{{ quizPages.subject.name }}】{{ quiz.name }}</span>
+            <el-tooltip placement="top" content="点击开始考试">
+                <el-card shadow="hover" class="box-card"
+                    @click.native="onStartExamClicked(quiz.id, quiz.name, quiz.exam_minutes)">
+                    <template #header>
+                        <div class="card-header">
+                            <span>【{{ quizPages.subject.name }}】{{ quiz.name }}</span>
+                        </div>
+                    </template>
+                    <div class="card-body" :style="cardBodyStyle()">
+                        <ol style="margin: 0; padding-left: 10px;">
+                            <li v-if="!isOralMath">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
+                            <li v-if="!isOralMath">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
+                            <li v-if="!isOralMath">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
+                            <li v-if="!isOralMath">考试时长：{{ quiz.exam_minutes }}分钟</li>
+                            <li v-else>点击卡片根据提示配置考试信息</li>
+                            <li>最近考试：{{ quiz.last_exam_time }}</li>
+                        </ol>
                     </div>
-                </template>
-                <div class="card-body" :style="cardBodyStyle()">
-                    <ol style="margin: 0; padding-left: 10px;">
-                        <li v-if="!isOralMath">{{ "选择题数" }}：{{ quiz.choice_num }}</li>
-                        <li v-if="!isOralMath">{{ "判断题数" }}：{{ quiz.logic_num }}</li>
-                        <li v-if="!isOralMath">{{ "编程题数" }}：{{ quiz.coding_num }}</li>
-                        <li v-if="!isOralMath">考试时长：{{ quiz.exam_minutes }}分钟</li>
-                        <li v-else>点击卡片根据提示配置考试信息</li>
-                        <li>最近考试：{{ quiz.last_exam_time }}</li>
-                    </ol>
-                </div>
-            </el-card>
+                </el-card>
+            </el-tooltip>
         </el-col>
     </el-row>
 

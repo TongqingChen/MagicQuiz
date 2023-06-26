@@ -66,11 +66,11 @@
                     <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="404"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
-                        <el-table-column prop="quiz_name" sortable label="试卷名" />
+                        <el-table-column prop="quiz_name" sortable label="试卷名" show-overflow-tooltip/>
                         <el-table-column prop="abs_score" sortable label="得分" />
                         <el-table-column prop="use_minutes" sortable label="分钟" />
                         <el-table-column prop="date_time" sortable label="考试时间" />
-                        <el-table-column prop="note" label="备注" />
+                        <el-table-column prop="note" label="备注" show-overflow-tooltip/>
                     </el-table>
                 </el-card>
             </el-col>
