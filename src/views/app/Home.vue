@@ -24,11 +24,11 @@
         <!-- big day -->
         <el-scrollbar v-if="settings.data[SetID.BIG_DAY].value">
             <!-- <div style="display: flex; width: 100%;"> -->
-                <el-row :gutter="8" class="mb-4" style="display: flex; flex-wrap: nowrap;">
-                    <el-col v-for="d in meta.big_days" :xs="8" :sm="6" :md="4" :lg="3" :xl="2" class="mb-2">
-                        <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
-                    </el-col>
-                </el-row>
+            <el-row :gutter="8" class="mb-4" style="display: flex; flex-wrap: nowrap;">
+                <el-col v-for="d in meta.big_days" :xs="8" :sm="6" :md="4" :lg="3" :xl="2" class="mb-2">
+                    <BigDay :title='d.name' :date='d.date' :description="d.description"></BigDay>
+                </el-col>
+            </el-row>
             <!-- </div> -->
         </el-scrollbar>
 
@@ -57,7 +57,7 @@
             <el-col :sm="12" class="mb-4">
                 <el-card>
                     <div class="subject">
-                        科目: 
+                        科目:
                         <el-radio-group v-model="meta.current_sub" size="small">
                             <el-radio-button v-for="(val, key) in meta.exam_his" :label="key"> {{ key }}({{ val.length
                             }})</el-radio-button>
@@ -66,11 +66,11 @@
                     <el-table :data="meta.exam_his[meta.current_sub]" table-layout="auto" height="404"
                         style="width: 100%; color:darkslategray; font-size: 12px;" stripe border>
                         <!-- <el-table-column fixed type='index' width="30" /> -->
-                        <el-table-column prop="quiz_name" sortable label="试卷名" show-overflow-tooltip/>
+                        <el-table-column prop="quiz_name" sortable label="试卷名" show-overflow-tooltip />
                         <el-table-column prop="abs_score" sortable label="得分" />
                         <el-table-column prop="use_minutes" sortable label="分钟" />
                         <el-table-column prop="date_time" sortable label="考试时间" />
-                        <el-table-column prop="note" label="备注" show-overflow-tooltip/>
+                        <el-table-column prop="note" label="备注" show-overflow-tooltip />
                     </el-table>
                 </el-card>
             </el-col>
@@ -113,7 +113,6 @@ let settings = reactive(new Settings())
 const showSettings = ref(false)
 
 const meta: any = reactive({
-    version: '1.7.20230609',
     title: { greeting: '', quote: '' },
     user: { id: 0, avatar: '@/assets/vue.svg', first_name: '', 'last_name': '' },
     big_days: [],
@@ -214,10 +213,10 @@ const onLinkClicked = (index: number) => {
             } else if (h >= 0 && h < 6) {
                 meta.title.greeting = "偷偷向银河要了一把碎星，只等你闭上眼睛撒入你的梦中，晚安🌛！";
             }
-            ElMessage.success({
-                message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}[${meta.version}]`,
-                duration: 1000
-            })
+            // ElMessage.success({
+            //     message: `${date.toLocaleString('zh-CN')} ${meta.title.greeting}[${meta.version}]`,
+            //     duration: 1000
+            // })
             break
     }
 }

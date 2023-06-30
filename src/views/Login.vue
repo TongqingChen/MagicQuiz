@@ -16,7 +16,7 @@
                     <el-button class="login-btn" type="primary" @click="submitForm(ruleFormRef)"
                         @keydown.enter="keyDown">登录</el-button>
                     <!-- <el-button class="login-btn" @click="resetForm(ruleFormRef)">重置</el-button> -->
-                    <el-button class="login-btn" @click="resetForm">重置</el-button>
+                    <el-button class="login-btn" @click="resetForm">清空</el-button>
                 </el-form-item>
                 <el-form-item style="display: flex; align-content: space-between;">
                     <el-link class="login-btn" type="primary" href="http://localhost:8000/admin">管理员后台</el-link>

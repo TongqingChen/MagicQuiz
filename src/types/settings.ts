@@ -17,7 +17,7 @@ export enum SetID {
 }
 export class Settings implements ISettings {
     data: ISetUnit[] = [
-        { name: '用户卡片', value: true },
+        { name: '用户卡片', value: false },
         { name: '纪念日', value: true },
         { name: '已完成纪念日', value: true },
         { name: '习惯打卡', value: true },

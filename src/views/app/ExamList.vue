@@ -176,6 +176,7 @@ const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: numb
         type: 'warning',
     }
     ).then(() => {
+        console.log(router.getRoutes())
         router.push({
             path: '/exam',
             query: {

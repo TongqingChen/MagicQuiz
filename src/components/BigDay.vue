@@ -1,5 +1,5 @@
 <template>
-    <el-tooltip :content="description" placement="top" :disabled="!(description && description.length > 0)">
+    <el-tooltip :content="tipContent" placement="top" raw-content :disabled="!(title.length > 0 || description.length > 0)">
         <el-card class="box-card">
             <template #header>
                 <el-text size="small" style="color:white" truncated>{{ title }}</el-text>
@@ -35,6 +35,10 @@ const meta = computed(() => {
     }
 })
 const props = defineProps(["date", "title", "description"])
+
+const tipContent = computed(() => {
+    return `<span><strong>${props.title}</strong><br/>${props.description}</span>`
+})
 </script>
 
 <style lang="scss" scoped>
