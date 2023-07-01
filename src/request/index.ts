@@ -3,16 +3,11 @@ import { IQuestionResult, IQuizResult, IUserInfo } from '@/types/http'
 import { ISettings } from '@/types/settings'
 import { ElMessage } from 'element-plus'
 
-let api_base_url = 'http://192.168.1.7:2345/'
+let api_base_url = 'http://192.168.1.12:2345/'
 
-if (import.meta.env.DEV == true) {
-    api_base_url = 'http://localhost:8000/'
-} else if (import.meta.env.PROD == true) {
-    api_base_url = 'http://192.168.1.7:2345/'
-}
-
+api_base_url = 'http://localhost:8000/'
+ 
 const Axios = axios.create({
-    // baseURL: 'http://192.168.1.7:2345/',
     baseURL: api_base_url,
     timeout: 6000,
     headers: {
