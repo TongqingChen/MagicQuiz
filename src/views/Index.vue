@@ -16,7 +16,7 @@
                 </el-tooltip>
                 <el-dropdown @command="userInfoCommand">
                     <div class="header-user">
-                        <el-avatar :size="48" :src="user.avatar" />
+                        <el-avatar :size="46" :src="user.avatar" />
                         <span>{{ user.last_name }}{{ user.first_name }}</span>
                         <el-icon>
                             <ArrowDown />
@@ -123,20 +123,20 @@ onMounted(() => {
 
     .header {
         padding: 0;
-        height: 50px;
+        height: 48px;
         display: flex;
         background-color: #545c64;
 
         .el-logo {
             display: flex;
             align-items: center;
-            height: 50px;
+            height: 100%;
             padding-left: 5px;
             cursor: pointer;
 
             img {
-                width: 48px;
-                height: 48px;
+                width: 46px;
+                height: 46px;
             }
 
             .title {
@@ -173,7 +173,7 @@ onMounted(() => {
         background-color: #f5f7fa;
         color: darkblue;
         padding: 5px;
-        height: calc(100vh - 50px);
+        height: calc(100vh - 48px);
     }
 }
 </style>
