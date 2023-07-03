@@ -95,10 +95,7 @@ const changeValue = (v: any) => {
     })
 }
 const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) => {
-    if (rowIndex % 2 == 0) {
-        return 'success-row'
-    }
-    return ''
+    return rowIndex % 2 ? '' : 'success-row'
 }
 onMounted(async () => {
     await Api.getSubjectList().then(res => {

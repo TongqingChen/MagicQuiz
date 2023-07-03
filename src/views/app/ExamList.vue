@@ -98,7 +98,6 @@ const getQuizList = () => {
         })
         quizPages.quizDisplay = quizPages.quizList
         subjectList = subjectList.filter(s => s.count > 0)
-        subjectList.reverse()
         subjectList.length > 0 && (quizPages.subject.id = subjectList[0].id)
         onSubjectSelected()
     })
@@ -174,9 +173,7 @@ const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: numb
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning',
-    }
-    ).then(() => {
-        console.log(router.getRoutes())
+    }).then(() => {
         router.push({
             path: '/exam',
             query: {
@@ -184,7 +181,7 @@ const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: numb
                 exam_seconds: exam_minutes * 60
             }
         })
-    })
+    }).catch(() => { })
 }
 </script>
 <style lang="scss" scoped>
