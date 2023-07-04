@@ -39,7 +39,7 @@ import { IWrongSet, WrongSet } from '@/types/http';
 import { Edit } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
-import QuestionDialog from '@/views/app/QuestionDialog.vue';
+import QuestionDialog from '@/views/components/QuestionDialog.vue';
 
 const router = useRouter()
 let loading = ref(true)

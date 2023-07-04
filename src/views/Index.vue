@@ -2,10 +2,15 @@
     <div>
         <el-container class="layout">
             <el-header class="header">
-                <div class="el-logo" @click.native="userInfoCommand('home')">
-                    <img src="@/assets/logo.png" />
-                    <span class="title">首页</span>
-                </div>
+                <el-tooltip content="首页" place-ment="bottom" effect="dark">
+                    <div class="el-logo" @click.native="userInfoCommand('home')">
+                        <!-- <img src="@/assets/logo.png" /> -->
+                        <el-icon :size="40" color='darkcyan'>
+                            <ChromeFilled />
+                        </el-icon>
+                        <span class="title">学海</span>
+                    </div>
+                </el-tooltip>
                 <el-menu :ellipsis="false" :default-active="activeIdx" class="menu" mode="horizontal"
                     background-color="#545c64" text-color="#fff" active-text-color="#ffd04b" @select="handleSelect" router>
                     <MenuItem v-for="item in menuList" :key="item.path" :item="item" />
@@ -39,23 +44,27 @@
             <!-- <el-footer class="footer">Footer</el-footer> -->
         </el-container>
     </div>
+    <el-dialog title="修改密码" v-model="visibled" width="30%">
+        <ChangePassword :visible="visibled"></ChangePassword>
+    </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import MenuItem from '@/components/MenuItem.vue'
 import { useRoute, useRouter } from 'vue-router';
 import { computed } from '@vue/reactivity';
 import { Api } from '@/request';
-import { ArrowDown, Switch, User, Lock, InfoFilled, FullScreen } from '@element-plus/icons-vue';
+import { ArrowDown, Switch, User, Lock, InfoFilled, FullScreen, ChromeFilled } from '@element-plus/icons-vue';
 import { ElMessageBox } from 'element-plus';
 import screenfull from "screenfull";
 import { Info } from '@/info'
+import ChangePassword from '@/views/components/ChangePassword.vue'
 
 const route = useRoute()
 const router = useRouter()
 const info = new Info()
-
+const visibled = ref(false)
 const user = reactive({ id: -1, avatar: '@/assets/vue.svg', first_name: '未登录', 'last_name': '' })
 
 const activeIdx = computed(() => {
@@ -72,7 +81,8 @@ const userInfoCommand = (command: string) => {
     if (command == 'user_center') {
         router.push('/userInfo')
     } else if (command == 'change_pwd') {
-
+        visibled.value = true
+        console.log(visibled)
     } else if (command == 'logout') {
         Api.clearUserInfo()
         router.push('/login')
@@ -135,15 +145,14 @@ onMounted(() => {
             cursor: pointer;
 
             img {
-                width: 46px;
-                height: 46px;
+                width: 40px;
+                height: 40px;
             }
-
             .title {
                 color: yellow;
                 font-size: 16px;
                 font-weight: bold;
-                margin-left: 8px;
+                margin-left: 4px;
                 width: 32px
             }
         }

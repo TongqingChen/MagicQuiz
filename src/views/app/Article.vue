@@ -1,13 +1,15 @@
 <template>
     <div class="common-layout">
         <el-container>
-            <el-aside width="200px">
+            <el-aside width="220px">
                 <el-menu @select="onArticleSelected" :default-active="currActive">
                     <el-sub-menu v-for="m in meta" :index="m.category">
                         <template #title>
-                            <el-icon><Folder /></el-icon>
+                            <el-icon>
+                                <Folder />
+                            </el-icon>
                             {{ m.category }}</template>
-                        <el-menu-item v-for="a in m.articles" :index="String(a.id)">{{ a.title }}</el-menu-item>
+                        <el-menu-item v-for="a in m.articles" :index="String(a.id)"><el-icon><Document /></el-icon>{{ a.title }}</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-aside>
@@ -25,8 +27,8 @@
                 </p>
                 <v-md-preview :text="currArticle.content"></v-md-preview>
                 <div v-if="currArticle.attachment && currArticle.attachment.length > 0">
-                    <VueOfficeDocx v-if="currArticle.attach_type == 0" :src="currArticle.attachment"/>
-                    <VueOfficePdf v-if="currArticle.attach_type == 1" :src="currArticle.attachment"/>
+                    <VueOfficeDocx v-if="currArticle.attach_type == 0" :src="currArticle.attachment" />
+                    <VueOfficePdf v-if="currArticle.attach_type == 1" :src="currArticle.attachment" />
                     <el-link v-if="currArticle.attach_type < 0" :href="currArticle.attachment" type="primary">下载</el-link>
                 </div>
             </el-main>
@@ -37,7 +39,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import { Api } from '@/request'
-import { Folder } from '@element-plus/icons-vue';
+import { Folder, Reading } from '@element-plus/icons-vue';
 import { IArticles, Article } from '@/types/wiki'
 import VueOfficePdf from '@vue-office/pdf';
 import VueOfficeDocx from '@vue-office/docx';
@@ -83,12 +85,16 @@ const onArticleSelected = (key: string, path: string) => {
 }
 
 .el-menu-item {
-    height: 32px;
+    height: 26px;
+    line-height: 22px;
     background-color: #f8f8f8;
-}
-
-.el-sub-menu__title {
-    height: 32px !important;
+    font-size: 12px;
+    // padding-left: 20px;
+    // :deep(.el-sub-menu__title) {
+    //     height: 32px;
+    //     line-height: 32px;
+    //     padding-left: 10px;
+    // }
 }
 
 .el-menu {
@@ -110,5 +116,4 @@ const onArticleSelected = (key: string, path: string) => {
     font-size: small;
     display: flex;
     justify-content: center;
-}
-</style>
+}</style>

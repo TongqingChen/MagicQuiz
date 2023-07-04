@@ -76,7 +76,7 @@
             </el-col>
         </el-row>
     </div>
-    <el-dialog v-model="showSettings" title="配置" width="80%" center>
+    <el-dialog v-model="showSettings" title="配置" width="40%" center>
         <el-form label-position="right" :label-width="200">
             <el-form-item v-for="s in settings.data" :label="s.name">
                 <el-switch v-model="s.value" />

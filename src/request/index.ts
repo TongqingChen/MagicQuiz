@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 let api_base_url = 'http://192.168.1.12:2345/'
 
 api_base_url = 'http://localhost:8000/'
- 
+
 const Axios = axios.create({
     baseURL: api_base_url,
     timeout: 6000,
@@ -46,7 +46,8 @@ Axios.interceptors.response.use(response => {
             return axios.request(err.config)
         }
     }
-    ElMessage.error(`${err.message}(${err.response.statusText})`)
+    // console.error(err)
+    ElMessage.error(err.request.response)
     return Promise.reject(err)
 }
 )
@@ -57,6 +58,15 @@ export class Api {
             url: "api/token/",
             method: "POST",
             data: user_data
+        })
+    }
+    static changePwd(old_password: string, new_password: string) {
+        const user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: "change_password/",
+            method: "POST",
+            data: { id: user_id, old_pwd: old_password, new_pwd: new_password },
+            headers: { "Content-Type": "multipart/form-data" },
         })
     }
 

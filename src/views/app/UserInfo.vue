@@ -119,7 +119,7 @@ const onSubmit = () => {
     }
     Api.updateUserInfo(d)
         .then(res => ElMessage.success('信息修改成功'))
-        .catch(err => ElMessage.error("信息修改失败"))
+        .catch(err => ElMessage.error(err.request.responseText))
 }
 </script>
 

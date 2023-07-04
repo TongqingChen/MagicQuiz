@@ -34,7 +34,7 @@
 import { Api } from '@/request';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { IQuestion } from '@/types/question';
-import QuestionDialog from '@/views/app/QuestionDialog.vue'
+import QuestionDialog from '@/views/components/QuestionDialog.vue'
 
 interface IQuizTitle {
     value: number,

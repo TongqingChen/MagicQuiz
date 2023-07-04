@@ -1,3 +1,3 @@
 export class Info {
-    version: string = '2.0.20230630'
+    version: string = 'v2.1.20230704'
 }
