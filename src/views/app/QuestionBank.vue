@@ -46,7 +46,7 @@ interface ISubjectTitle {
     children: IQuizTitle[]
 }
 
-const qTypes = ['单选', '判断', '编程']
+const qTypes = ['单选', '判断', '填空', '问答']
 const qDifficulty = ['简单', '一般', '困难']
 let options: ISubjectTitle[] = reactive([])
 const currType = ref(0)

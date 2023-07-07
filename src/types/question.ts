@@ -2,6 +2,7 @@ export enum QueType {
     UNKNOWN = -1,
     CHOICE = 0,
     LOGIC,
+    BLANK,
     CODING
 }
 export interface IQuestion {
@@ -32,6 +33,22 @@ export class Question implements IQuestion {
     userAnswer: string = ""
     displayType: string = ""
     score: number = 0
+
+    copyFrom(q: Question) {
+        this.index = q.index
+        this.id = q.id
+        this.type = q.type
+        this.title = q.title
+        this.description = q.description
+        this.image = q.image
+        this.answer = q.answer
+        this.analysis = q.analysis
+        this.difficulty_level = q.difficulty_level
+        this.doubt = q.doubt
+        this.userAnswer = q.userAnswer
+        this.displayType = q.displayType
+        this.score = q.score
+    }
 }
 
 interface IQuestionListWithType {

@@ -19,7 +19,7 @@
                     </template>
                     <div class="card-body" :style="cardBodyStyle()">
                         <ol style="margin: 0; padding-left: 10px;">
-                            <li v-if="!isOralMath" v-for="q in quiz.question_counts">{{q.name}}题数: {{ q.count }}</li>
+                            <li v-for="q in quiz.question_counts.filter(t=>t.count>0)" >{{q.name}}题数: {{ q.count }}</li>
                             <li v-if="!isOralMath">考试时长: {{ quiz.exam_minutes }}分钟</li>
                             <li v-else>点击卡片根据提示配置考试信息</li>
                             <li>最近考试: {{ quiz.last_exam_time }}</li>
@@ -75,7 +75,8 @@ const showDialog = ref(false)
 const randomQuiz = reactive([
     { label: '选择', val: 15, min: 5, max: 100, step: 5 },
     { label: '判断', val: 10, min: 5, max: 100, step: 5 },
-    { label: '编程', val: 2, min: 0, max: 20, step: 1 },
+    { label: '填空', val: 2, min: 0, max: 20, step: 1 },
+    { label: '问答', val: 2, min: 0, max: 20, step: 1 },
     { label: '时长(分钟)', val: 60, min: 10, max: 120, step: 10 }
 ])
 const oralMathConfig = reactive([
@@ -153,8 +154,8 @@ const onRandomQuiz = () => {
         path: '/exam',
         query: {
             id: -2, name: '随机测试', sub_name: quizPages.subject.name,
-            choice_num: randomQuiz[0].val, logic_num: randomQuiz[1].val,
-            coding_num: randomQuiz[2].val, exam_seconds: randomQuiz[3].val * 60
+            choice_num: randomQuiz[0].val, logic_num: randomQuiz[1].val, blank_num: randomQuiz[2].val,
+            coding_num: randomQuiz[3].val, exam_seconds: randomQuiz[4].val * 60
         }
     })
 }
@@ -212,9 +213,11 @@ const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: numb
         }
 
         .card-body {
-            height: 90px;
-            padding: 20px;
+            height: 108px;
+            padding: 10px 16px;
             color: darkcyan;
+            display: flex;
+            align-items: center;
         }
     }
 
