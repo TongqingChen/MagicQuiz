@@ -4,9 +4,7 @@ export interface IQuiz {
     id: number,
     name: string,
     subject: number,
-    choice_num: number,
-    logic_num: number,
-    coding_num: number,
+    question_counts: [{ id: number, name: string, count: number }],
     last_exam_time: string,
     exam_minutes: number
 }
