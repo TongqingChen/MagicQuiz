@@ -57,7 +57,7 @@
                             <el-radio label="T">正确</el-radio>
                             <el-radio label="F">错误</el-radio>
                         </el-radio-group>
-                        <el-input v-model="activeQ.userAnswer" placeholder="请填入答案，多个答案以英文分号隔开"
+                        <el-input v-model="activeQ.userAnswer" placeholder="请填入答案，多个答案以英文分号隔开，如: 134;2;abc"
                             v-if="activeQ.type == QueType.BLANK" clearable @blur="onAnswerSelected">
                         </el-input>
                     </div>
@@ -94,7 +94,6 @@ let qTypes = reactive([])
 let ijPairs = reactive([[0, 0]])
 
 const autoNext = ref(true)
-const showQuestion = ref(false)
 const textType = computed(() => { return autoNext.value ? "primary" : "info" })
 
 const getQuestionList = async () => {
@@ -231,10 +230,10 @@ const onAnswerSelected = () => {
         var i = ijPairs[activeQ.index][0]
         var j = ijPairs[activeQ.index][1]
         examInfo.meta[i].qList[j].userAnswer = activeQ.userAnswer
-        if (autoNext.value && activeQ.index < examInfo.question_num - 1 && examInfo.meta[i].qList[j].displayType != 'primary') {
+        examInfo.meta[i].qList[j].displayType = activeQ.userAnswer.length > 0 ? 'primary' : 'default'
+        if (autoNext.value && activeQ.index < examInfo.question_num - 1 && activeQ.userAnswer.length > 0) {
             onQuestionClicked(activeQ.index + 1)
         }
-        examInfo.meta[i].qList[j].displayType = 'primary'
     }
 }
 
@@ -343,7 +342,8 @@ const submitQuiz = () => {
         color: darkgreen;
         font-size: 14px;
         white-space: pre-wrap;
-        :depp(.el-tag__content){
+
+        :depp(.el-tag__content) {
             padding-right: 10px !important;
         }
     }
