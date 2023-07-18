@@ -251,6 +251,22 @@ export class Api {
             method: "GET"
         })
     }
+    
+    static startNewGame(game:number, level:number, difficulty:number){
+        var user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: `start_new_game/?user_id=${user_id}&game_id=${game}&level=${level}&difficulty=${difficulty}`,
+            method: "GET"
+        })
+    }
+
+    static getGameRecord(game:number, level:number, difficulty:number){
+        var user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: `get_best_record/?user_id=${user_id}&game_id=${game}&level=${level}&difficulty=${difficulty}`,
+            method: "GET"
+        })
+    }
 
     static storeUserInfo(user_info: IUserInfo) {
         // 将token进行保存

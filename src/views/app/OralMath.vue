@@ -81,7 +81,7 @@ const uploadExamResults = async () => {
     math_info.meta.forEach(m => {
         var flag = String(m.answer) == m.user_answer
         m.mark = flag ? '✅' : '❌'
-        correct_count += flag ? 1 : 0
+        correct_count += (flag ? 1 : 0)
     })
     error_count = math_info.meta.length - correct_count
     var user_id = Api.loadUserIdFromStorage()
@@ -94,7 +94,7 @@ const uploadExamResults = async () => {
     results.meta.use_minutes = Math.max(1, Math.round((Date.now() - math_info.start_time) / 1000 / 60))
     await Api.postQuizResult(results.meta)
     ElMessageBox.alert(`【得分】<b>${results.meta.abs_score}</b>/100<br/>【详情】` +
-        (correct_count == math_info.meta.length ? "恭喜您获得满分💯" : `<b>${correct_count}</b> ✅, <b>${error_count}<b/> ❌<br/>`) +
+        (correct_count == math_info.meta.length ? "恭喜您获得满分<font size='5'>💯</font><br/>" : `<b>${correct_count}</b> ✅, <b>${error_count}<b/> ❌<br/>`) +
         `【用时】<b>${((Date.now() - math_info.start_time) / 1000 / 60).toFixed(2)}<b/>分钟<br/>`, '考试结果',
         { type: correct_count == math_info.meta.length ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }

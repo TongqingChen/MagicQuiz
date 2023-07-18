@@ -43,7 +43,14 @@ const routes: Array<RouteRecordRaw> = [
             name: '足迹',
             meta: { icon: "Flag", visible: true },
             component: () => import('@/views/app/GreatEvent.vue'),
-        }, {
+         }, 
+        // {
+        //     path: "/game",
+        //     name: '游戏',
+        //     component: () => import('@/views/components/Sudoku.vue'),
+        //     meta: { icon: "User", visible: true },
+        // }, 
+        {
             path: "/userInfo",
             name: '个人中心',
             component: () => import('@/views/app/UserInfo.vue'),
