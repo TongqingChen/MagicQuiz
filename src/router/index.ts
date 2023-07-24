@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
             component: () => import('@/views/app/Home.vue'), // 建议进行路由懒加载，优化访问性能
         }, {
             path: '/examList',
-            name: '试卷',
+            name: '考试',
             meta: { visible: true, icon: "EditPen" },
             component: () => import('@/views/app/ExamList.vue'),
         }, {
@@ -43,13 +43,12 @@ const routes: Array<RouteRecordRaw> = [
             name: '足迹',
             meta: { icon: "Flag", visible: true },
             component: () => import('@/views/app/GreatEvent.vue'),
-         }, 
-        // {
-        //     path: "/game",
-        //     name: '游戏',
-        //     component: () => import('@/views/components/Sudoku.vue'),
-        //     meta: { icon: "User", visible: true },
-        // }, 
+        }, {
+            path: "/game",
+            name: '游戏',
+            component: () => import('@/views/app/Game.vue'),
+            meta: { icon: "Mouse", visible: true },
+        },
         {
             path: "/userInfo",
             name: '个人中心',
@@ -66,7 +65,7 @@ const routes: Array<RouteRecordRaw> = [
                 meta: { icon: "HomeFilled", visible: false },
             }, {
                 path: '/exam',
-                name: '考试',
+                name: '答题',
                 component: () => import('@/views/app/Exam.vue'),
                 meta: { icon: "HomeFilled", visible: false },
             },]

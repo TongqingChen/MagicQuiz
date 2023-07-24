@@ -19,7 +19,8 @@
                     </template>
                     <div class="card-body" :style="cardBodyStyle()">
                         <ol style="margin: 0; padding-left: 10px;">
-                            <li v-for="q in quiz.question_counts.filter(t=>t.count>0)" >{{q.name}}题数: {{ q.count }}</li>
+                            <li v-for="q in quiz.question_counts.filter(t => t.count > 0)">{{ q.name }}题数: {{ q.count }}
+                            </li>
                             <li v-if="!isOralMath">考试时长: {{ quiz.exam_minutes }}分钟</li>
                             <li v-else>点击卡片根据提示配置考试信息</li>
                             <li>最近考试: {{ quiz.last_exam_time }}</li>
@@ -90,6 +91,7 @@ const getQuizList = () => {
     quizPages.currentPage = 1
     Api.getQuizList().then((res: { data: [] }) => {
         quizPages.quizList = res.data
+        quizPages.quizList = quizPages.quizList.filter(s => s.subject == 3 || s.question_counts.some(v => v.count > 0))
         quizPages.quizNum = quizPages.quizList.length
         quizPages.quizList.forEach(q => {
             var s = subjectList.find(s => s.id == q.subject)
