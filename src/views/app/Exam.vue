@@ -283,7 +283,7 @@ const uploadExamResults = async () => {
         await Api.postQuizResult(results.meta)
     }
     ElMessageBox.alert(`【得分】${results.meta.abs_score}/${total_score}<br/>` +
-        (results.meta.abs_score == total_score ? '【信息】恭喜您获得满分💯' : rsl_str) +
+        (results.meta.abs_score == total_score ? '【信息】恭喜您获得满分💯<br/>' : rsl_str) +
         `【用时】<b>${((Date.now() - examInfo.start_time) / 1000 / 60).toFixed(2)}</b>分钟<br/>`, '考试结果',
         { type: results.meta.abs_score == total_score ? 'success' : 'error', dangerouslyUseHTMLString: true })
 }
