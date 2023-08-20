@@ -27,4 +27,3 @@ src/vite-env.d.ts
 yarn.lock
 .vscode/
 package-lock.json
-dist/
