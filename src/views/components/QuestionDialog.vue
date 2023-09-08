@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 const showAnswer = ref(false)
 const dialogVisible = computed(() => {
     return props.visible

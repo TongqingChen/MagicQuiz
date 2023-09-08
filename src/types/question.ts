@@ -33,6 +33,7 @@ export class Question implements IQuestion {
     userAnswer: string = ""
     displayType: string = ""
     score: number = 0
+    favourite: boolean = false
 
     copyFrom(q: Question) {
         this.index = q.index
@@ -48,6 +49,7 @@ export class Question implements IQuestion {
         this.userAnswer = q.userAnswer
         this.displayType = q.displayType
         this.score = q.score
+        this.favourite = q.favourite
     }
 }
 

@@ -15,6 +15,7 @@ const Axios = axios.create({
     }
 })
 
+
 //请求拦截
 Axios.interceptors.request.use((config) => {
     config.headers = config.headers || {}
@@ -192,11 +193,37 @@ export class Api {
         })
     }
 
+    static getFavouriteSetsBySubName(sub_name: string | null = null) {
+        const user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: 'favourite_set/?user_id=' + (sub_name ? `${user_id}&sub_name=${sub_name}` : `${user_id}`),
+            method: "GET"
+        })
+    }
+
     static postQuestionsResult(data: IQuestionResult[]) {
         return Axios({
             url: 'wrongsets_mixpost/',
             method: "POST",
             data: data
+        })
+    }
+
+    static postFavouriteQuestion(question:number){
+        const user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: 'favourite_set/',
+            method: "POST",
+            data: {'user':user_id, 'question': question}
+        })
+    }
+
+    static deleteFavouriteQuestion(question:number){
+        const user_id = Api.loadUserIdFromStorage()
+        return Axios({
+            url: 'favourite_set/',
+            method: "DELETE",
+            data: {'user':user_id, 'question': question}
         })
     }
 

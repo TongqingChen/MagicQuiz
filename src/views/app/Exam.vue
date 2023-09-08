@@ -44,6 +44,8 @@
                                 <ArrowRight />
                             </el-icon></el-button>
                     </el-button-group>
+                    <el-button v-if="examInfo.state == ExamState.FINISHED" type="success" :icon="activeQ.favourite?StarFilled:Star" round size="small"
+                        @click="onFavouriteClicked" :disabled="activeQ.favourite">收藏</el-button>
                     <div v-if="examInfo.state == ExamState.ONGOING">
                         <el-radio-group v-model="activeQ.userAnswer" v-if="activeQ.type == QueType.CHOICE"
                             @change="onAnswerSelected">
@@ -82,7 +84,7 @@ import { onBeforeRouteLeave, useRoute } from 'vue-router';
 import { Api } from '@/request';
 import { IWrongSet, QuizResult } from '@/types/http'
 // import Timer from '@/components/Timer.vue'
-import { ArrowLeft, ArrowRight, Check, Close } from '@element-plus/icons-vue'
+import { ArrowLeft, ArrowRight, Check, Close, Star, StarFilled } from '@element-plus/icons-vue'
 import { ISettings, SetID } from '@/types/settings';
 import FlipCounter from '@/components/FlipCounter.vue'
 
@@ -127,7 +129,7 @@ const getQuestionList = async () => {
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
                     image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, doubt: false,
-                    analysis: q.analysis, displayType: 'default', userAnswer: '', score: q.score, copyFrom: () => { }
+                    analysis: q.analysis, displayType: 'default', userAnswer: '', score: q.score, favourite: false, copyFrom: () => { }
                 })
                 examInfo.scores += q.score
             })
@@ -144,14 +146,14 @@ const getQuestionList = async () => {
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: w.qid, type: w.type_id, title: w.title, description: w.description,
                     image: w.image, difficulty_level: 0, answer: w.answer, doubt: false, analysis: w.analysis,
-                    displayType: 'default', userAnswer: '未作答', score: w.score, copyFrom: () => { }
+                    displayType: 'default', userAnswer: '未作答', score: w.score, favourite: false, copyFrom: () => { }
                 })
                 examInfo.scores += w.score
             })
             examInfo.question_num = wrong_set.length
             examInfo.state = ExamState.ONGOING
         })
-    } else if (examInfo.id == -2) {
+    } else if (examInfo.id == -2) { // -2 表示随机考试
         var choice_num = Number(route.query.choice_num)
         var logic_num = Number(route.query.logic_num)
         var blank_num = Number(route.query.blank_num)
@@ -165,11 +167,28 @@ const getQuestionList = async () => {
                 examInfo.meta[t_id].qList.push({
                     index: i++, id: q.id, type: q.type, title: q.title, description: q.description,
                     image: q.image, difficulty_level: q.difficulty_level, answer: q.answer, doubt: false,
-                    analysis: q.analysis, displayType: 'default', userAnswer: '', score: q.score, copyFrom: () => { }
+                    analysis: q.analysis, displayType: 'default', userAnswer: '', score: q.score, favourite: false, copyFrom: () => { }
                 })
                 examInfo.scores += q.score
             })
             examInfo.question_num = questions.length
+            examInfo.state = ExamState.ONGOING
+        })
+    } else if (examInfo.id == -3) { // -3 表示收藏题集
+        await Api.getFavouriteSetsBySubName(examInfo.subjectName).then(res => {
+            const wrong_set: IWrongSet[] = res.data[examInfo.subjectName]
+            wrong_set.sort((w1, w2) => { return w1.type_id - w2.type_id })
+            wrong_set.forEach(w => {
+                var t_id = qTypes.findIndex(qt => qt[0] == w.type_id)
+                ijPairs.push([t_id, examInfo.meta[w.type_id].qList.length])
+                examInfo.meta[t_id].qList.push({
+                    index: i++, id: w.qid, type: w.type_id, title: w.title, description: w.description,
+                    image: w.image, difficulty_level: 0, answer: w.answer, doubt: false, analysis: w.analysis,
+                    displayType: 'default', userAnswer: '未作答', score: w.score, favourite: false, copyFrom: () => { }
+                })
+                examInfo.scores += w.score
+            })
+            examInfo.question_num = wrong_set.length
             examInfo.state = ExamState.ONGOING
         })
     }
@@ -279,7 +298,7 @@ const uploadExamResults = async () => {
     results.meta.rel_score = Math.round(results.meta.abs_score * 100 / total_score)
     results.meta.use_minutes = Math.max(1, Math.round((Date.now() - examInfo.start_time) / 1000 / 60))
     await Api.postQuestionsResult(results.questions)
-    if (examInfo.id >= 0) { //错题集和随机考试不提交考试记录
+    if (examInfo.id >= 0) { //错题集、题库随机考试、收藏集不提交考试记录，仅提交错题记录
         await Api.postQuizResult(results.meta)
     }
     ElMessageBox.alert(`【得分】${results.meta.abs_score}/${total_score}<br/>` +
@@ -294,6 +313,16 @@ const submitQuiz = () => {
         { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }
     ).then(() => {
         uploadExamResults()
+    })
+}
+
+const onFavouriteClicked = async () => {
+    await Api.postFavouriteQuestion(activeQ.id).then(() => {
+        var i = ijPairs[activeQ.index][0]
+        var j = ijPairs[activeQ.index][1]
+        examInfo.meta[i].qList[j].favourite = true
+        activeQ.favourite = true
+        ElMessage.success('收藏成功')
     })
 }
 </script>

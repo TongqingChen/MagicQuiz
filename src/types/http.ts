@@ -6,6 +6,7 @@ export interface IQuestionResult {
     user_answer: string;
     is_correct: boolean;
 }
+
 export interface IQuizResult {
     user: number;
     quiz: number;

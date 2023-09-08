@@ -29,6 +29,11 @@ const routes: Array<RouteRecordRaw> = [
             meta: { icon: "DocumentDelete", visible: true },
             component: () => import('@/views/app/WrongSet.vue'),
         }, {
+            path: '/favouriteSet',
+            name: '收藏',
+            meta: { icon: "Star", visible: true },
+            component: () => import('@/views/app/FavouriteSet.vue'),
+        }, {
             path: "/habbit",
             name: '习惯',
             meta: { icon: "Calendar", visible: false },
