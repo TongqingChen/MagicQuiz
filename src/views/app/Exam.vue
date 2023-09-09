@@ -23,14 +23,12 @@
                     </div>
                 </el-scrollbar>
             </el-aside>
-            <el-main v-if="activeQ.index >= 0 || true">
+            <el-main v-if="activeQ.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px;">
                     <div class="user-answer"><el-tag size="small" effect="dark">考生答案</el-tag>{{ activeQ.userAnswer }}
                     </div>
                     <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
                             effect="dark">正确答案</el-tag>{{ activeQ.answer }}</div>
-                    <div class="answer" v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
-                            effect="dark">题目解析</el-tag>{{ activeQ.analysis }}</div>
                     <el-text :type="textType" size="small" style="padding-left: 6px;">自动下题</el-text>
                     <el-switch v-model="autoNext" inline-prompt :active-icon="Check" :inactive-icon="Close" />
                     <el-button-group style="padding-left: 6px;">
@@ -44,8 +42,9 @@
                                 <ArrowRight />
                             </el-icon></el-button>
                     </el-button-group>
-                    <el-button v-if="examInfo.state == ExamState.FINISHED" type="success" :icon="activeQ.favourite?StarFilled:Star" round size="small"
-                        @click="onFavouriteClicked" :disabled="activeQ.favourite">收藏</el-button>
+                    <el-button v-if="examInfo.state == ExamState.FINISHED" type="success"
+                        :icon="activeQ.favourite ? StarFilled : Star" round size="small" @click="onFavouriteClicked"
+                        :disabled="activeQ.favourite">收藏</el-button>
                     <div v-if="examInfo.state == ExamState.ONGOING">
                         <el-radio-group v-model="activeQ.userAnswer" v-if="activeQ.type == QueType.CHOICE"
                             @change="onAnswerSelected">
@@ -70,6 +69,9 @@
                     <el-image v-if="activeQ.image" :src="activeQ.image" fit="scale-down" />
                     <div>{{ activeQ.description }}</div>
                 </div>
+                <div style="padding-left: 6px; padding-top: 5px;" class="answer"
+                    v-if="examInfo.state == ExamState.FINISHED"><el-tag size="small" type="success"
+                        effect="dark">题目解析</el-tag>{{ activeQ.analysis }}</div>
             </el-main>
         </el-container>
     </el-container>
@@ -355,9 +357,14 @@ const onFavouriteClicked = async () => {
 
     .question {
         padding-left: 10px;
-        margin: 0px;
+        margin: 4px;
+        padding: 6px;
         font-size: 14px;
         white-space: pre-wrap;
+        border-style: dotted;
+        border-color: darkgray;
+        // background-color: #f5f5f5;
+        border-width: 2px;
 
         .title {
             font-weight: bold;
