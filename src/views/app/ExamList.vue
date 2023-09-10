@@ -81,8 +81,8 @@ const randomQuiz = reactive([
     { label: '时长(分钟)', val: 60, min: 10, max: 120, step: 10 }
 ])
 const oralMathConfig = reactive([
-    { label: '加数个数', val: 3, min: 2, max: 5, step: 1 },
-    { label: '加数最大值', val: 30, min: 10, max: 100, step: 10 },
+    { label: '数字个数', val: 3, min: 2, max: 5, step: 1 },
+    { label: '几以内运算', val: 30, min: 10, max: 100, step: 10 },
     { label: '题目个数', val: 50, min: 20, max: 100, step: 10 },
     { label: '时长(分钟)', val: 10, min: 5, max: 30, step: 5 }
 ])
@@ -196,6 +196,7 @@ const onStartExamClicked = (quizId: number, quizName: string, exam_minutes: numb
 .home-card {
     display: flex;
     flex-wrap: wrap;
+    margin: 0px !important;
 
     .button {
         font-size: 12px;

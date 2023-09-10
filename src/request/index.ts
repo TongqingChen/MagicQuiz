@@ -257,9 +257,9 @@ export class Api {
             method: "GET",
         })
     }
-    static getOralMath(digital_num: number, max_digital: number, q_num: number) {
+    static getOralMath(quiz_id:number, digital_num: number, max_digital: number, q_num: number) {
         return Axios({
-            url: `oral_math/?digital_num=${digital_num}&max_digital=${max_digital}&q_num=${q_num}`,
+            url: `oral_math/?quiz_id=${quiz_id}&digital_num=${digital_num}&max_digital=${max_digital}&q_num=${q_num}`,
             method: "GET",
         })
     }

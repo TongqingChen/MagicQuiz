@@ -16,7 +16,7 @@
                 <el-col v-for="m in math_info.meta" :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                     <el-card>
                         <span class="question">{{ m.title }}</span>
-                        <el-input class="clear-number-input" v-model="m.user_answer" :max="999" clearable type="number"
+                        <el-input class="clear-number-input" v-model="m.user_answer" :max="9999" clearable type="number"
                             :disabled="math_info.state == ExamState.FINISHED"></el-input>
                         <span>{{ m.mark }}</span>
                     </el-card>
@@ -62,7 +62,7 @@ onMounted(() => {
     math_info.state = ExamState.ONGOING
     var s: ISettings = Api.loadSettings()
     s && (blink.value = s.data[SetID.EXAM_TIME_BLINK].value)
-    Api.getOralMath(math_info.digital_num, math_info.max_digital, math_info.que_num).then((res) => {
+    Api.getOralMath(math_info.id, math_info.digital_num, math_info.max_digital, math_info.que_num).then((res) => {
         math_info.meta = []
         res.data.forEach((r: any[]) =>
             math_info.meta.push({ title: r[0], answer: r[1], user_answer: '', mark: '' })
@@ -176,7 +176,7 @@ onBeforeRouteLeave((to, from, next) => {
 .question {
     display: inline-flex;
     justify-content: center;
-    width: 118px;
+    /* width: 118px; */
     font-size: 16px;
     color: darkcyan;
     font-weight: bold;
