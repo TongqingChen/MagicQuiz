@@ -1,38 +1,75 @@
 <template>
-    <div class="subject">
-        <span>科目：</span>
-        <el-radio-group v-model="currentInfo.subject" size="small">
-            <el-radio-button v-for="(val, key) in favouriteSets" :label="key"> {{ key }}({{ val.length }})</el-radio-button>
-        </el-radio-group>
-    </div>
-    <el-table :data="favouriteSets[currentInfo.subject]" :row-class-name="tableRowClassName" border v-loading="loading"
-        style="width: 100%; color:darkslategray; font-size: 13px;">
-        <el-table-column fixed type='index' width="32px" />
-        <el-table-column prop="quiz_name" label="试卷名" width="88px" sortable show-overflow-tooltip />
+    <QuizCascader
+        :options="options"
+        @clicked="onSelectionChanged"
+    ></QuizCascader>
+    <el-table
+        :data="favsDisplay"
+        :row-class-name="tableRowClassName"
+        border
+        v-loading="loading"
+        style="width: 100%; color: darkslategray; font-size: 12px"
+    >
+        <el-table-column fixed type="index" width="32px" />
+        <el-table-column
+            prop="qz_name"
+            label="试卷名"
+            width="88px"
+            sortable
+            show-overflow-tooltip
+        />
         <el-table-column prop="type" label="题型" width="60px" sortable />
         <el-table-column prop="title" label="题目" show-overflow-tooltip />
-        <el-table-column prop="description" label="描述" show-overflow-tooltip />
+        <el-table-column
+            prop="description"
+            label="描述"
+            show-overflow-tooltip
+        />
         <el-table-column prop="level" label="难度" width="60px" sortable />
         <el-table-column fixed="right" label="查看" width="40px">
             <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="onDetailsClicked(scope.$index)">详情</el-button>
+                <el-button
+                    link
+                    type="primary"
+                    size="small"
+                    @click="onDetailsClicked(scope.$index)"
+                    >详情</el-button
+                >
             </template>
         </el-table-column>
         <el-table-column fixed="right" label="删除" width="40px">
             <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="onDeleteClicked(scope.$index)">删除</el-button>
+                <el-button
+                    link
+                    type="primary"
+                    size="small"
+                    @click="onDeleteClicked(scope.$index)"
+                    >删除</el-button
+                >
             </template>
         </el-table-column>
     </el-table>
-    <el-affix v-if="currentInfo.subject.length > 0" position="bottom" :offset="20">
+    <el-affix v-if="favsDisplay.length > 0" position="bottom" :offset="20">
         <el-tooltip placement="right" content="收藏题考试">
-            <el-button type="primary" :icon="Edit" circle @click="startExamInFavouriteSet" />
+            <el-button
+                type="primary"
+                :icon="Edit"
+                circle
+                @click="startExamInFavouriteSet"
+            />
         </el-tooltip>
     </el-affix>
-    <QuestionDialog :visible="currentInfo.drawerVisible"
-        :header="`${currentInfo.q.qid}.【${currentInfo.subject}】${currentInfo.q.quiz_name}`" :title="currentInfo.q.title"
-        :image="currentInfo.q.image" :description="currentInfo.q.description" :analysis="currentInfo.q.analysis"
-        :answer="currentInfo.q.answer" :userAnswer="currentInfo.q.user_answer" @close="currentInfo.drawerVisible = false">
+    <QuestionDialog
+        :visible="crtInfo.drawerVisible"
+        :header="`${crtInfo.q.qid}.【${crtInfo.subject} | ${crtInfo.grade} | ${crtInfo.volume}】${crtInfo.q.qz_name}`"
+        :title="crtInfo.q.title"
+        :image="crtInfo.q.image"
+        :description="crtInfo.q.description"
+        :analysis="crtInfo.q.analysis"
+        :answer="crtInfo.q.answer"
+        :userAnswer="crtInfo.q.user_answer"
+        @close="crtInfo.drawerVisible = false"
+    >
     </QuestionDialog>
 </template>
 
@@ -40,30 +77,61 @@
 import { Api } from '@/request/index';
 import { onMounted, reactive, ref } from 'vue';
 import { IWrongSet, WrongSet } from '@/types/http';
-import { Edit } from '@element-plus/icons-vue'
+import { Edit } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
 import QuestionDialog from '@/views/components/QuestionDialog.vue';
+import { IBaseInfo, IQuizInfo, ISubjectInfo } from '@/types/quiz_cascader';
+import QuizCascader from '../components/QuizCascader.vue';
 
-const router = useRouter()
-let loading = ref(true)
-var favouriteSets: { [key: string]: IWrongSet[] } = reactive(
-    {}
-)
+const router = useRouter();
+let loading = ref(true);
+var quizs: IQuizInfo[] = reactive([]);
+var favs: IWrongSet[] = reactive([]);
+var favsDisplay: IWrongSet[] = reactive([]);
 
-const currentInfo: { subject: string, drawerVisible: boolean, q: IWrongSet } = reactive({
-    subject: '',
+const options: ISubjectInfo[] = reactive([]);
+
+const crtInfo = reactive({
+    subject: { id: 0, name: '' },
+    grade: { id: 0, name: '' },
+    volume: { id: 0, name: '' },
     drawerVisible: false,
-    q: new WrongSet()
-})
+    q: new WrongSet(),
+});
+
+const onSelectionChanged = (
+    sub: IBaseInfo,
+    grade: IBaseInfo,
+    volume: IBaseInfo
+) => {
+    crtInfo.subject = sub;
+    crtInfo.grade = grade;
+    crtInfo.volume = volume;
+    loading.value = true;
+    favsDisplay.splice(0);
+    var qzs = quizs.filter((qz) => {
+        return (
+            qz.subject.id == sub.id &&
+            qz.grade.id == grade.id &&
+            qz.volume.id == volume.id
+        );
+    });
+    favsDisplay = favs.filter((w) => {
+        return qzs.some((qz) => qz.quiz.id == w.qz_id);
+    });
+    loading.value = false;
+    // num.value = Math.random();
+};
+
 const onDetailsClicked = (index: number) => {
-    currentInfo.q = favouriteSets[currentInfo.subject][index]
-    currentInfo.drawerVisible = true;
-}
+    crtInfo.q = favsDisplay[index];
+    crtInfo.drawerVisible = true;
+};
 const onDeleteClicked = (index: number) => {
-    currentInfo.q = favouriteSets[currentInfo.subject][index]
+    crtInfo.q = favsDisplay[index];
     ElMessageBox.confirm(
-        `从收藏集里删除本题【${currentInfo.q.title.substring(0, 10)}...】吗？`,
+        `从收藏集里删除本题【${crtInfo.q.title.substring(0, 10)}...】吗？`,
         '请确认',
         {
             confirmButtonText: '确定',
@@ -71,34 +139,56 @@ const onDeleteClicked = (index: number) => {
             type: 'warning',
         }
     ).then(async () => {
-        await Api.deleteFavouriteQuestion(currentInfo.q.qid).then(async (res)=>{
-            console.log(res)
+        await Api.deleteFavouriteQuestion(crtInfo.q.qid).then(async (res) => {
+            console.log(res);
             ElMessage({
                 message: '删除成功.',
                 type: 'success',
-            })
-        })
-    })
-}
+            });
+        });
+    });
+};
 onMounted(() => {
-    Api.getFavouriteSetsBySubName().then(res => {
-        var keys = Object.keys(res.data)
-        keys.forEach(key => {
-            if (res.data[key].length > 0) {
-                favouriteSets[key] = res.data[key]
+    Api.getFavouriteSetsBySubInfos().then((res) => {
+        quizs = res.data['quizs'];
+        quizs.forEach((qz) => {
+            var sidx = options.findIndex((opt) => {
+                return opt.v.id == qz.subject.id;
+            });
+            if (sidx < 0) {
+                sidx = options.length;
+                options.push({
+                    v: qz.subject,
+                    children: [],
+                });
             }
-        })
-        keys = Object.keys(favouriteSets)
-        if (keys.length > 0) {
-            currentInfo.subject = keys[0]
-        }
-        loading.value = false
-    })
-})
+            var gidx = options[sidx].children.findIndex((g) => {
+                return g.v.id == qz.grade.id;
+            });
+            if (gidx < 0) {
+                gidx = options[sidx].children.length;
+                options[sidx].children.push({
+                    v: qz.grade,
+                    children: [],
+                });
+            }
+            var vidx = options[sidx].children[gidx].children.findIndex((v) => {
+                return v.id == qz.volume.id;
+            });
+            if (vidx < 0) {
+                vidx = options[sidx].children[gidx].children.length;
+                options[sidx].children[gidx].children.push(qz.volume);
+            }
+        });
+        favs = res.data['questions'];
+        loading.value = false;
+        console.log(quizs, favs);
+    });
+});
 const startExamInFavouriteSet = () => {
-    const exam_minutes = 60
+    const exam_minutes = 60;
     ElMessageBox.confirm(
-        `开始【${currentInfo.subject}《收藏题集》】(${exam_minutes}分钟)考试吗？`,
+        `开始【${crtInfo.subject.name} | ${crtInfo.grade.name} | ${crtInfo.volume.name}《收藏题集》】(${exam_minutes}分钟)考试吗？`,
         '请确认',
         {
             confirmButtonText: '确定',
@@ -108,27 +198,33 @@ const startExamInFavouriteSet = () => {
     ).then(() => {
         router.push({
             path: '/exam',
-            query: { id: -3, name: '收藏题集', sub_name: currentInfo.subject, exam_seconds: exam_minutes * 60 }
-        })
-    })
-}
+            query: {
+                id: -3,
+                name: '收藏题集',
+                subject: crtInfo.subject.name,
+                grade: crtInfo.grade.name,
+                volume: crtInfo.volume.name,
+                exam_seconds: exam_minutes * 60,
+            },
+        });
+    });
+};
 
-const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) => {
+const tableRowClassName = ({
+    row,
+    rowIndex,
+}: {
+    row: any;
+    rowIndex: number;
+}) => {
     if (rowIndex % 2 == 0) {
-        return 'success-row'
+        return 'success-row';
     }
-    return ''
-}
+    return '';
+};
 </script>
 
 <style lang="scss" scoped>
-.subject {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
 .question {
     font-size: 14px;
     white-space: pre-wrap;
@@ -139,7 +235,6 @@ const tableRowClassName = ({ row, rowIndex }: { row: any, rowIndex: number }) =>
     padding: 0 4px;
 }
 </style>
-
 
 <style lang="scss">
 .success-row {

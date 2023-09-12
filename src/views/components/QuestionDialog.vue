@@ -4,20 +4,21 @@
             <div>{{ header }}</div>
         </template>
         <div class="question">
-            <div class="question">{{ title }}</div>
+            <div style="color: darkblue;">{{ title }}</div>
             <el-image v-if="image && image.length > 0" :src="image" fit="scale-down" />
             <div>{{ description }}</div>
-            <div v-if="showAnswer">
-                <div v-if="userAnswer" style="color: darkred; font-weight: bold;"><el-tag type='danger' size='small'
-                        effect="dark">考生答案</el-tag> {{ userAnswer }}</div>
-                <div style="color: darkgreen; font-weight: bold;"><el-tag type='success' size='small'
-                        effect="dark">正确答案</el-tag> {{ answer }}</div>
-                <div style="color: darkgreen;"><el-tag type='success' size='small' effect="dark">题目解析</el-tag> {{
-                    analysis }}</div>
-            </div>
+        </div>
+
+        <div v-if="showAnswer">
+            <div v-if="userAnswer" style="color: darkred; font-weight: bold;"><el-tag type='danger' size='small'
+                    effect="dark">考生答案</el-tag> {{ userAnswer }}</div>
+            <div style="color: darkgreen; font-weight: bold;"><el-tag type='success' size='small'
+                    effect="dark">正确答案</el-tag> {{ answer }}</div>
+            <div style="color: darkgreen;"><el-tag type='success' size='small' effect="dark">题目解析</el-tag> {{
+                analysis }}</div>
         </div>
         <template #footer>
-            <el-button type="primary" @click="() => showAnswer = true">显示答案</el-button>
+            <el-button v-if="!showAnswer" type="primary" @click="() => showAnswer = true">显示答案</el-button>
         </template>
     </el-dialog>
 </template>
@@ -54,6 +55,11 @@ const closes = () => {
 .question {
     font-size: 14px;
     white-space: pre-wrap;
-    color: darkblue;
+    // color: darkcyan;
+    border-style: dashed;
+    border-width: 2px;
+    border-color: grey;
+    padding: 6px;
+    margin-bottom: 4px;
 }
 </style>

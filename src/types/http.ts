@@ -1,4 +1,4 @@
-import { QueType } from "./question";
+import { QueType } from './question';
 
 export interface IQuestionResult {
     user: number;
@@ -29,15 +29,15 @@ export class QuizResult {
         rel_score: 0,
         abs_score: 0,
         use_minutes: 0,
-        note: ""
-    }
-    questions: IQuestionResult[] = []
+        note: '',
+    };
+    questions: IQuestionResult[] = [];
 }
-
 
 export interface IWrongSet {
     qid: number;
-    quiz_name: string;
+    qz_id: number;
+    qz_name: string;
     title: string;
     type_id: QueType;
     type: string;
@@ -52,7 +52,8 @@ export interface IWrongSet {
 }
 export class WrongSet implements IWrongSet {
     qid: number = 0;
-    quiz_name: string = '';
+    qz_id: number = 0;
+    qz_name: string = '';
     title: string = '';
     type_id: QueType = QueType.UNKNOWN;
     type: string = '';
@@ -75,15 +76,15 @@ export interface IOverviewInfo {
     question_num: number;
     wrongset_num: number;
     exam_record: {
-        [key: string]: IQuizResultPlus[]
-    }
+        [key: string]: IQuizResultPlus[];
+    };
 }
 export class OverviewInfo implements IOverviewInfo {
     subject_num = 0;
     quiz_num = 0;
     question_num = 0;
     wrongset_num = 0;
-    exam_record = {}
+    exam_record = {};
 }
 
 export interface IUserInfo {
@@ -109,19 +110,18 @@ export interface IUserInfoExt extends IUserInfo {
 }
 
 export class UserInfo {
-    id: number = 2
-    avatar: string = ""// http://localhost:8000/media/avatar/2%E5%AF%B8_-_415x627.jpg"
-    username: string = ""
-    last_name: string = ""
-    first_name: string = ""
-    birthday: string = ""
-    gender: number = 0
-    email: string = ""
-    mobile: string = ""
-    school: string = ""
-    address: string = ""
-    card_id: string = ""
-    date_joined: string = ""
-    failure_time: string = ''
+    id: number = 2;
+    avatar: string = ''; // http://localhost:8000/media/avatar/2%E5%AF%B8_-_415x627.jpg"
+    username: string = '';
+    last_name: string = '';
+    first_name: string = '';
+    birthday: string = '';
+    gender: number = 0;
+    email: string = '';
+    mobile: string = '';
+    school: string = '';
+    address: string = '';
+    card_id: string = '';
+    date_joined: string = '';
+    failure_time: string = '';
 }
-

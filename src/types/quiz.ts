@@ -1,9 +1,12 @@
-import { ISubject } from "@/types/subject"
+import { IGrade, ISubject, IVolume } from "@/types/subject"
 
 export interface IQuiz {
     id: number,
     name: string,
     subject: number,
+    grade: number,
+    volume: number,
+    tag: string,
     question_counts: [{ id: number, name: string, count: number }],
     last_exam_time: string,
     exam_minutes: number
@@ -14,6 +17,16 @@ export class QuizPages {
         id: -1,
         name: '',
         logo: '',
+        count: 0
+    }
+    grade: IGrade = {
+        id: -1,
+        name: '',
+        count: 0
+    }
+    volume: IVolume = {
+        id: -1,
+        name: '',
         count: 0
     }
     currentPage: number = 0
