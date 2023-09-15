@@ -118,7 +118,7 @@ export class Api {
     }
     static getQuestionListByQuizId(id: number) {
         return Axios({
-            url: `questions/?quiz__id=${id}`,
+            url: `user_questions/?quiz=${id}`,
             method: 'GET',
         });
     }
@@ -128,8 +128,9 @@ export class Api {
             method: 'GET',
         });
     }
-    static getQuestionListRandom(sub_name: string, nums: number[]) {
-        var url = `random_quiz/?sub_name=${sub_name}`;
+    static getQuestionListRandom(sub_infos: string[], nums: number[]) {
+        const user_id = Api.loadUserIdFromStorage();
+        var url = `random_quiz/?user_id=${user_id}&sub=${sub_infos[0]}&grd=${sub_infos[1]}&vol=${sub_infos[2]}`;
         nums.forEach((n) => (url += `&nums=${n}`));
         return Axios({
             url: url,

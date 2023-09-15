@@ -16,6 +16,8 @@ export interface IQuestion {
     analysis: string;
     difficulty_level: number;
     score: number;
+    is_favourited: boolean;
+    wrong_times: number;
 }
 
 export class Question implements IQuestion {
@@ -32,7 +34,8 @@ export class Question implements IQuestion {
     userAnswer: string = '';
     displayType: string = '';
     score: number = 0;
-    favourite: boolean = false;
+    is_favourited: boolean = false;
+    wrong_times: number = 0;
 
     copyFrom(q: Question) {
         this.index = q.index;
@@ -48,7 +51,8 @@ export class Question implements IQuestion {
         this.userAnswer = q.userAnswer;
         this.displayType = q.displayType;
         this.score = q.score;
-        this.favourite = q.favourite;
+        this.is_favourited = q.is_favourited;
+        this.wrong_times = q.wrong_times;
     }
 }
 

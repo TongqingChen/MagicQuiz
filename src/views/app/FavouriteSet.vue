@@ -61,14 +61,36 @@
     </el-affix>
     <QuestionDialog
         :visible="crtInfo.drawerVisible"
-        :header="`${crtInfo.q.qid}.【${crtInfo.subject} | ${crtInfo.grade} | ${crtInfo.volume}】${crtInfo.q.qz_name}`"
-        :title="crtInfo.q.title"
-        :image="crtInfo.q.image"
-        :description="crtInfo.q.description"
-        :analysis="crtInfo.q.analysis"
-        :answer="crtInfo.q.answer"
-        :userAnswer="crtInfo.q.user_answer"
-        @close="crtInfo.drawerVisible = false"
+        :id="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].qid : 0"
+        :wrong_times="
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].wrong_times : 0
+        "
+        :is_favourited="
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].is_favourited : false
+        "
+        :header="
+            crtInfo.qidx >= 0
+                ? `${favsDisplay[crtInfo.qidx].qid}.【${crtInfo.subject} | ${
+                      crtInfo.grade
+                  } | ${crtInfo.volume}】${favsDisplay[crtInfo.qidx].qz_name}`
+                : ''
+        "
+        :title="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].title : ''"
+        :image="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].image : ''"
+        :description="
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].description : ''
+        "
+        :analysis="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].analysis : ''"
+        :answer="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].answer : ''"
+        :userAnswer="
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].user_answer : ''
+        "
+        @close="
+            (fav) => {
+                favsDisplay[crtInfo.qidx].is_favourited = fav;
+                crtInfo.drawerVisible = false;
+            }
+        "
     >
     </QuestionDialog>
 </template>
@@ -76,7 +98,7 @@
 <script lang="ts" setup>
 import { Api } from '@/request/index';
 import { onMounted, reactive, ref } from 'vue';
-import { IWrongSet, WrongSet } from '@/types/http';
+import { IWrongSet } from '@/types/http';
 import { Edit } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -97,7 +119,7 @@ const crtInfo = reactive({
     grade: { id: 0, name: '' },
     volume: { id: 0, name: '' },
     drawerVisible: false,
-    q: new WrongSet(),
+    qidx: -1,
 });
 
 const onSelectionChanged = (
@@ -125,13 +147,16 @@ const onSelectionChanged = (
 };
 
 const onDetailsClicked = (index: number) => {
-    crtInfo.q = favsDisplay[index];
+    crtInfo.qidx = index;
     crtInfo.drawerVisible = true;
 };
 const onDeleteClicked = (index: number) => {
-    crtInfo.q = favsDisplay[index];
+    crtInfo.qidx = index;
     ElMessageBox.confirm(
-        `从收藏集里删除本题【${crtInfo.q.title.substring(0, 10)}...】吗？`,
+        `从收藏集里删除本题【${favsDisplay[crtInfo.qidx].title.substring(
+            0,
+            10
+        )}...】吗？`,
         '请确认',
         {
             confirmButtonText: '确定',
@@ -139,13 +164,14 @@ const onDeleteClicked = (index: number) => {
             type: 'warning',
         }
     ).then(async () => {
-        await Api.deleteFavouriteQuestion(crtInfo.q.qid).then(async (res) => {
-            console.log(res);
-            ElMessage({
-                message: '删除成功.',
-                type: 'success',
-            });
-        });
+        await Api.deleteFavouriteQuestion(favsDisplay[crtInfo.qidx].qid).then(
+            async (res) => {
+                ElMessage({
+                    message: '删除成功.',
+                    type: 'success',
+                });
+            }
+        );
     });
 };
 onMounted(() => {
@@ -182,13 +208,12 @@ onMounted(() => {
         });
         favs = res.data['questions'];
         loading.value = false;
-        console.log(quizs, favs);
     });
 });
 const startExamInFavouriteSet = () => {
     const exam_minutes = 60;
     ElMessageBox.confirm(
-        `开始【${crtInfo.subject.name} | ${crtInfo.grade.name} | ${crtInfo.volume.name}《收藏题集》】(${exam_minutes}分钟)考试吗？`,
+        `开始【${crtInfo.subject.name}⭐${crtInfo.grade.name}⭐${crtInfo.volume.name}《收藏题集》】(${exam_minutes}分钟)考试吗？`,
         '请确认',
         {
             confirmButtonText: '确定',

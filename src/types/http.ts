@@ -1,3 +1,4 @@
+import { FALSE } from 'sass';
 import { QueType } from './question';
 
 export interface IQuestionResult {
@@ -18,6 +19,8 @@ export interface IQuizResult {
 
 export interface IQuizResultPlus extends IQuizResult {
     id: number;
+    grade_name: string;
+    volume_name: string;
     quiz_name: string;
     date_time: string;
 }
@@ -48,7 +51,8 @@ export interface IWrongSet {
     analysis: string;
     user_answer: string;
     level: string;
-    record_times: number;
+    is_favourited: boolean;
+    wrong_times: number;
 }
 export class WrongSet implements IWrongSet {
     qid: number = 0;
@@ -64,7 +68,8 @@ export class WrongSet implements IWrongSet {
     analysis: string = '';
     user_answer: string = '';
     level: string = '';
-    record_times: number = 0;
+    is_favourited: boolean = false;
+    wrong_times: number = 0;
 }
 // export class WrongSet{
 //     meta: {string:IWrongSet[]} = {'dict':[{qid:0, }]}
@@ -84,6 +89,8 @@ export class OverviewInfo implements IOverviewInfo {
     quiz_num = 0;
     question_num = 0;
     wrongset_num = 0;
+    grade_name: string = '';
+    volume_name: string = '';
     exam_record = {};
 }
 

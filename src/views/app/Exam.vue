@@ -3,8 +3,9 @@
         <el-header>
             <!-- <span>【{{ examInfo.subjectName }}】{{ examInfo.name }}【总分: {{ examInfo.scores }}】</span> -->
             <span
-                >【{{ examInfo.subjectName }} | {{ examInfo.gradeName }} |
-                {{ examInfo.volumeName }}】{{ examInfo.name }}</span
+                >【{{ examInfo.subjectName }}💠{{ examInfo.gradeName }}💠{{
+                    examInfo.volumeName
+                }}】{{ examInfo.name }}</span
             >
             <!-- <Timer style="color: red;" :start_flag="examInfo.state == ExamState.ONGOING" :count_down="true"
                 :duration_secs="examInfo.exam_seconds" :blink="blink" start_text='【考试剩余】' @end_event="uploadExamResults">
@@ -37,7 +38,7 @@
                                 v-for="q in qs.qList"
                                 :type="q.displayType"
                                 @click="onQuestionClicked(q.index)"
-                                >{{ q.doubt ? "❓" : q.index + 1 }}
+                                >{{ q.doubt ? '❓' : q.index + 1 }}
                             </el-button>
                         </div>
                     </div>
@@ -101,12 +102,14 @@
                     <el-button
                         v-if="examInfo.state == ExamState.FINISHED"
                         type="success"
-                        :icon="activeQ.favourite ? StarFilled : Star"
+                        :icon="activeQ.is_favourited ? StarFilled : Star"
                         round
                         size="small"
                         @click="onFavouriteClicked"
-                        :disabled="activeQ.favourite"
-                        >收藏</el-button
+                        :disabled="activeQ.is_favourited"
+                        >{{
+                            activeQ.is_favourited ? '已收藏' : '收藏'
+                        }}</el-button
                     >
                     <div v-if="examInfo.state == ExamState.ONGOING">
                         <el-radio-group
@@ -165,12 +168,12 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, onMounted, ref, computed, onBeforeUnmount } from "vue";
-import { ElMessageBox, ElMessage } from "element-plus";
-import { Question, ExamInfo, ExamState, QueType } from "@/types/question";
-import { onBeforeRouteLeave, useRoute } from "vue-router";
-import { Api } from "@/request";
-import { IWrongSet, QuizResult } from "@/types/http";
+import { reactive, onMounted, ref, computed, onBeforeUnmount } from 'vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { Question, ExamInfo, ExamState, QueType } from '@/types/question';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { Api } from '@/request';
+import { IWrongSet, QuizResult } from '@/types/http';
 // import Timer from '@/components/Timer.vue'
 import {
     ArrowLeft,
@@ -179,9 +182,9 @@ import {
     Close,
     Star,
     StarFilled,
-} from "@element-plus/icons-vue";
-import { ISettings, SetID } from "@/types/settings";
-import FlipCounter from "@/components/FlipCounter.vue";
+} from '@element-plus/icons-vue';
+import { ISettings, SetID } from '@/types/settings';
+import FlipCounter from '@/components/FlipCounter.vue';
 
 const route = useRoute();
 const blink = ref(true);
@@ -192,7 +195,7 @@ let ijPairs = reactive([[0, 0]]);
 
 const autoNext = ref(true);
 const textType = computed(() => {
-    return autoNext.value ? "primary" : "info";
+    return autoNext.value ? 'primary' : 'info';
 });
 
 const getQuestionList = async () => {
@@ -219,7 +222,7 @@ const getQuestionList = async () => {
         examInfo.meta.push({
             typeId: q[0],
             typeName: q[1],
-            icon: "Message",
+            icon: 'Message',
             qList: [],
         });
     });
@@ -228,31 +231,19 @@ const getQuestionList = async () => {
     ijPairs = [];
     if (examInfo.id > 0) {
         await Api.getQuestionListByQuizId(examInfo.id).then((res) => {
-            let questions: Question[] = res.data.results;
-            console.log('-----', questions)
+            let questions: Question[] = res.data;
             questions.sort((q1, q2) => {
                 return q1.type - q2.type;
             });
             questions.forEach((q) => {
                 var t_id = qTypes.findIndex((qt) => qt[0] == q.type);
                 ijPairs.push([t_id, examInfo.meta[q.type].qList.length]);
-                examInfo.meta[t_id].qList.push({
-                    index: i++,
-                    id: q.id,
-                    type: q.type,
-                    title: q.title,
-                    description: q.description,
-                    image: q.image,
-                    difficulty_level: q.difficulty_level,
-                    answer: q.answer,
-                    doubt: false,
-                    analysis: q.analysis,
-                    displayType: "default",
-                    userAnswer: "",
-                    score: q.score,
-                    favourite: false,
-                    copyFrom: () => {},
-                });
+                var _q = new Question();
+                _q.copyFrom(q);
+                _q.index = i++;
+                _q.userAnswer = '';
+                _q.displayType = 'default';
+                examInfo.meta[t_id].qList.push(_q);
                 examInfo.scores += q.score;
             });
             examInfo.question_num = questions.length;
@@ -265,7 +256,7 @@ const getQuestionList = async () => {
             examInfo.gradeName,
             examInfo.volumeName,
         ]).then((res) => {
-            const wrong_set: IWrongSet[] = res.data["questions"];
+            const wrong_set: IWrongSet[] = res.data['questions'];
             wrong_set.sort((w1, w2) => {
                 return w1.type_id - w2.type_id;
             });
@@ -283,10 +274,11 @@ const getQuestionList = async () => {
                     answer: w.answer,
                     doubt: false,
                     analysis: w.analysis,
-                    displayType: "default",
-                    userAnswer: "未作答",
+                    displayType: 'default',
+                    userAnswer: '未作答',
                     score: w.score,
-                    favourite: false,
+                    is_favourited: w.is_favourited,
+                    wrong_times: w.wrong_times,
                     copyFrom: () => {},
                 });
                 examInfo.scores += w.score;
@@ -300,12 +292,10 @@ const getQuestionList = async () => {
         var logic_num = Number(route.query.logic_num);
         var blank_num = Number(route.query.blank_num);
         var coding_num = Number(route.query.coding_num);
-        await Api.getQuestionListRandom(examInfo.subjectName, [
-            choice_num,
-            logic_num,
-            blank_num,
-            coding_num,
-        ]).then((res) => {
+        await Api.getQuestionListRandom(
+            [examInfo.subjectName, examInfo.gradeName, examInfo.volumeName],
+            [choice_num, logic_num, blank_num, coding_num]
+        ).then((res) => {
             let questions: Question[] = res.data;
             questions.sort((q1, q2) => {
                 return q1.type - q2.type;
@@ -313,23 +303,12 @@ const getQuestionList = async () => {
             questions.forEach((q) => {
                 var t_id = qTypes.findIndex((qt) => qt[0] == q.type);
                 ijPairs.push([t_id, examInfo.meta[q.type].qList.length]);
-                examInfo.meta[t_id].qList.push({
-                    index: i++,
-                    id: q.id,
-                    type: q.type,
-                    title: q.title,
-                    description: q.description,
-                    image: q.image,
-                    difficulty_level: q.difficulty_level,
-                    answer: q.answer,
-                    doubt: false,
-                    analysis: q.analysis,
-                    displayType: "default",
-                    userAnswer: "",
-                    score: q.score,
-                    favourite: false,
-                    copyFrom: () => {},
-                });
+                var _q = new Question();
+                _q.copyFrom(q);
+                _q.index = i++;
+                _q.userAnswer = '';
+                _q.displayType = 'default';
+                examInfo.meta[t_id].qList.push(_q);
                 examInfo.scores += q.score;
             });
             examInfo.question_num = questions.length;
@@ -342,7 +321,7 @@ const getQuestionList = async () => {
             examInfo.gradeName,
             examInfo.volumeName,
         ]).then((res) => {
-            const wrong_set: IWrongSet[] = res.data["questions"];
+            const wrong_set: IWrongSet[] = res.data['questions'];
             wrong_set.sort((w1, w2) => {
                 return w1.type_id - w2.type_id;
             });
@@ -360,10 +339,11 @@ const getQuestionList = async () => {
                     answer: w.answer,
                     doubt: false,
                     analysis: w.analysis,
-                    displayType: "default",
-                    userAnswer: "未作答",
+                    displayType: 'default',
+                    userAnswer: '未作答',
                     score: w.score,
-                    favourite: false,
+                    is_favourited: w.is_favourited,
+                    wrong_times: w.wrong_times,
                     copyFrom: () => {},
                 });
                 examInfo.scores += w.score;
@@ -395,12 +375,12 @@ onBeforeRouteLeave((to, from, next) => {
         return;
     }
     ElMessageBox.confirm(
-        "正在考试中，离开页面数据将会丢失，考试中断！",
-        "确认离开吗？",
+        '正在考试中，离开页面数据将会丢失，考试中断！',
+        '确认离开吗？',
         {
-            confirmButtonText: "继续考试",
-            cancelButtonText: "确认离开",
-            type: "warning",
+            confirmButtonText: '继续考试',
+            cancelButtonText: '确认离开',
+            type: 'warning',
             closeOnPressEscape: false, //按下 ESC 键关闭弹窗
             distinguishCancelAndClose: true, //区分取消与关闭
         }
@@ -409,7 +389,7 @@ onBeforeRouteLeave((to, from, next) => {
             next(false);
         })
         .catch((err) => {
-            if (err == "cancel") {
+            if (err == 'cancel') {
                 next();
             } else {
                 next(false);
@@ -433,7 +413,7 @@ const onAnswerSelected = () => {
         var j = ijPairs[activeQ.index][1];
         examInfo.meta[i].qList[j].userAnswer = activeQ.userAnswer;
         examInfo.meta[i].qList[j].displayType =
-            activeQ.userAnswer.length > 0 ? "primary" : "default";
+            activeQ.userAnswer.length > 0 ? 'primary' : 'default';
         if (
             autoNext.value &&
             activeQ.index < examInfo.question_num - 1 &&
@@ -458,7 +438,7 @@ const uploadExamResults = async () => {
     var i = 0;
     examInfo.meta.forEach((qs) => {
         qs.qList.forEach((q) => {
-            q.displayType = q.userAnswer == q.answer ? "success" : "danger";
+            q.displayType = q.userAnswer == q.answer ? 'success' : 'danger';
             if (q.userAnswer == q.answer) {
                 results.meta.abs_score += q.score;
                 correct_count[i]++;
@@ -477,10 +457,16 @@ const uploadExamResults = async () => {
         i++;
     });
     i = 0;
-    var rsl_str = "";
+    var rsl_str = '';
     qTypes.forEach((q) => {
         results.meta.note += `${q[1]}:${correct_count[i]}/${examInfo.meta[i].qList.length},`;
-        rsl_str += `【${q[1]}】<b>${correct_count[i]}</b> ✅, <b>${error_count[i]}</b> ❌<br/>`;
+        if (correct_count[i] + error_count[i] > 0) {
+            rsl_str += `【${q[1]}】`;
+            correct_count[i] > 0 &&
+                (rsl_str += `<b>${correct_count[i]}</b> ✅, `);
+            error_count[i] > 0 &&
+                (rsl_str += `<b>${error_count[i]}</b> ❌<br/>`);
+        }
         i++;
     });
     results.meta.user = user_id;
@@ -500,26 +486,26 @@ const uploadExamResults = async () => {
     ElMessageBox.alert(
         `【得分】${results.meta.abs_score}/${total_score}<br/>` +
             (results.meta.abs_score == total_score
-                ? "【信息】恭喜您获得满分💯<br/>"
+                ? '【信息】恭喜您获得满分💯<br/>'
                 : rsl_str) +
             `【用时】<b>${(
                 (Date.now() - examInfo.start_time) /
                 1000 /
                 60
             ).toFixed(2)}</b>分钟<br/>`,
-        "考试结果",
+        '考试结果',
         {
-            type: results.meta.abs_score == total_score ? "success" : "error",
+            type: results.meta.abs_score == total_score ? 'success' : 'error',
             dangerouslyUseHTMLString: true,
         }
     );
 };
 
 const submitQuiz = () => {
-    ElMessageBox.confirm("确定结束考试并交卷吗？", "请确认", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
+    ElMessageBox.confirm('确定结束考试并交卷吗？', '请确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
     }).then(() => {
         uploadExamResults();
     });
@@ -529,9 +515,9 @@ const onFavouriteClicked = async () => {
     await Api.postFavouriteQuestion(activeQ.id).then(() => {
         var i = ijPairs[activeQ.index][0];
         var j = ijPairs[activeQ.index][1];
-        examInfo.meta[i].qList[j].favourite = true;
-        activeQ.favourite = true;
-        ElMessage.success("收藏成功");
+        examInfo.meta[i].qList[j].is_favourited = true;
+        activeQ.is_favourited = true;
+        ElMessage.success('收藏成功');
     });
 };
 </script>

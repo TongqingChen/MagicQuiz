@@ -56,14 +56,42 @@
     </el-affix>
     <QuestionDialog
         :visible="crtInfo.drawerVisible"
-        :header="`${crtInfo.q.qid}.【${crtInfo.subject.name} | ${crtInfo.grade.name} | ${crtInfo.volume.name}】${crtInfo.q.qz_name}`"
-        :title="crtInfo.q.title"
-        :image="crtInfo.q.image"
-        :description="crtInfo.q.description"
-        :analysis="crtInfo.q.analysis"
-        :answer="crtInfo.q.answer"
-        :userAnswer="crtInfo.q.user_answer"
-        @close="crtInfo.drawerVisible = false"
+        :id="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].qid : 0"
+        :wrong_times="
+            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].wrong_times : 0
+        "
+        :is_favourited="
+            crtInfo.qidx >= 0
+                ? wrongDisplays[crtInfo.qidx].is_favourited
+                : false
+        "
+        :header="
+            crtInfo.qidx >= 0
+                ? `${wrongDisplays[crtInfo.qidx].qid}.【${
+                      crtInfo.subject.name
+                  } | ${crtInfo.grade.name} | ${crtInfo.volume.name}】${
+                      wrongDisplays[crtInfo.qidx].qz_name
+                  }`
+                : ''
+        "
+        :title="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].title : ''"
+        :image="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].image : ''"
+        :description="
+            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].description : ''
+        "
+        :analysis="
+            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].analysis : ''
+        "
+        :answer="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].answer : ''"
+        :userAnswer="
+            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].user_answer : ''
+        "
+        @close="
+            (fav) => {
+                wrongDisplays[crtInfo.qidx].is_favourited = fav;
+                crtInfo.drawerVisible = false;
+            }
+        "
     >
     </QuestionDialog>
 </template>
@@ -93,7 +121,7 @@ let crtInfo = reactive({
     subject: { id: 0, name: '' },
     grade: { id: 0, name: '' },
     volume: { id: 0, name: '' },
-    q: new WrongSet(),
+    qidx: -1,
 });
 
 const onSelectionChanged = (
@@ -116,13 +144,12 @@ const onSelectionChanged = (
     wrongDisplays = wrongs.filter((w) => {
         return qzs.some((qz) => qz.quiz.id == w.qz_id);
     });
-    console.log('wdssss', wrongDisplays);
     loading.value = false;
     // num.value = Math.random();
 };
 
 const onDetailsClicked = (index: number) => {
-    crtInfo.q = wrongDisplays[index];
+    crtInfo.qidx = index;
     crtInfo.drawerVisible = true;
 };
 onMounted(() => {
@@ -164,7 +191,7 @@ onMounted(() => {
 const startExamInWrongSet = () => {
     const exam_minutes = 60;
     ElMessageBox.confirm(
-        `开始【${crtInfo.subject.name}|${crtInfo.grade.name}|${crtInfo.volume.name}《错题集》】(${exam_minutes}分钟)考试吗？`,
+        `开始【${crtInfo.subject.name}⭐${crtInfo.grade.name}⭐${crtInfo.volume.name}《错题集》】(${exam_minutes}分钟)考试吗？`,
         '请确认',
         {
             confirmButtonText: '确定',

@@ -33,10 +33,11 @@
                     <template #header>
                         <div class="card-header">
                             <span
-                                >{{ currInfo.subject.name }} |
-                                {{ currInfo.grade.name }} |
-                                {{ currInfo.volume.name }} |
-                                {{ quiz.name }}</span
+                                >{{ currInfo.subject.name }}⭐{{
+                                    currInfo.grade.name
+                                }}⭐{{ currInfo.volume.name }}⭐{{
+                                    quiz.name
+                                }}</span
                             >
                         </div>
                     </template>
@@ -101,23 +102,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, computed } from "vue";
-import { Api } from "@/request/index";
+import { ref, reactive, onMounted, computed } from 'vue';
+import { Api } from '@/request/index';
 
-import { useRouter } from "vue-router";
-import { ElMessageBox } from "element-plus";
-import { Edit } from "@element-plus/icons-vue";
-import { IBaseInfo, ISubjectInfo } from "@/types/quiz_cascader";
-import { IQuiz } from "@/types/quiz";
-import QuizCascader from "../components/QuizCascader.vue";
+import { useRouter } from 'vue-router';
+import { ElMessageBox } from 'element-plus';
+import { Edit } from '@element-plus/icons-vue';
+import { IBaseInfo, ISubjectInfo } from '@/types/quiz_cascader';
+import { IQuiz } from '@/types/quiz';
+import QuizCascader from '../components/QuizCascader.vue';
 
 const router = useRouter();
 
 const currInfo = reactive({
-    quiz: { id: 0, name: "" },
-    subject: { id: 0, name: "" },
-    grade: { id: 0, name: "" },
-    volume: { id: 0, name: "" },
+    quiz: { id: 0, name: '' },
+    subject: { id: 0, name: '' },
+    grade: { id: 0, name: '' },
+    volume: { id: 0, name: '' },
     page: 0,
 });
 let num = ref(0);
@@ -131,17 +132,17 @@ let quizListDisplay: IQuiz[] = reactive([]);
 
 const showDialog = ref(false);
 const randomQuiz = reactive([
-    { label: "选择", val: 15, min: 5, max: 100, step: 5 },
-    { label: "判断", val: 10, min: 5, max: 100, step: 5 },
-    { label: "填空", val: 2, min: 0, max: 20, step: 1 },
-    { label: "问答", val: 2, min: 0, max: 20, step: 1 },
-    { label: "时长(分钟)", val: 60, min: 10, max: 120, step: 10 },
+    { label: '选择', val: 15, min: 5, max: 100, step: 5 },
+    { label: '判断', val: 10, min: 5, max: 100, step: 5 },
+    { label: '填空', val: 2, min: 0, max: 20, step: 1 },
+    { label: '问答', val: 2, min: 0, max: 20, step: 1 },
+    { label: '时长(分钟)', val: 60, min: 10, max: 120, step: 10 },
 ]);
 const oralMathConfig = reactive([
-    { label: "数字个数", val: 3, min: 2, max: 5, step: 1 },
-    { label: "几以内运算", val: 30, min: 10, max: 100, step: 10 },
-    { label: "题目个数", val: 50, min: 20, max: 100, step: 10 },
-    { label: "时长(分钟)", val: 10, min: 5, max: 30, step: 5 },
+    { label: '数字个数', val: 3, min: 2, max: 5, step: 1 },
+    { label: '几以内运算', val: 30, min: 10, max: 100, step: 10 },
+    { label: '题目个数', val: 50, min: 20, max: 100, step: 10 },
+    { label: '时长(分钟)', val: 10, min: 5, max: 30, step: 5 },
 ]);
 
 const onSelectionChanged = (
@@ -159,15 +160,14 @@ const onSelectionChanged = (
             qz.volume == currInfo.volume.id
         );
     });
-    console.log(quizListDisplay);
     num.value = Math.random();
 };
 
 const cardBodyStyle = () => {
-    const colors = ["#c6e2ff", "wheat", "#48F4DB"];
+    const colors = ['#c6e2ff', 'wheat', '#48F4DB'];
     var idx = options.findIndex((v) => v.v.id == currInfo.subject.id);
     return {
-        "background-color": colors[idx % colors.length],
+        'background-color': colors[idx % colors.length],
     };
 };
 
@@ -213,10 +213,10 @@ const onRandomQuiz = () => {
     showDialog.value = false;
     if (isOralMath.value) {
         router.push({
-            path: "/oral_math",
+            path: '/oral_math',
             query: {
                 id: currInfo.quiz.id,
-                name: "数学口算",
+                name: '数学口算',
                 digital_num: oralMathConfig[0].val,
                 max_digital: oralMathConfig[1].val,
                 q_num: oralMathConfig[2].val,
@@ -226,11 +226,13 @@ const onRandomQuiz = () => {
         return;
     }
     router.push({
-        path: "/exam",
+        path: '/exam',
         query: {
             id: -2,
-            name: "随机测试",
+            name: '随机测试',
             subject: currInfo.subject.name,
+            grade: currInfo.grade.name,
+            volume: currInfo.volume.name,
             choice_num: randomQuiz[0].val,
             logic_num: randomQuiz[1].val,
             blank_num: randomQuiz[2].val,
@@ -251,17 +253,17 @@ const onStartExamClicked = (
         return;
     }
     ElMessageBox.confirm(
-        `开始【${currInfo.subject.name} | ${currInfo.grade.name} | ${currInfo.volume.name}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
-        "请确认",
+        `开始【${currInfo.subject.name}⭐${currInfo.grade.name}⭐${currInfo.volume.name}《${quizName}》】(${exam_minutes}分钟)考试吗？`,
+        '请确认',
         {
-            confirmButtonText: "确定",
-            cancelButtonText: "取消",
-            type: "warning",
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
         }
     )
         .then(() => {
             router.push({
-                path: "/exam",
+                path: '/exam',
                 query: {
                     id: quizId,
                     name: quizName,

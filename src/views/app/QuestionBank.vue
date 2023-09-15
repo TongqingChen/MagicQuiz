@@ -61,14 +61,21 @@
     </el-table>
     <QuestionDialog
         :visible="detailsVisible"
-        :header="`${currQ.id}. ${currQuizInfo}`"
-        :title="currQ.title"
-        :image="currQ.image"
-        :description="currQ.description"
-        :analysis="currQ.analysis"
-        :answer="currQ.answer"
+        :wrong_times="currIdx >= 0 ? qListDisplay[currIdx].wrong_times : 0"
+        :id="currIdx >= 0 ? qListDisplay[currIdx].id : 0"
+        :is_favourited="
+            currIdx >= 0 ? qListDisplay[currIdx].is_favourited : false
+        "
+        :header="
+            currIdx >= 0 ? `${qListDisplay[currIdx].id}. ${currQuizInfo}` : ''
+        "
+        :title="currIdx >= 0 ? qListDisplay[currIdx].title : ''"
+        :image="currIdx >= 0 ? qListDisplay[currIdx].image : ''"
+        :description="currIdx >= 0 ? qListDisplay[currIdx].description : ''"
+        :analysis="currIdx >= 0 ? qListDisplay[currIdx].analysis : ''"
+        :answer="currIdx >= 0 ? qListDisplay[currIdx].answer : ''"
         :userAnswer="null"
-        @close="detailsVisible = false"
+        @close="(fav: boolean) => { qListDisplay[currIdx].is_favourited = fav; detailsVisible = false;}"
     >
     </QuestionDialog>
 </template>
@@ -76,7 +83,7 @@
 <script lang="ts" setup>
 import { Api } from '@/request';
 import { computed, onMounted, reactive, ref } from 'vue';
-import { IQuestion, Question } from '@/types/question';
+import { IQuestion } from '@/types/question';
 import QuestionDialog from '@/views/components/QuestionDialog.vue';
 import QuizCascader from '../components/QuizCascader.vue';
 import { IBaseInfo, IQuizInfo, ISubjectInfo } from '@/types/quiz_cascader';
@@ -97,13 +104,13 @@ const qListDisplay = computed(() => {
     });
 });
 
-let currQ: IQuestion = reactive(new Question());
 let currQuizInfo = ref('');
+let currIdx = -1;
 
 const detailsVisible = ref(false);
 const loading = ref(false);
 const questionSelected = (idx: number) => {
-    currQ = qListDisplay.value[idx];
+    currIdx = idx;
     detailsVisible.value = true;
 };
 
@@ -133,7 +140,7 @@ const onQuizChanged = () => {
     qList.splice(0);
     Api.getQuestionListByQuizId(currQuizId.value).then((res) => {
         var i = 1;
-        res.data.results.forEach((d: IQuestion) => {
+        res.data.forEach((d: IQuestion) => {
             qList.push({
                 index: i++,
                 id: d.id,
@@ -145,6 +152,8 @@ const onQuizChanged = () => {
                 difficulty_level: d.difficulty_level,
                 score: d.score,
                 answer: d.answer,
+                is_favourited: d.is_favourited,
+                wrong_times: d.wrong_times,
             });
         });
         currType.value = -1;
