@@ -4,7 +4,7 @@
         @clicked="onSelectionChanged"
     ></QuizCascader>
     <el-table
-        :data="wrongDisplays"
+        :data="favsDisplay"
         :row-class-name="tableRowClassName"
         border
         v-loading="loading"
@@ -26,12 +26,17 @@
             show-overflow-tooltip
         />
         <el-table-column prop="level" label="难度" width="60px" sortable />
-        <el-table-column
-            prop="record_times"
-            label="次数"
-            width="60px"
-            sortable
-        />
+        <el-table-column fixed="right" label="删除" width="40px">
+            <template v-slot="scope">
+                <el-button
+                    link
+                    type="primary"
+                    size="small"
+                    @click="onDeleteClicked(scope.$index)"
+                    >删除</el-button
+                >
+            </template>
+        </el-table-column>
         <el-table-column fixed="right" label="查看" width="40px">
             <template v-slot="scope">
                 <el-button
@@ -44,51 +49,47 @@
             </template>
         </el-table-column>
     </el-table>
-    <el-affix v-if="wrongDisplays.length > 0" position="bottom" :offset="20">
-        <el-tooltip placement="right" content="错题考试">
+    <el-affix v-if="favsDisplay.length > 0" position="bottom" :offset="20">
+        <el-tooltip placement="right" content="收藏题考试">
             <el-button
                 type="primary"
                 :icon="Edit"
                 circle
-                @click="startExamInWrongSet"
+                @click="startExamInFavouriteSet"
             />
         </el-tooltip>
     </el-affix>
     <QuestionDialog
         :visible="crtInfo.drawerVisible"
-        :id="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].qid : 0"
+        :id="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].qid : 0"
         :wrong_times="
-            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].wrong_times : 0
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].wrong_times : 0
         "
         :is_favourited="
-            crtInfo.qidx >= 0
-                ? wrongDisplays[crtInfo.qidx].is_favourited
-                : false
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].is_favourited : false
         "
         :header="
             crtInfo.qidx >= 0
-                ? `${wrongDisplays[crtInfo.qidx].qid}.【${
+                ? `${favsDisplay[crtInfo.qidx].qid}.【${
                       crtInfo.subject.name
                   } | ${crtInfo.grade.name} | ${crtInfo.volume.name}】${
-                      wrongDisplays[crtInfo.qidx].qz_name
+                      favsDisplay[crtInfo.qidx].qz_name
                   }`
                 : ''
         "
-        :title="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].title : ''"
-        :image="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].image : ''"
+        :title="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].title : ''"
+        :image="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].image : ''"
         :description="
-            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].description : ''
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].description : ''
         "
-        :analysis="
-            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].analysis : ''
-        "
-        :answer="crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].answer : ''"
+        :analysis="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].analysis : ''"
+        :answer="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].answer : ''"
         :userAnswer="
-            crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].user_answer : ''
+            crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].user_answer : ''
         "
         @close="
             (fav) => {
-                wrongDisplays[crtInfo.qidx].is_favourited = fav;
+                favsDisplay[crtInfo.qidx].is_favourited = fav;
                 crtInfo.drawerVisible = false;
             }
         "
@@ -101,61 +102,29 @@ import { Api } from '@/request/index';
 import { onMounted, reactive, ref } from 'vue';
 import { IWrongSet } from '@/types/http';
 import { Edit } from '@element-plus/icons-vue';
-import { ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
 import QuestionDialog from '@/views/components/QuestionDialog.vue';
 import QuizCascader from '@/views/components/QuizCascader.vue';
-import { IQuizInfo, ISubjectInfo, IBaseInfo } from '@/types/quiz_cascader';
+import { IBaseInfo, IQuizInfo, ISubjectInfo } from '@/types/quiz_cascader';
 
 const router = useRouter();
 let loading = ref(true);
-
 var quizs: IQuizInfo[] = reactive([]);
-var wrongs: IWrongSet[] = reactive([]);
-var wrongDisplays: IWrongSet[] = reactive([]);
+var favs: IWrongSet[] = reactive([]);
+var favsDisplay: IWrongSet[] = reactive([]);
 
 const options: ISubjectInfo[] = reactive([]);
 
-let crtInfo = reactive({
-    drawerVisible: false,
+const crtInfo = reactive({
     subject: { id: 0, name: '' },
     grade: { id: 0, name: '' },
     volume: { id: 0, name: '' },
+    drawerVisible: false,
     qidx: -1,
 });
-
-const onSelectionChanged = (
-    sub: IBaseInfo,
-    grade: IBaseInfo,
-    volume: IBaseInfo
-) => {
-    crtInfo.subject = sub;
-    crtInfo.grade = grade;
-    crtInfo.volume = volume;
-    loading.value = true;
-
-    crtInfo.qidx = -1;
-    wrongDisplays.splice(0);
-    var qzs = quizs.filter((qz) => {
-        return (
-            qz.subject.id == sub.id &&
-            qz.grade.id == grade.id &&
-            qz.volume.id == volume.id
-        );
-    });
-    wrongDisplays = wrongs.filter((w) => {
-        return qzs.some((qz) => qz.quiz.id == w.qz_id);
-    });
-    loading.value = false;
-    // num.value = Math.random();
-};
-
-const onDetailsClicked = (index: number) => {
-    crtInfo.qidx = index;
-    crtInfo.drawerVisible = true;
-};
 onMounted(() => {
-    Api.getWrongSetsMixedBySubInfos().then((res) => {
+    Api.getFavouriteSetsBySubInfos().then((res) => {
         quizs = res.data['quizs'];
         quizs.forEach((qz) => {
             var sidx = options.findIndex((opt) => {
@@ -186,14 +155,68 @@ onMounted(() => {
                 options[sidx].children[gidx].children.push(qz.volume);
             }
         });
-        wrongs = res.data['questions'];
+        favs = res.data['questions'];
         loading.value = false;
     });
 });
-const startExamInWrongSet = () => {
+const onSelectionChanged = (
+    sub: IBaseInfo,
+    grade: IBaseInfo,
+    volume: IBaseInfo
+) => {
+    crtInfo.subject = sub;
+    crtInfo.grade = grade;
+    crtInfo.volume = volume;
+    loading.value = true;
+    crtInfo.qidx = -1;
+    favsDisplay.splice(0);
+    var qzs = quizs.filter((qz) => {
+        return (
+            qz.subject.id == sub.id &&
+            qz.grade.id == grade.id &&
+            qz.volume.id == volume.id
+        );
+    });
+    favsDisplay = favs.filter((w) => {
+        return qzs.some((qz) => qz.quiz.id == w.qz_id);
+    });
+    loading.value = false;
+    // num.value = Math.random();
+};
+
+const onDetailsClicked = (index: number) => {
+    crtInfo.qidx = index;
+    crtInfo.drawerVisible = true;
+};
+const onDeleteClicked = (index: number) => {
+    crtInfo.qidx = index;
+    ElMessageBox.confirm(
+        `从收藏集里删除本题【${favsDisplay[crtInfo.qidx].title.substring(
+            0,
+            10
+        )}...】吗？`,
+        '请确认',
+        {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning',
+        }
+    ).then(async () => {
+        await Api.deleteFavouriteQuestion(favsDisplay[crtInfo.qidx].qid).then(
+            async (res) => {
+                ElMessage({
+                    message: '删除成功.',
+                    type: 'success',
+                });
+            }
+        );
+    });
+};
+
+const startExamInFavouriteSet = () => {
     const exam_minutes = 60;
     ElMessageBox.confirm(
-        `开始【${crtInfo.subject.name}⭐${crtInfo.grade.name}⭐${crtInfo.volume.name}《错题集》】(${exam_minutes}分钟)考试吗？`,
+        `开始【${crtInfo.subject.name}⭐${crtInfo.grade.name}⭐${crtInfo.volume.name}《收藏题集》】(${exam_minutes}分钟)考试吗？`,
         '请确认',
         {
             confirmButtonText: '确定',
@@ -204,8 +227,8 @@ const startExamInWrongSet = () => {
         router.push({
             path: '/exam',
             query: {
-                id: -1,
-                name: '错题集',
+                id: -3,
+                name: '收藏题集',
                 subject: crtInfo.subject.name,
                 grade: crtInfo.grade.name,
                 volume: crtInfo.volume.name,
@@ -230,14 +253,6 @@ const tableRowClassName = ({
 </script>
 
 <style lang="scss" scoped>
-.subject {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-    font-weight: bold;
-    font-size: 14px;
-}
-
 .question {
     font-size: 14px;
     white-space: pre-wrap;
@@ -247,10 +262,11 @@ const tableRowClassName = ({
 .el-table:deep(.cell) {
     padding: 0 4px;
 }
-</style>
-
-<style lang="scss">
 .success-row {
     --el-table-tr-bg-color: var(--el-color-success-light-9) !important;
 }
 </style>
+
+<!-- <style lang="scss">
+
+</style> -->
