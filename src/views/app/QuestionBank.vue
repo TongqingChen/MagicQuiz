@@ -88,88 +88,6 @@ import QuestionDialog from '@/views/components/QuestionDialog.vue';
 import QuizCascader from '../components/QuizCascader.vue';
 import { IBaseInfo, IQuizInfo, ISubjectInfo } from '@/types/quiz_cascader';
 
-const qTypes = ['全部', '单选', '判断', '填空', '问答'];
-const qDifficulty = ['简单', '一般', '困难'];
-let options: ISubjectInfo[] = reactive([]);
-let quizList: IQuizInfo[] = reactive([]);
-
-let currQuizId = ref(0);
-let quizListDisplay: IQuizInfo[] = reactive([]);
-
-const currType = ref(0);
-let qList: IQuestion[] = reactive([]);
-const qListDisplay = computed(() => {
-    return qList.filter((q) => {
-        return currType.value < 0 || q.type == currType.value;
-    });
-});
-
-let currQuizInfo = ref('');
-let currIdx = -1;
-
-const detailsVisible = ref(false);
-const loading = ref(false);
-const questionSelected = (idx: number) => {
-    currIdx = idx;
-    detailsVisible.value = true;
-};
-
-const onSelectionChanged = (
-    sub: IBaseInfo,
-    grade: IBaseInfo,
-    volume: IBaseInfo
-) => {
-    currQuizInfo.value = `【${sub.name} | ${grade.name} | ${volume.name}】`;
-    quizListDisplay.splice(0);
-    quizListDisplay = quizList.filter((qz) => {
-        return (
-            qz.subject.id == sub.id &&
-            qz.grade.id == grade.id &&
-            qz.volume.id == volume.id
-        );
-    });
-    if (quizListDisplay.length > 0) {
-        currQuizId.value = quizListDisplay[0].quiz.id;
-        currQuizInfo.value += quizListDisplay[0].quiz.name;
-        onQuizChanged();
-    }
-};
-
-const onQuizChanged = () => {
-    loading.value = true;
-    qList.splice(0);
-    Api.getQuestionListByQuizId(currQuizId.value).then((res) => {
-        var i = 1;
-        res.data.forEach((d: IQuestion) => {
-            qList.push({
-                index: i++,
-                id: d.id,
-                type: d.type,
-                title: d.title,
-                description: d.description,
-                image: d.image,
-                analysis: d.analysis,
-                difficulty_level: d.difficulty_level,
-                score: d.score,
-                answer: d.answer,
-                is_favourited: d.is_favourited,
-                wrong_times: d.wrong_times,
-            });
-        });
-        currType.value = -1;
-        loading.value = false;
-    });
-};
-
-const tableRowClassName = ({
-    row,
-    rowIndex,
-}: {
-    row: any;
-    rowIndex: number;
-}) => {
-    return rowIndex % 2 ? '' : 'success-row';
-};
 onMounted(async () => {
     await Api.getQuizList().then((res) => {
         res.data.forEach(
@@ -226,6 +144,89 @@ onMounted(async () => {
         );
     });
 });
+const qTypes = ['全部', '单选', '判断', '填空', '问答'];
+const qDifficulty = ['简单', '一般', '困难'];
+let options: ISubjectInfo[] = reactive([]);
+let quizList: IQuizInfo[] = reactive([]);
+
+let currQuizId = ref(0);
+let quizListDisplay: IQuizInfo[] = reactive([]);
+
+const currType = ref(0);
+let qList: IQuestion[] = reactive([]);
+
+let currQuizInfo = ref('');
+let currIdx = -1;
+
+const detailsVisible = ref(false);
+const loading = ref(false);
+
+const questionSelected = (idx: number) => {
+    currIdx = idx;
+    detailsVisible.value = true;
+};
+const qListDisplay = computed(() => {
+    currIdx = -1;
+    return qList.filter((q) => {
+        return currType.value < 0 || q.type == currType.value;
+    });
+});
+const onSelectionChanged = (
+    sub: IBaseInfo,
+    grade: IBaseInfo,
+    volume: IBaseInfo
+) => {
+    currQuizInfo.value = `【${sub.name} | ${grade.name} | ${volume.name}】`;
+    quizListDisplay.splice(0);
+    quizListDisplay = quizList.filter((qz) => {
+        return (
+            qz.subject.id == sub.id &&
+            qz.grade.id == grade.id &&
+            qz.volume.id == volume.id
+        );
+    });
+    if (quizListDisplay.length > 0) {
+        currQuizId.value = quizListDisplay[0].quiz.id;
+        currQuizInfo.value += quizListDisplay[0].quiz.name;
+        onQuizChanged();
+    }
+};
+
+const onQuizChanged = () => {
+    loading.value = true;
+    qList.splice(0);
+    Api.getQuestionListByQuizId(currQuizId.value).then((res) => {
+        var i = 1;
+        res.data.forEach((d: IQuestion) => {
+            qList.push({
+                index: i++,
+                id: d.id,
+                type: d.type,
+                title: d.title,
+                description: d.description,
+                image: d.image,
+                analysis: d.analysis,
+                difficulty_level: d.difficulty_level,
+                score: d.score,
+                answer: d.answer,
+                is_favourited: d.is_favourited,
+                wrong_times: d.wrong_times,
+            });
+        });
+        currType.value = -1;
+        loading.value = false;
+    });
+};
+
+const tableRowClassName = ({
+    row,
+    rowIndex,
+}: {
+    row: any;
+    rowIndex: number;
+}) => {
+    return rowIndex % 2 ? '' : 'success-row';
+};
 </script>
 
 <style lang="scss" scoped>

@@ -70,9 +70,11 @@
         "
         :header="
             crtInfo.qidx >= 0
-                ? `${favsDisplay[crtInfo.qidx].qid}.【${crtInfo.subject} | ${
-                      crtInfo.grade
-                  } | ${crtInfo.volume}】${favsDisplay[crtInfo.qidx].qz_name}`
+                ? `${favsDisplay[crtInfo.qidx].qid}.【${
+                      crtInfo.subject.name
+                  } | ${crtInfo.grade.name} | ${crtInfo.volume.name}】${
+                      favsDisplay[crtInfo.qidx].qz_name
+                  }`
                 : ''
         "
         :title="crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].title : ''"

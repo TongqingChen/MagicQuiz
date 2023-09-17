@@ -79,7 +79,7 @@
     </el-dialog>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { Star, StarFilled } from '@element-plus/icons-vue';
 import { Api } from '@/request';

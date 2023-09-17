@@ -133,6 +133,8 @@ const onSelectionChanged = (
     crtInfo.grade = grade;
     crtInfo.volume = volume;
     loading.value = true;
+
+    crtInfo.qidx = -1;
     wrongDisplays.splice(0);
     var qzs = quizs.filter((qz) => {
         return (
