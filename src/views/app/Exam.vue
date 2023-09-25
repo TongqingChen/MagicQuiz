@@ -552,17 +552,17 @@ const onFavouriteClicked = async () => {
         padding-left: 10px;
         margin: 4px;
         padding: 6px;
-        font-size: 14px;
         white-space: pre-wrap;
         border-style: dotted;
         border-color: darkgray;
         // background-color: #f5f5f5;
         border-width: 2px;
+        color: darkolivegreen;
+        font-size: 14px;
 
         .title {
             font-weight: bold;
-            // color: darkblue;
-            font-size: 14px;
+            color: darkblue;
         }
     }
 

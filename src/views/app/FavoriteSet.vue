@@ -88,7 +88,7 @@
             crtInfo.qidx >= 0 ? favsDisplay[crtInfo.qidx].user_answer : ''
         "
         @close="
-            (fav) => {
+            (fav: boolean) => {
                 favsDisplay[crtInfo.qidx].is_favourited = fav;
                 crtInfo.drawerVisible = false;
             }

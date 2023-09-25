@@ -61,7 +61,7 @@
                 >
                 {{ answer }}
             </div>
-            <div style="color: darkgreen">
+            <div style="color: darkgreen; white-space: pre-wrap">
                 <el-tag type="success" size="small" effect="dark"
                     >题目解析</el-tag
                 >

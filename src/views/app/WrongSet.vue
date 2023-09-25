@@ -27,7 +27,7 @@
         />
         <el-table-column prop="level" label="难度" width="60px" sortable />
         <el-table-column
-            prop="record_times"
+            prop="wrong_times"
             label="次数"
             width="60px"
             sortable
@@ -87,7 +87,7 @@
             crtInfo.qidx >= 0 ? wrongDisplays[crtInfo.qidx].user_answer : ''
         "
         @close="
-            (fav) => {
+            (fav: boolean) => {
                 wrongDisplays[crtInfo.qidx].is_favourited = fav;
                 crtInfo.drawerVisible = false;
             }
