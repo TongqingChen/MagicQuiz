@@ -10,22 +10,47 @@
         v-loading="loading"
         style="width: 100%; color: darkslategray; font-size: 12px"
     >
-        <el-table-column fixed type="index" width="32px" />
+        <el-table-column fixed lable="序号" width="32px" align="center">
+            <template v-slot="scope">
+                <el-tooltip effect="dark" content="详情">
+                    <el-button
+                        link
+                        type="primary"
+                        size="small"
+                        @click="onDetailsClicked(scope.$index)"
+                        >{{ scope.$index + 1 }}</el-button
+                    >
+                </el-tooltip>
+            </template>
+        </el-table-column>
         <el-table-column
             prop="qz_name"
             label="试卷名"
             width="88px"
             sortable
             show-overflow-tooltip
+            align="center"
         />
-        <el-table-column prop="type" label="题型" width="60px" sortable />
+        <el-table-column
+            prop="type"
+            label="题型"
+            width="60px"
+            sortable
+            align="center"
+        />
         <el-table-column prop="title" label="题目" show-overflow-tooltip />
         <el-table-column
             prop="description"
             label="描述"
             show-overflow-tooltip
         />
-        <el-table-column prop="level" label="难度" width="60px" sortable />
+        <el-table-column
+            prop="level"
+            label="难度"
+            width="60px"
+            sortable
+            align="center"
+        />
         <el-table-column fixed="right" label="删除" width="40px">
             <template v-slot="scope">
                 <el-button
@@ -34,17 +59,6 @@
                     size="small"
                     @click="onDeleteClicked(scope.$index)"
                     >删除</el-button
-                >
-            </template>
-        </el-table-column>
-        <el-table-column fixed="right" label="查看" width="40px">
-            <template v-slot="scope">
-                <el-button
-                    link
-                    type="primary"
-                    size="small"
-                    @click="onDetailsClicked(scope.$index)"
-                    >详情</el-button
                 >
             </template>
         </el-table-column>

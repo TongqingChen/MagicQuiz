@@ -30,8 +30,20 @@
         border
         v-loading="loading"
     >
-        <el-table-column fixed type="index" width="32px" />
-        <el-table-column label="题型" width="40px">
+        <el-table-column fixed lable="序号" width="32px" align="center">
+            <template v-slot="scope">
+                <el-tooltip effect="dark" content="详情">
+                    <el-button
+                        link
+                        type="primary"
+                        size="small"
+                        @click="questionSelected(scope.$index)"
+                        >{{ scope.$index + 1 }}</el-button
+                    >
+                </el-tooltip>
+            </template>
+        </el-table-column>
+        <el-table-column label="题型" width="40px" align="center">
             <template #default="scope">{{
                 qTypes[scope.row.type + 1]
             }}</template>
@@ -42,21 +54,10 @@
             label="描述"
             show-overflow-tooltip
         />
-        <el-table-column label="难度" width="40px">
+        <el-table-column label="难度" width="40px" align="center">
             <template #default="scope">{{
                 qDifficulty[scope.row.difficulty_level]
             }}</template>
-        </el-table-column>
-        <el-table-column fixed="right" label="查看" width="40px">
-            <template v-slot="scope">
-                <el-button
-                    link
-                    type="primary"
-                    size="small"
-                    @click="questionSelected(scope.$index)"
-                    >详情</el-button
-                >
-            </template>
         </el-table-column>
     </el-table>
     <QuestionDialog
