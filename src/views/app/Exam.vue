@@ -46,9 +46,29 @@
             </el-aside>
             <el-main v-if="activeQ.index >= 0">
                 <div style="padding-left: 6px; padding-top: 5px">
+                    <div v-if="examInfo.state == ExamState.FINISHED">
+                        <el-text size="small">{{
+                            showAnswer ? '隐藏答案' : '显示答案'
+                        }}</el-text>
+                        <el-switch
+                            v-model="showAnswer"
+                            inline-prompt
+                            :active-icon="Check"
+                            :inactive-icon="Close"
+                        />
+                    </div>
                     <div class="user-answer">
                         <el-tag size="small" effect="dark">考生答案</el-tag
-                        >{{ activeQ.userAnswer }}
+                        ><el-text
+                            :type="
+                                examInfo.state == ExamState.FINISHED
+                                    ? activeQ.userAnswer == activeQ.answer
+                                        ? 'success'
+                                        : 'danger'
+                                    : 'default'
+                            "
+                            >{{ activeQ.userAnswer }}</el-text
+                        >
                     </div>
                     <div
                         class="answer"
@@ -56,14 +76,11 @@
                     >
                         <el-tag size="small" type="success" effect="dark"
                             >正确答案</el-tag
-                        >{{ activeQ.answer }}
+                        ><el-text type="success">{{
+                            showAnswer ? activeQ.answer : '🚫'
+                        }}</el-text>
                     </div>
-                    <el-text
-                        :type="textType"
-                        size="small"
-                        style="padding-left: 6px"
-                        >自动下题</el-text
-                    >
+                    <el-text :type="textType" size="small">自动下题</el-text>
                     <el-switch
                         v-model="autoNext"
                         inline-prompt
@@ -160,7 +177,7 @@
                 >
                     <el-tag size="small" type="success" effect="dark"
                         >题目解析</el-tag
-                    >{{ activeQ.analysis }}
+                    >{{ showAnswer ? activeQ.analysis : '🚫' }}
                 </div>
             </el-main>
         </el-container>
@@ -194,6 +211,7 @@ let qTypes = reactive([]);
 let ijPairs = reactive([[0, 0]]);
 
 const autoNext = ref(true);
+const showAnswer = ref(false);
 const textType = computed(() => {
     return autoNext.value ? 'primary' : 'info';
 });
@@ -399,7 +417,12 @@ onBeforeRouteLeave((to, from, next) => {
 
 let activeQ = reactive(new Question());
 const onQuestionClicked = (index: number) => {
-    activeQ.copyFrom(examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]);
+    if (index != activeQ.index) {
+        showAnswer.value = false;
+        activeQ.copyFrom(
+            examInfo.meta[ijPairs[index][0]].qList[ijPairs[index][1]]
+        );
+    }
 };
 
 const onDoubtBtnClicked = () => {
